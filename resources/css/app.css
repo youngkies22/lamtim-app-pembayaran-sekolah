@@ -1,0 +1,283 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.vue';
+
+@theme {
+    --font-sans: 'Inter', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+/* Modern DataTables Styling - Using native CSS */
+.dataTables_wrapper {
+    color: rgb(55 65 81);
+}
+
+.dark .dataTables_wrapper {
+    color: rgb(209 213 219);
+}
+
+.dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: rgb(75 85 99);
+}
+
+.dark .dataTables_length label {
+    color: rgb(156 163 175);
+}
+
+.dataTables_length select {
+    padding: 0.625rem 2.5rem 0.625rem 1rem;
+    font-size: 0.875rem;
+    background-color: white;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 0.75rem;
+    color: inherit;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25em 1.25em;
+    transition: all 0.2s;
+}
+
+.dataTables_length select:focus {
+    outline: none;
+    border-color: rgb(99 102 241);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+.dark .dataTables_length select {
+    background-color: rgb(31 41 55);
+    border-color: rgb(55 65 81);
+    color: white;
+}
+
+.dataTables_filter {
+    display: none;
+    /* Using custom search input */
+}
+
+.dataTables_info {
+    font-size: 0.875rem;
+    color: rgb(107 114 128);
+}
+
+.dark .dataTables_info {
+    color: rgb(156 163 175);
+}
+
+.dataTables_paginate {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.dataTables_paginate .paginate_button {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(55 65 81);
+    background-color: white;
+    border: 1px solid rgb(229 231 235);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dark .dataTables_paginate .paginate_button {
+    color: rgb(209 213 219);
+    background-color: rgb(31 41 55);
+    border-color: rgb(55 65 81);
+}
+
+.dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+    background-color: rgb(243 244 246);
+    border-color: rgb(209 213 219);
+}
+
+.dark .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current) {
+    background-color: rgb(55 65 81);
+    border-color: rgb(75 85 99);
+}
+
+.dataTables_paginate .paginate_button.current {
+    background: linear-gradient(to right, rgb(37 99 235), rgb(79 70 229));
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.25);
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.dataTables_processing {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(4px);
+    border-radius: 0.75rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgb(243 244 246);
+    padding: 1.5rem;
+}
+
+.dark .dataTables_processing {
+    background-color: rgba(31, 41, 55, 0.95) !important;
+    border-color: rgb(55 65 81);
+}
+
+/* Table styling */
+table.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table.dataTable thead th {
+    border-bottom: 2px solid rgb(243 244 246);
+}
+
+.dark table.dataTable thead th {
+    border-bottom-color: rgb(55 65 81);
+}
+
+table.dataTable tbody tr {
+    border-bottom: 1px solid rgb(249 250 251);
+    transition: background-color 0.15s;
+}
+
+.dark table.dataTable tbody tr {
+    border-bottom-color: rgb(31 41 55);
+}
+
+table.dataTable tbody tr:hover {
+    background: linear-gradient(to right, rgba(239, 246, 255, 0.5), rgba(238, 242, 255, 0.5));
+}
+
+.dark table.dataTable tbody tr:hover {
+    background: linear-gradient(to right, rgba(30, 58, 138, 0.1), rgba(49, 46, 129, 0.1));
+}
+
+table.dataTable tbody tr:last-child {
+    border-bottom: none;
+}
+
+/* Sorting icons */
+table.dataTable thead .sorting,
+table.dataTable thead .sorting_asc,
+table.dataTable thead .sorting_desc {
+    cursor: pointer;
+    position: relative;
+    padding-right: 1.5rem;
+}
+
+table.dataTable thead .sorting::after,
+table.dataTable thead .sorting_asc::after,
+table.dataTable thead .sorting_desc::after {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.4;
+}
+
+table.dataTable thead .sorting::after {
+    content: "↕";
+}
+
+table.dataTable thead .sorting_asc::after {
+    content: "↑";
+    opacity: 1;
+    color: rgb(79 70 229);
+}
+
+.dark table.dataTable thead .sorting_asc::after {
+    color: rgb(129 140 248);
+}
+
+table.dataTable thead .sorting_desc::after {
+    content: "↓";
+    opacity: 1;
+    color: rgb(79 70 229);
+}
+
+.dark table.dataTable thead .sorting_desc::after {
+    color: rgb(129 140 248);
+}
+
+/* Empty table */
+table.dataTable tbody .dataTables_empty {
+    text-align: center;
+    padding: 3rem 0;
+    color: rgb(107 114 128);
+}
+
+.dark table.dataTable tbody .dataTables_empty {
+    color: rgb(156 163 175);
+}
+
+/* Loading state */
+.dataTables_wrapper.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Custom scrollbar for tables */
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background-color: rgb(243 244 246);
+    border-radius: 9999px;
+}
+
+.dark .overflow-x-auto::-webkit-scrollbar-track {
+    background-color: rgb(31 41 55);
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: rgb(209 213 219);
+    border-radius: 9999px;
+}
+
+.dark .overflow-x-auto::-webkit-scrollbar-thumb {
+    background-color: rgb(75 85 99);
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(156 163 175);
+}
+
+.dark .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128);
+}
+
+/* Grid pattern for gradient headers */
+.bg-grid-white\/10 {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.1)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+}
+
+/* Animation utilities */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+}
