@@ -122,17 +122,12 @@
               placeholder="Nama lengkap jenis pembayaran" />
           </div>
           <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi</label>
-            <textarea v-model="form.deskripsi" rows="3"
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Keterangan</label>
+            <textarea v-model="form.keterangan" rows="3"
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
-              placeholder="Deskripsi jenis pembayaran"></textarea>
+              placeholder="Keterangan jenis pembayaran"></textarea>
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Urutan</label>
-            <input v-model.number="form.urutan" type="number"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
-              placeholder="0" />
-          </div>
+
         </div>
       </template>
     </FormModal>
