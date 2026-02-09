@@ -214,8 +214,8 @@ const printInvoice = ref(null);
 // Filters
 const filters = reactive({
     status: '',
-    startDate: '',
-    endDate: '',
+    startDate: new Date().toISOString().split('T')[0], // Hari ini
+    endDate: new Date().toISOString().split('T')[0],   // Hari ini
 });
 
 // Helper

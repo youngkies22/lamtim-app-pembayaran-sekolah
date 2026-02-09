@@ -487,8 +487,8 @@ const stats = reactive({
 const filters = reactive({
     status: '',
     isVerified: '',
-    startDate: '',
-    endDate: '',
+    startDate: new Date().toISOString().split('T')[0], // Hari ini
+    endDate: new Date().toISOString().split('T')[0],   // Hari ini
 });
 
 // Proses Form
