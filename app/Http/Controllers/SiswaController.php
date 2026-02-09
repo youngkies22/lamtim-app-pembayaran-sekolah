@@ -102,13 +102,8 @@ class SiswaController extends Controller
                 'currentRombel:id,idSiswa,idRombel',
                 'currentRombel.rombel:id,kode,nama,idJurusan',
                 'currentRombel.rombel.jurusan:id,kode,nama'
-            ])
-            ->makeHidden([
-                'idAgama', 'username', 'qrcode', 'fotoOsis', 'fotoProfile',
-                'waSiswa', 'waOrtu', 'waWali', 'tahunAngkatan',
-                'createdBy', 'updatedBy', 'deletedBy',
-                'created_at', 'updated_at', 'agama'
             ]);
+
 
         // Apply filters
         // Handle search - can be string or array from DataTables
