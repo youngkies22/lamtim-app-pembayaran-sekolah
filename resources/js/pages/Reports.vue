@@ -2,7 +2,8 @@
   <Layout :active-menu="'Reports'">
     <div class="space-y-6">
       <!-- Modern Header with Gradient -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-xl">
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-xl">
         <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div class="relative">
           <h1 class="text-3xl font-bold text-white flex items-center gap-3">
@@ -26,26 +27,18 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Periode Awal</label>
-            <input
-              v-model="filters.startDate"
-              type="date"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white"
-            />
+            <input v-model="filters.startDate" type="date"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Periode Akhir</label>
-            <input
-              v-model="filters.endDate"
-              type="date"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white"
-            />
+            <input v-model="filters.endDate" type="date"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Jenis Pembayaran</label>
-            <select
-              v-model="filters.jenisPembayaran"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white"
-            >
+            <select v-model="filters.jenisPembayaran"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:text-white">
               <option value="">Semua Jenis</option>
               <option v-for="jenis in jenisPembayaranList" :key="jenis.id" :value="jenis.kode">
                 {{ jenis.kode }} - {{ jenis.nama }}
@@ -53,11 +46,8 @@
             </select>
           </div>
           <div class="flex items-end">
-            <button
-              @click="loadReport"
-              :disabled="loading"
-              class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-            >
+            <button @click="loadReport" :disabled="loading"
+              class="w-full px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 transition-all flex items-center justify-center gap-2">
               <svg v-if="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -71,11 +61,8 @@
 
       <!-- Summary Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div
-          v-for="stat in summaryStats"
-          :key="stat.name"
-          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all"
-        >
+        <div v-for="stat in summaryStats" :key="stat.name"
+          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ stat.name }}</p>
@@ -97,13 +84,13 @@
       </div>
 
       <!-- Report Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div
+          class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Detail Laporan</h3>
-          <button
-            @click="exportReport"
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors"
-          >
+          <button @click="exportReport"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
             <ArrowDownTrayIcon class="w-4 h-4" />
             Export Excel
           </button>
@@ -112,12 +99,24 @@
           <table class="w-full">
             <thead>
               <tr class="bg-gray-50 dark:bg-gray-900/50">
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tanggal</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nama Siswa</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jenis</th>
-                <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nominal</th>
-                <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  No</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Tanggal</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Nama Siswa</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Jenis</th>
+                <th
+                  class="px-6 py-4 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Nominal</th>
+                <th
+                  class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -126,7 +125,8 @@
                   <div class="flex flex-col items-center justify-center gap-3">
                     <svg class="animate-spin h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                      </path>
                     </svg>
                     <span class="text-gray-500 dark:text-gray-400 font-medium">Memuat data...</span>
                   </div>
@@ -138,16 +138,22 @@
                     <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-full">
                       <ChartBarIcon class="w-10 h-10 text-gray-400" />
                     </div>
-                    <span class="text-gray-500 dark:text-gray-400 font-medium">Tidak ada data untuk periode yang dipilih</span>
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">Tidak ada data untuk periode yang
+                      dipilih</span>
                   </div>
                 </td>
               </tr>
-              <tr v-else v-for="(item, index) in reportData" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+              <tr v-else v-for="(item, index) in reportData" :key="item.id"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ index + 1 }}</td>
-                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ formatDate(item.tanggalBayar || item.tanggalTagihan || item.tanggal) }}</td>
-                <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{{ item.siswa?.nama || item.nama || '-' }}</td>
-                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ item.masterPembayaran?.nama || item.jenis || '-' }}</td>
-                <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{ formatCurrency(item.nominalBayar || item.nominalTagihan || item.nominal || 0) }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ formatDate(item.tanggalBayar ||
+                  item.tanggalTagihan || item.tanggal) }}</td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{{ item.siswa?.nama || item.nama
+                  || '-' }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ item.masterPembayaran?.nama ||
+                  item.jenis || '-' }}</td>
+                <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{
+                  formatCurrency(item.nominalBayar || item.nominalTagihan || item.nominal || 0) }}</td>
                 <td class="px-6 py-4 text-center">
                   <span :class="[
                     'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold',
@@ -185,8 +191,8 @@ const reportData = ref([]);
 const jenisPembayaranList = ref([]);
 
 const filters = reactive({
-  startDate: new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0],
-  endDate: new Date().toISOString().split('T')[0],
+  startDate: new Date().toISOString().split('T')[0], // Hari ini
+  endDate: new Date().toISOString().split('T')[0],   // Hari ini
   jenisPembayaran: '',
 });
 
@@ -291,14 +297,14 @@ const loadReport = async () => {
     const totalPembayaran = pembayaranData
       .filter(item => item.status === 1)
       .reduce((sum, item) => sum + (item.nominalBayar || 0), 0);
-    
+
     // Total Tagihan: sum of all nominalTagihan from tagihan
     const totalTagihan = tagihanData
       .reduce((sum, item) => sum + (item.nominalTagihan || 0), 0);
-    
+
     // Jumlah Transaksi: count of completed payments
     const jumlahTransaksi = pembayaranData.filter(item => item.status === 1).length;
-    
+
     // Belum Lunas: count of tagihan with status 0 (belum bayar) or 3 (sebagian)
     const belumLunas = tagihanData.filter(item => item.status === 0 || item.status === 3).length;
 
