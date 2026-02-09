@@ -2,7 +2,8 @@
   <Layout :active-menu="'Master Data'">
     <div class="space-y-6">
       <!-- Header -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8 shadow-xl">
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8 shadow-xl">
         <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -11,20 +12,14 @@
                 <CreditCardIcon class="w-8 h-8 text-white" />
               </div>
               Data Jenis Pembayaran
-              <button
-                @click="showInfoModal = true"
-                class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
-                title="Informasi Jenis Pembayaran"
-              >
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Jenis Pembayaran">
                 <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
               </button>
             </h1>
           </div>
-          <button
-            v-if="canCreateData"
-            @click="openCreateModal"
-            class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
-          >
+          <button v-if="canCreateData" @click="openCreateModal"
+            class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
             <PlusIcon class="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" />
             Tambah Jenis
           </button>
@@ -35,28 +30,33 @@
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
         <div class="relative">
           <MagnifyingGlassIcon class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            v-model="searchQuery"
-            @input="debouncedSearch"
-            placeholder="Cari jenis pembayaran..."
-            class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:text-white transition-all duration-200"
-          />
+          <input type="text" v-model="searchQuery" @input="debouncedSearch" placeholder="Cari jenis pembayaran..."
+            class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:text-white transition-all duration-200" />
         </div>
       </div>
 
       <!-- Table Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead>
               <tr class="bg-gray-50 dark:bg-gray-900/50">
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kode</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nama</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Deskripsi</th>
-                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Urutan</th>
-                <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Aksi</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  No</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Kode</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Nama</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Keterangan</th>
+                <th
+                  class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
@@ -65,7 +65,8 @@
                   <div class="flex flex-col items-center justify-center gap-3">
                     <svg class="animate-spin h-10 w-10 text-emerald-600" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z">
+                      </path>
                     </svg>
                     <span class="text-gray-500 dark:text-gray-400 font-medium">Memuat data...</span>
                   </div>
@@ -79,22 +80,18 @@
                   </div>
                 </td>
               </tr>
-              <tr v-else v-for="(item, index) in tableData" :key="item.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+              <tr v-else v-for="(item, index) in tableData" :key="item.id"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                 <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ index + 1 }}</td>
                 <td class="px-6 py-4">
                   <span class="text-sm font-medium text-gray-900 dark:text-white">{{ item.kode }}</span>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">{{ item.nama }}</td>
-                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ item.deskripsi || '-' }}</td>
-                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ item.urutan }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ item.keterangan || '-' }}</td>
                 <td class="px-6 py-4">
-                  <ActionButton
-                    v-if="canEditData || canDeleteData"
-                    @edit="canEditData ? handleEdit(item.id) : null"
-                    @delete="canDeleteData ? handleDelete(item) : null"
-                    :show-edit="canEditData"
-                    :show-delete="canDeleteData"
-                  />
+                  <ActionButton v-if="canEditData || canDeleteData" @edit="canEditData ? handleEdit(item.id) : null"
+                    @delete="canDeleteData ? handleDelete(item) : null" :show-edit="canEditData"
+                    :show-delete="canDeleteData" />
                   <span v-else class="text-xs text-gray-400 dark:text-gray-500">Read Only</span>
                 </td>
               </tr>
@@ -105,14 +102,8 @@
     </div>
 
     <!-- Form Modal -->
-    <FormModal
-      :show="showModal"
-      :title="editingId ? 'Edit Jenis Pembayaran' : 'Tambah Jenis Pembayaran Baru'"
-      :loading="submitLoading"
-      :error="formError"
-      @close="closeModal"
-      @submit="handleSubmit"
-    >
+    <FormModal :show="showModal" :title="editingId ? 'Edit Jenis Pembayaran' : 'Tambah Jenis Pembayaran Baru'"
+      :loading="submitLoading" :error="formError" @close="closeModal" @submit="handleSubmit">
       <template #icon>
         <CreditCardIcon class="w-6 h-6" />
       </template>
@@ -120,66 +111,41 @@
         <div class="space-y-5">
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Kode *</label>
-            <input
-              v-model="form.kode"
-              type="text"
-              required
+            <input v-model="form.kode" type="text" required
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
-              placeholder="Contoh: SPP, PKL, KI"
-            />
+              placeholder="Contoh: SPP, PKL, KI" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama *</label>
-            <input
-              v-model="form.nama"
-              type="text"
-              required
+            <input v-model="form.nama" type="text" required
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
-              placeholder="Nama lengkap jenis pembayaran"
-            />
+              placeholder="Nama lengkap jenis pembayaran" />
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Deskripsi</label>
-            <textarea
-              v-model="form.deskripsi"
-              rows="3"
+            <textarea v-model="form.deskripsi" rows="3"
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
-              placeholder="Deskripsi jenis pembayaran"
-            ></textarea>
+              placeholder="Deskripsi jenis pembayaran"></textarea>
           </div>
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Urutan</label>
-            <input
-              v-model.number="form.urutan"
-              type="number"
+            <input v-model.number="form.urutan" type="number"
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
-              placeholder="0"
-            />
+              placeholder="0" />
           </div>
         </div>
       </template>
     </FormModal>
 
     <!-- Confirm Delete Modal -->
-    <ConfirmModal
-      :show="showDeleteModal"
-      type="danger"
-      title="Hapus Jenis Pembayaran"
+    <ConfirmModal :show="showDeleteModal" type="danger" title="Hapus Jenis Pembayaran"
       :message="`Apakah Anda yakin ingin menghapus jenis pembayaran '${deletingItem?.nama || ''}'?`"
-      confirm-text="Ya, Hapus"
-      :loading="deleteLoading"
-      @confirm="confirmDelete"
-      @cancel="showDeleteModal = false"
-    />
+      confirm-text="Ya, Hapus" :loading="deleteLoading" @confirm="confirmDelete" @cancel="showDeleteModal = false" />
 
     <!-- Info Modal -->
-    <InfoModal
-      :show="showInfoModal"
-      title="Informasi Jenis Pembayaran"
-      subtitle="Pelajari lebih lanjut tentang jenis pembayaran yang bisa Anda isi"
-      :sections="infoSections"
-      @close="showInfoModal = false"
-    />
+    <InfoModal :show="showInfoModal" title="Informasi Jenis Pembayaran"
+      subtitle="Pelajari lebih lanjut tentang jenis pembayaran yang bisa Anda isi" :sections="infoSections"
+      @close="showInfoModal = false" />
 
     <!-- Toast -->
     <Toast ref="toastRef" />
@@ -259,8 +225,7 @@ const searchQuery = ref('');
 const initialForm = {
   kode: '',
   nama: '',
-  deskripsi: '',
-  urutan: 0,
+  keterangan: '',
 };
 
 const form = reactive({ ...initialForm });
@@ -304,8 +269,7 @@ const handleEdit = async (id) => {
     Object.assign(form, {
       kode: jenis.kode || '',
       nama: jenis.nama || '',
-      deskripsi: jenis.deskripsi || '',
-      urutan: jenis.urutan || 0,
+      keterangan: jenis.keterangan || '',
     });
     formError.value = '';
     showModal.value = true;
