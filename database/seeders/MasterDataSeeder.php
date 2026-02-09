@@ -22,8 +22,9 @@ class MasterDataSeeder extends Seeder
             ['kode' => '2024-2025'],
             [
                 'kode' => '2024-2025',
-                'slag' => '2024-2025',
-                'nama' => 'Tahun Ajaran 2024/2025',
+                'tahun' => '2024/2025',
+                'tanggalMulai' => '2024-07-15',
+                'tanggalSelesai' => '2025-06-30',
                 'isActive' => 1,
             ]
         );
@@ -32,8 +33,9 @@ class MasterDataSeeder extends Seeder
             ['kode' => '2025-2026'],
             [
                 'kode' => '2025-2026',
-                'slag' => '2025-2026',
-                'nama' => 'Tahun Ajaran 2025/2026',
+                'tahun' => '2025/2026',
+                'tanggalMulai' => '2025-07-15',
+                'tanggalSelesai' => '2026-06-30',
                 'isActive' => 0,
             ]
         );

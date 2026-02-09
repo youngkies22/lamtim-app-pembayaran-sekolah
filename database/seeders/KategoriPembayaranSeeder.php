@@ -16,15 +16,13 @@ class KategoriPembayaranSeeder extends Seeder
             [
                 'kode' => 'BULANAN',
                 'nama' => 'Bulanan',
-                'deskripsi' => 'Pembayaran yang dilakukan setiap bulan',
-                'urutan' => 1,
+                'keterangan' => 'Pembayaran yang dilakukan setiap bulan',
                 'isActive' => 1,
             ],
             [
                 'kode' => 'TAMBAHAN',
                 'nama' => 'Tambahan',
-                'deskripsi' => 'Pembayaran tambahan di luar pembayaran rutin',
-                'urutan' => 2,
+                'keterangan' => 'Pembayaran tambahan di luar pembayaran rutin',
                 'isActive' => 1,
             ],
         ];

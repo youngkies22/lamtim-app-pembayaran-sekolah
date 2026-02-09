@@ -16,29 +16,25 @@ class TipePembayaranSeeder extends Seeder
             [
                 'kode' => 'TUNAI',
                 'nama' => 'Tunai',
-                'deskripsi' => 'Pembayaran secara tunai',
-                'urutan' => 1,
+                'keterangan' => 'Pembayaran secara tunai',
                 'isActive' => 1,
             ],
             [
                 'kode' => 'TRANSFER',
                 'nama' => 'Transfer Bank',
-                'deskripsi' => 'Pembayaran melalui transfer bank',
-                'urutan' => 2,
+                'keterangan' => 'Pembayaran melalui transfer bank',
                 'isActive' => 1,
             ],
             [
                 'kode' => 'E-WALLET',
                 'nama' => 'E-Wallet',
-                'deskripsi' => 'Pembayaran melalui e-wallet (OVO, DANA, GoPay, dll)',
-                'urutan' => 3,
+                'keterangan' => 'Pembayaran melalui e-wallet (OVO, DANA, GoPay, dll)',
                 'isActive' => 1,
             ],
             [
                 'kode' => 'QRIS',
                 'nama' => 'QRIS',
-                'deskripsi' => 'Pembayaran melalui QRIS',
-                'urutan' => 4,
+                'keterangan' => 'Pembayaran melalui QRIS',
                 'isActive' => 1,
             ],
         ];

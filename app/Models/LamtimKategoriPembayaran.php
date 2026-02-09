@@ -18,16 +18,11 @@ class LamtimKategoriPembayaran extends Model
     protected $fillable = [
         'kode',
         'nama',
-        'deskripsi',
-        'urutan',
+        'keterangan',
         'isActive',
-        'createdBy',
-        'updatedBy',
-        'deletedBy',
     ];
 
     protected $casts = [
-        'urutan' => 'integer',
         'isActive' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

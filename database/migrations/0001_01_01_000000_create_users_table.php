@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->tinyInteger('role')->default(1)->comment('1=admin, 2=operator, 3=kepsek');
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=nonaktif');
+            $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
             

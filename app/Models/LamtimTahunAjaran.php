@@ -18,13 +18,16 @@ class LamtimTahunAjaran extends Model
 
     protected $fillable = [
         'kode',
-        'slag',
-        'nama',
+        'tahun',
+        'tanggalMulai',
+        'tanggalSelesai',
         'isActive',
     ];
 
     protected $casts = [
         'isActive' => 'boolean',
+        'tanggalMulai' => 'date',
+        'tanggalSelesai' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
