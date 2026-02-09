@@ -19,8 +19,8 @@ class UpdateMasterPembayaranRequest extends FormRequest
         return [
             'kode' => ['sometimes', 'string', 'max:100', Rule::unique('lamtim_master_pembayarans', 'kode')->ignore($id)],
             'nama' => ['sometimes', 'string', 'max:255'],
-            'jenisPembayaran' => ['sometimes', 'string', 'in:SPP,PKL,KI,UKOM,LAINNYA'],
-            'kategori' => ['sometimes', 'string', 'in:BULANAN,TAMBAHAN'],
+            'jenisPembayaran' => ['sometimes', 'string', Rule::exists('lamtim_jenis_pembayarans', 'kode')->where('isActive', 1)],
+            'kategori' => ['sometimes', 'string', Rule::exists('lamtim_kategori_pembayarans', 'kode')->where('isActive', 1)],
             'nominal' => ['sometimes', 'numeric', 'min:0'],
             'isCicilan' => ['sometimes', 'boolean'],
             'minCicilan' => ['nullable', 'numeric', 'min:0'],

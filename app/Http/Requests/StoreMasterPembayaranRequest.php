@@ -17,8 +17,8 @@ class StoreMasterPembayaranRequest extends FormRequest
         return [
             'kode' => ['nullable', 'string', 'max:100', 'unique:lamtim_master_pembayarans,kode'],
             'nama' => ['required', 'string', 'max:255'],
-            'jenisPembayaran' => ['required', 'string', 'in:SPP,PKL,KI,UKOM,LAINNYA'],
-            'kategori' => ['required', 'string', 'in:BULANAN,TAMBAHAN'],
+            'jenisPembayaran' => ['required', 'string', Rule::exists('lamtim_jenis_pembayarans', 'kode')->where('isActive', 1)],
+            'kategori' => ['required', 'string', Rule::exists('lamtim_kategori_pembayarans', 'kode')->where('isActive', 1)],
             'nominal' => ['required', 'numeric', 'min:0'],
             'isCicilan' => ['sometimes', 'boolean'],
             'minCicilan' => ['nullable', 'numeric', 'min:0'],
@@ -41,8 +41,8 @@ class StoreMasterPembayaranRequest extends FormRequest
     {
         return [
             'kode.unique' => 'Kode master pembayaran sudah digunakan',
-            'jenisPembayaran.in' => 'Jenis pembayaran harus salah satu dari: SPP, PKL, KI, UKOM, LAINNYA',
-            'kategori.in' => 'Kategori harus salah satu dari: BULANAN, TAMBAHAN',
+            'jenisPembayaran.exists' => 'Jenis pembayaran tidak valid atau tidak aktif',
+            'kategori.exists' => 'Kategori pembayaran tidak valid atau tidak aktif',
             'nominal.min' => 'Nominal harus lebih besar dari 0',
         ];
     }
