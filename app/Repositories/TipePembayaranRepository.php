@@ -22,7 +22,7 @@ class TipePembayaranRepository implements TipePembayaranRepositoryInterface
             });
         }
 
-        return $query->orderBy('urutan')->orderBy('nama')->get();
+        return $query->orderBy('nama')->get();
     }
 
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
@@ -38,7 +38,7 @@ class TipePembayaranRepository implements TipePembayaranRepositoryInterface
             });
         }
 
-        return $query->orderBy('urutan')->orderBy('nama')->paginate($perPage);
+        return $query->orderBy('nama')->paginate($perPage);
     }
 
     public function find(string $id): ?LamtimTipePembayaran

@@ -32,8 +32,8 @@ class TipePembayaranController extends Controller
             $validated = $request->validate([
                 'kode' => 'required|string|max:50',
                 'nama' => 'required|string|max:255',
-                'deskripsi' => 'nullable|string',
-                'urutan' => 'nullable|integer',
+                'keterangan' => 'nullable|string',
+
             ]);
 
             $tipe = $this->service->create($validated);
@@ -61,8 +61,8 @@ class TipePembayaranController extends Controller
             $validated = $request->validate([
                 'kode' => 'sometimes|string|max:50',
                 'nama' => 'sometimes|string|max:255',
-                'deskripsi' => 'nullable|string',
-                'urutan' => 'nullable|integer',
+                'keterangan' => 'nullable|string',
+
             ]);
 
             $tipe = $this->service->update($id, $validated);
