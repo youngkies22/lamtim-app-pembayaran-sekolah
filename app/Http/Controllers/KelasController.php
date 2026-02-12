@@ -115,10 +115,11 @@ class KelasController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', LamtimKelas::class);
+
         try {
             $validated = $request->validate([
-                'kode' => 'required|string|unique:lamtim_kelas,kode',
-                'nama' => 'required|string|max:255',
+                'nama' => 'required|string|max:50|unique:lamtim_kelas,nama',
             ]);
 
             $kelas = $this->service->create($validated);
@@ -130,13 +131,11 @@ class KelasController extends Controller
                 return ResponseHelper::success($kelas, 'Kelas berhasil dibuat');
             }
 
-            return redirect()->route('kelas.index')
-                ->with('success', 'Kelas berhasil dibuat');
+            return redirect()->route('kelas.index')->with('success', 'Kelas berhasil dibuat');
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return ResponseHelper::error($e->getMessage(), 500);
             }
-
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
@@ -168,10 +167,9 @@ class KelasController extends Controller
     public function edit(string $id)
     {
         $kelas = $this->service->find($id);
+        if (!$kelas) abort(404);
         
-        if (!$kelas) {
-            abort(404);
-        }
+        $this->authorize('update', $kelas);
 
         return view('kelas.edit', compact('kelas'));
     }
@@ -181,10 +179,17 @@ class KelasController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $kelas = $this->service->find($id);
+        if (!$kelas) {
+            if (request()->expectsJson()) return ResponseHelper::notFound('Kelas tidak ditemukan');
+            return abort(404);
+        }
+
+        $this->authorize('update', $kelas);
+
         try {
             $validated = $request->validate([
-                'kode' => 'sometimes|string|unique:lamtim_kelas,kode,' . $id,
-                'nama' => 'sometimes|string|max:255',
+                'nama' => 'required|string|max:50|unique:lamtim_kelas,nama,' . $id,
             ]);
 
             $kelas = $this->service->update($id, $validated);
@@ -196,13 +201,11 @@ class KelasController extends Controller
                 return ResponseHelper::success($kelas, 'Kelas berhasil diupdate');
             }
 
-            return redirect()->route('kelas.index')
-                ->with('success', 'Kelas berhasil diupdate');
+            return redirect()->route('kelas.index')->with('success', 'Kelas berhasil diupdate');
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return ResponseHelper::error($e->getMessage(), 500);
             }
-
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
@@ -212,6 +215,14 @@ class KelasController extends Controller
      */
     public function destroy(string $id)
     {
+        $kelas = $this->service->find($id);
+        if (!$kelas) {
+             if (request()->expectsJson()) return ResponseHelper::notFound('Kelas tidak ditemukan');
+             return back()->withErrors(['error' => 'Kelas tidak ditemukan']);
+        }
+
+        $this->authorize('delete', $kelas);
+
         try {
             $this->service->delete($id);
             

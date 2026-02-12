@@ -66,12 +66,23 @@ class RombelController extends Controller
         return view('rombel.create');
     }
 
-    public function store(StoreRombelRequest $request)
+    public function store(Request $request)
     {
-        try {
-            $rombel = $this->service->create($request->validated());
-            $this->service->invalidateCache();
+        $this->authorize('create', LamtimRombel::class);
 
+        try {
+            $validated = $request->validate([
+                'idSekolah' => 'required|uuid|exists:lamtim_sekolahs,id',
+                'idJurusan' => 'required|uuid|exists:lamtim_jurusans,id',
+                'idKelas' => 'required|uuid|exists:lamtim_kelas,id',
+                'nama' => 'required|string|max:255',
+            ]);
+
+            $rombel = $this->service->create($validated);
+            
+            // Clear all rombel cache patterns
+            $this->clearRombelCache();
+            
             if ($request->expectsJson()) {
                 return ResponseHelper::success($rombel, 'Rombel berhasil dibuat');
             }
@@ -104,15 +115,35 @@ class RombelController extends Controller
     {
         $rombel = $this->service->find($id);
         if (!$rombel) abort(404);
+        
+        $this->authorize('update', $rombel);
+
         return view('rombel.edit', compact('rombel'));
     }
 
-    public function update(UpdateRombelRequest $request, string $id)
+    public function update(Request $request, string $id)
     {
-        try {
-            $rombel = $this->service->update($id, $request->validated());
-            $this->service->invalidateCache();
+        $rombel = $this->service->find($id);
+        if (!$rombel) {
+            if (request()->expectsJson()) return ResponseHelper::notFound('Rombel tidak ditemukan');
+            return abort(404);
+        }
 
+        $this->authorize('update', $rombel);
+
+        try {
+            $validated = $request->validate([
+                'idSekolah' => 'sometimes|uuid|exists:lamtim_sekolahs,id',
+                'idJurusan' => 'sometimes|uuid|exists:lamtim_jurusans,id',
+                'idKelas' => 'sometimes|uuid|exists:lamtim_kelas,id',
+                'nama' => 'sometimes|string|max:255',
+            ]);
+
+            $rombel = $this->service->update($id, $validated);
+            
+            // Clear all rombel cache patterns
+            $this->clearRombelCache();
+            
             if ($request->expectsJson()) {
                 return ResponseHelper::success($rombel, 'Rombel berhasil diupdate');
             }
@@ -128,6 +159,14 @@ class RombelController extends Controller
 
     public function destroy(string $id)
     {
+        $rombel = $this->service->find($id);
+        if (!$rombel) {
+             if (request()->expectsJson()) return ResponseHelper::notFound('Rombel tidak ditemukan');
+             return back()->withErrors(['error' => 'Rombel tidak ditemukan']);
+        }
+
+        $this->authorize('delete', $rombel);
+
         try {
             $this->service->delete($id);
             $this->service->invalidateCache();

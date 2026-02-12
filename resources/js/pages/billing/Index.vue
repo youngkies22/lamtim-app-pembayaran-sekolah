@@ -42,6 +42,24 @@
                                 </div>
                             </div>
 
+                            <div v-if="isClosed" class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 rounded-r-lg">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm leading-5 font-medium text-red-800 dark:text-red-200">
+                                            Periode Ditutup
+                                        </h3>
+                                        <div class="mt-2 text-sm leading-5 text-red-700 dark:text-red-300">
+                                            <p>{{ closingMessage || 'Transaksi untuk tanggal ini telah ditutup. Silakan hubungi admin.' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <form @submit.prevent="handleSubmit" class="space-y-5">
                                 <!-- Pilih Siswa -->
                                 <div>
@@ -205,7 +223,7 @@
                                     </button>
                                     <button
                                         type="submit"
-                                        :disabled="loading"
+                                        :disabled="loading || isClosed"
                                         class="flex-1 px-6 py-3.5 text-sm font-semibold bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-xl hover:from-emerald-700 hover:to-teal-800 disabled:opacity-50 transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                                     >
                                         <svg v-if="loading" class="animate-spin -ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24">
@@ -328,6 +346,7 @@ import Toast from '../../components/Toast.vue';
 import { pembayaranAPI, tagihanAPI } from '../../services/api';
 import { usePaymentCache } from '../../composables/usePaymentCache';
 import { useAppSettings } from '../../composables/useAppSettings';
+import { useClosingCheck } from '../../composables/useClosingCheck';
 
 const router = useRouter();
 const toastRef = ref(null);
@@ -338,6 +357,7 @@ const searchSiswa = ref('');
 
 const { appSettings } = useAppSettings();
 const { loadAll, getCached, getKategoriNama } = usePaymentCache();
+const { isClosed, message: closingMessage, checkDateStatus } = useClosingCheck();
 
 // Get cached data immediately (synchronous)
 const cached = getCached();
@@ -520,6 +540,7 @@ onMounted(async () => {
     // Set document title
     document.title = 'Billing Pembayaran - ' + (appSettings.nama_aplikasi || 'Sistem Pembayaran SPP');
     await loadData();
+    await checkDateStatus(new Date());
 });
 </script>
 

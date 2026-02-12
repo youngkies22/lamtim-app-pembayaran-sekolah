@@ -238,8 +238,13 @@ class SiswaController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    /**
+     * Store a newly created resource in storage.
+     */
     public function store(StoreSiswaRequest $request)
     {
+        $this->authorize('create', LamtimSiswa::class);
+
         try {
             $siswa = $this->service->create($request->validated());
 
@@ -289,10 +294,9 @@ class SiswaController extends Controller
     public function edit(string $id)
     {
         $siswa = $this->service->find($id);
-
-        if (!$siswa) {
-            abort(404);
-        }
+        if (!$siswa) abort(404);
+        
+        $this->authorize('update', $siswa);
 
         return view('siswa.edit', compact('siswa'));
     }
@@ -302,6 +306,14 @@ class SiswaController extends Controller
      */
     public function update(UpdateSiswaRequest $request, string $id)
     {
+        $siswa = $this->service->find($id);
+        if (!$siswa) {
+             if ($request->expectsJson()) return ResponseHelper::notFound('Siswa tidak ditemukan');
+             return abort(404);
+        }
+
+        $this->authorize('update', $siswa);
+
         try {
             $siswa = $this->service->update($id, $request->validated());
 
@@ -327,6 +339,14 @@ class SiswaController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
+        $siswa = $this->service->find($id);
+        if (!$siswa) {
+             if (request()->expectsJson()) return ResponseHelper::notFound('Siswa tidak ditemukan');
+             return back()->withErrors(['error' => 'Siswa tidak ditemukan']);
+        }
+
+        $this->authorize('delete', $siswa);
+
         try {
             $this->service->delete($id);
 

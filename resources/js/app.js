@@ -44,6 +44,8 @@ import Settings from './Pages/Settings.vue';
 import Profile from './Pages/Profile.vue';
 import UsersIndex from './Pages/users/Index.vue';
 import TrashIndex from './Pages/trash/Index.vue';
+import ClosingIndex from './Pages/Closing/Index.vue';
+import BackupIndex from './Pages/Backups/Index.vue';
 
 // Import API service
 import { authAPI } from './services/api';
@@ -239,6 +241,18 @@ const routes = [
         name: 'users',
         component: UsersIndex,
         meta: { requiresAuth: true, activeMenu: 'Users' }
+    },
+    {
+        path: '/closing',
+        name: 'closing',
+        component: ClosingIndex,
+        meta: { requiresAuth: true, activeMenu: 'Closing Management' }
+    },
+    {
+        path: '/backups',
+        name: 'backups',
+        component: BackupIndex,
+        meta: { requiresAuth: true, activeMenu: 'Backups' }
     },
     {
         path: '/auth/login',

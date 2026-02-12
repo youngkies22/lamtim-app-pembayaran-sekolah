@@ -2,7 +2,8 @@
   <Layout :active-menu="'Students'">
     <div class="space-y-6">
       <!-- Modern Header with Gradient -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 md:p-8 shadow-xl">
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-6 md:p-8 shadow-xl">
         <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -12,21 +13,18 @@
               </div>
               Data Siswa
             </h1>
-            <p class="mt-2 text-blue-100 text-sm md:text-base">Kelola data siswa dan mapping rombel dengan mudah dan efisien</p>
+            <p class="mt-2 text-blue-100 text-sm md:text-base">Kelola data siswa dan mapping rombel dengan mudah dan
+              efisien</p>
           </div>
           <div class="flex items-center gap-3 flex-wrap">
-            <button
-              @click="$router.push('/siswa-rombel/mapping')"
-              class="group relative inline-flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl shadow-lg hover:bg-white/30 transform hover:-translate-y-0.5 transition-all duration-200 text-sm md:text-base"
-            >
-              <ArrowsRightLeftIcon class="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:rotate-90 duration-300" />
+            <button @click="$router.push('/siswa-rombel/mapping')"
+              class="group relative inline-flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl shadow-lg hover:bg-white/30 transform hover:-translate-y-0.5 transition-all duration-200 text-sm md:text-base">
+              <ArrowsRightLeftIcon
+                class="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:rotate-90 duration-300" />
               Mapping Rombel
             </button>
-            <button
-              v-if="canCreateData"
-              @click="handleAdd"
-              class="group relative inline-flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-white text-blue-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-sm md:text-base"
-            >
+            <button v-if="canCreateData" @click="handleAdd"
+              class="group relative inline-flex items-center gap-2 px-4 md:px-6 py-2.5 md:py-3 bg-white text-blue-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-sm md:text-base">
               <PlusIcon class="w-4 h-4 md:w-5 md:h-5 transition-transform group-hover:rotate-90 duration-300" />
               Tambah Siswa
             </button>
@@ -37,199 +35,168 @@
       <!-- Data Siswa Content -->
       <div class="space-y-4">
 
-      <!-- Filter Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          <!-- Search -->
-          <div class="relative">
-            <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              v-model="searchQuery"
-              @input="handleSearch(searchQuery)"
-              placeholder="Cari siswa..."
-              class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          <!-- Filter Kelas -->
-          <select
-            v-model="filters.idKelas"
-            @change="applyFilters"
-            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">Semua Kelas</option>
-            <option v-for="kelas in kelasList" :key="kelas.id" :value="kelas.id">{{ kelas.nama || kelas.kode }}</option>
-          </select>
-
-          <!-- Filter Group (Jurusan) -->
-          <select
-            v-model="filters.idJurusan"
-            @change="applyFilters"
-            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option value="">Semua {{ labelJurusan }}</option>
-            <option v-for="jurusan in jurusanList" :key="jurusan.id" :value="jurusan.id">{{ jurusan.nama }}</option>
-          </select>
-
-          <!-- Filter Status -->
-          <select
-            v-model="filters.isActive"
-            @change="applyFilters"
-            class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option :value="null">Semua Status</option>
-            <option :value="1">Aktif</option>
-            <option :value="0">Tidak Aktif</option>
-            <option :value="2">Off</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- DataTable Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <!-- Search & Per Page Bar -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-4">
-          <div class="flex-1">
+        <!-- Filter Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- Search -->
             <div class="relative">
               <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                v-model="searchQuery"
-                @input="handleSearch(searchQuery)"
-                placeholder="Cari siswa..."
-                class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              />
+              <input type="text" v-model="searchQuery" @input="handleSearch(searchQuery)" placeholder="Cari siswa..."
+                class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" />
+            </div>
+
+            <!-- Filter Kelas -->
+            <select v-model="filters.idKelas" @change="applyFilters"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+              <option value="">Semua Kelas</option>
+              <option v-for="kelas in kelasList" :key="kelas.id" :value="kelas.id">{{ kelas.nama || kelas.kode }}
+              </option>
+            </select>
+
+            <!-- Filter Group (Jurusan) -->
+            <select v-model="filters.idJurusan" @change="applyFilters"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+              <option value="">Semua {{ labelJurusan }}</option>
+              <option v-for="jurusan in jurusanList" :key="jurusan.id" :value="jurusan.id">{{ jurusan.nama }}</option>
+            </select>
+
+            <!-- Filter Status -->
+            <select v-model="filters.isActive" @change="applyFilters"
+              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+              <option :value="null">Semua Status</option>
+              <option :value="1">Aktif</option>
+              <option :value="0">Tidak Aktif</option>
+              <option :value="2">Off</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- DataTable Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <!-- Search & Per Page Bar -->
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-4">
+            <div class="flex-1">
+              <div class="relative">
+                <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input type="text" v-model="searchQuery" @input="handleSearch(searchQuery)" placeholder="Cari siswa..."
+                  class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white" />
+              </div>
+            </div>
+            <select v-model="params.length" @change="handlePerpageChange(params.length)"
+              class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+              <option :value="10">10</option>
+              <option :value="25">25</option>
+              <option :value="50">50</option>
+              <option :value="100">100</option>
+            </select>
+          </div>
+
+          <!-- Table -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                <tr>
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">#
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Nama
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">NISN
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">JK
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                    Rombel</th>
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                    Status</th>
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Aksi
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr v-if="loading" class="bg-white dark:bg-gray-800">
+                  <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    <div class="flex items-center justify-center gap-2">
+                      <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                      </svg>
+                      Memuat...
+                    </div>
+                  </td>
+                </tr>
+                <tr v-else-if="error" class="bg-white dark:bg-gray-800">
+                  <td colspan="7" class="px-4 py-8 text-center text-red-600 dark:text-red-400">
+                    Error: {{ error.message }}
+                  </td>
+                </tr>
+                <tr v-else-if="data.length === 0" class="bg-white dark:bg-gray-800">
+                  <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                    Tidak ada data
+                  </td>
+                </tr>
+                <tr v-else v-for="(student, index) in data" :key="student.id"
+                  class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                  <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ params.start + index + 1 }}</td>
+                  <td class="px-4 py-2.5">
+                    <div class="font-medium text-gray-900 dark:text-white">{{ student.nama }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ student.nis || '-' }}</div>
+                  </td>
+                  <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.nisn || '-' }}</td>
+                  <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.jsk_label }}</td>
+                  <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.rombel_info || '-' }}</td>
+                  <td class="px-4 py-2.5" v-html="student.isActive_badge"></td>
+                  <td class="px-4 py-2.5">
+                    <div class="flex items-center gap-2">
+                      <button v-if="canEditData" @click="handleEdit(student.id)"
+                        class="p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors cursor-pointer"
+                        title="Edit">
+                        <PencilIcon class="w-4 h-4" />
+                      </button>
+                      <button v-if="isAdminUser" @click="handleDelete(student.id, student.nama)"
+                        class="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors cursor-pointer"
+                        title="Hapus">
+                        <TrashIcon class="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Compact Pagination -->
+          <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div class="text-xs text-gray-700 dark:text-gray-300">
+              Menampilkan <span class="font-medium">{{ params.start + 1 }}</span> -
+              <span class="font-medium">{{ params.start + data.length }}</span> dari
+              <span class="font-medium">{{ totalRecords }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button @click="handlePageChange(currentPage - 1)" :disabled="currentPage === 1 || loading"
+                class="px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                Prev
+              </button>
+              <span class="px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-300">
+                {{ currentPage }} / {{ totalPages }}
+              </span>
+              <button @click="handlePageChange(currentPage + 1)" :disabled="currentPage === totalPages || loading"
+                class="px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                Next
+              </button>
             </div>
           </div>
-          <select
-            v-model="params.length"
-            @change="handlePerpageChange(params.length)"
-            class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          >
-            <option :value="10">10</option>
-            <option :value="25">25</option>
-            <option :value="50">50</option>
-            <option :value="100">100</option>
-          </select>
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-              <tr>
-                <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">#</th>
-                <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Nama</th>
-                <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">NISN</th>
-                <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">JK</th>
-                <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Rombel</th>
-                <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Status</th>
-                <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-if="loading" class="bg-white dark:bg-gray-800">
-                <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  <div class="flex items-center justify-center gap-2">
-                    <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Memuat...
-                  </div>
-                </td>
-              </tr>
-              <tr v-else-if="error" class="bg-white dark:bg-gray-800">
-                <td colspan="7" class="px-4 py-8 text-center text-red-600 dark:text-red-400">
-                  Error: {{ error.message }}
-                </td>
-              </tr>
-              <tr v-else-if="data.length === 0" class="bg-white dark:bg-gray-800">
-                <td colspan="7" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  Tidak ada data
-                </td>
-              </tr>
-              <tr
-                v-else
-                v-for="(student, index) in data"
-                :key="student.id"
-                class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ params.start + index + 1 }}</td>
-                <td class="px-4 py-2.5">
-                  <div class="font-medium text-gray-900 dark:text-white">{{ student.nama }}</div>
-                  <div class="text-xs text-gray-500 dark:text-gray-400">{{ student.nis || '-' }}</div>
-                </td>
-                <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.nisn || '-' }}</td>
-                <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.jsk_label }}</td>
-                <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.rombel_info || '-' }}</td>
-                <td class="px-4 py-2.5" v-html="student.isActive_badge"></td>
-                <td class="px-4 py-2.5">
-                  <div class="flex items-center gap-2">
-                    <button
-                      @click="handleEdit(student.id)"
-                      class="p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors cursor-pointer"
-                      title="Edit"
-                    >
-                      <PencilIcon class="w-4 h-4" />
-                    </button>
-                    <button
-                      @click="handleDelete(student.id, student.nama)"
-                      class="p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors cursor-pointer"
-                      title="Hapus"
-                    >
-                      <TrashIcon class="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Compact Pagination -->
-        <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <div class="text-xs text-gray-700 dark:text-gray-300">
-            Menampilkan <span class="font-medium">{{ params.start + 1 }}</span> -
-            <span class="font-medium">{{ params.start + data.length }}</span> dari
-            <span class="font-medium">{{ totalRecords }}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button
-              @click="handlePageChange(currentPage - 1)"
-              :disabled="currentPage === 1 || loading"
-              class="px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Prev
-            </button>
-            <span class="px-2.5 py-1.5 text-xs text-gray-700 dark:text-gray-300">
-              {{ currentPage }} / {{ totalPages }}
-            </span>
-            <button
-              @click="handlePageChange(currentPage + 1)"
-              :disabled="currentPage === totalPages || loading"
-              class="px-2.5 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              Next
-            </button>
-          </div>
-        </div>
         </div>
       </div>
     </div>
 
     <!-- Confirm Delete Modal -->
-    <ConfirmModal
-      :show="showDeleteModal"
-      type="danger"
-      title="Hapus Siswa"
-      :message="`Apakah Anda yakin ingin menghapus siswa '${deletingItem?.nama || ''}'?`"
-      confirm-text="Ya, Hapus"
-      :loading="deleteLoading"
-      @confirm="confirmDelete"
-      @cancel="showDeleteModal = false"
-    />
+    <ConfirmModal :show="showDeleteModal" type="danger" title="Hapus Siswa"
+      :message="`Apakah Anda yakin ingin menghapus siswa '${deletingItem?.nama || ''}'?`" confirm-text="Ya, Hapus"
+      :loading="deleteLoading" @confirm="confirmDelete" @cancel="showDeleteModal = false" />
 
     <!-- Toast -->
     <Toast ref="toastRef" />
@@ -357,7 +324,7 @@ const handleDelete = (id, nama) => {
 
 const confirmDelete = async () => {
   if (!deletingItem.value) return;
-  
+
   try {
     deleteLoading.value = true;
     await siswaAPI.delete(deletingItem.value.id);

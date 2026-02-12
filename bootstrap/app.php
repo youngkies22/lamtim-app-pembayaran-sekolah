@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => CheckRole::class,
+            'check.closing' => \App\Http\Middleware\CheckClosing::class,
         ]);
 
         // Enable Sanctum stateful authentication for SPA

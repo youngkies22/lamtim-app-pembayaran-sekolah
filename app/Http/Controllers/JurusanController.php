@@ -106,6 +106,8 @@ class JurusanController extends Controller
 
     public function store(Request $request)
     {
+        $this->authorize('create', LamtimJurusan::class);
+
         try {
             $validated = $request->validate([
                 'idSekolah' => 'required|uuid|exists:lamtim_sekolahs,id',
@@ -150,11 +152,22 @@ class JurusanController extends Controller
     {
         $jurusan = $this->service->find($id);
         if (!$jurusan) abort(404);
+        
+        $this->authorize('update', $jurusan);
+
         return view('jurusan.edit', compact('jurusan'));
     }
 
     public function update(Request $request, string $id)
     {
+        $jurusan = $this->service->find($id);
+        if (!$jurusan) {
+            if (request()->expectsJson()) return ResponseHelper::notFound('Jurusan tidak ditemukan');
+            return abort(404);
+        }
+
+        $this->authorize('update', $jurusan);
+
         try {
             $validated = $request->validate([
                 'idSekolah' => 'sometimes|uuid|exists:lamtim_sekolahs,id',
@@ -182,6 +195,14 @@ class JurusanController extends Controller
 
     public function destroy(string $id)
     {
+        $jurusan = $this->service->find($id);
+        if (!$jurusan) {
+             if (request()->expectsJson()) return ResponseHelper::notFound('Jurusan tidak ditemukan');
+             return back()->withErrors(['error' => 'Jurusan tidak ditemukan']);
+        }
+        
+        $this->authorize('delete', $jurusan);
+
         try {
             $this->service->delete($id);
             

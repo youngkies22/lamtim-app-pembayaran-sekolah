@@ -13,6 +13,7 @@ use App\Exports\PembayaranExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\Closing;
 
 class PembayaranController extends Controller
 {
@@ -50,33 +51,13 @@ class PembayaranController extends Controller
     /**
      * DataTables server-side processing.
      */
+    /**
+     * DataTables server-side processing.
+     */
     public function datatable(Request $request)
     {
         $filters = $request->only(['status', 'isVerified', 'startDate', 'endDate']);
-        $query = $this->service->buildDatatableQuery($filters);
-
-        return DataTables::of($query)
-            ->addIndexColumn()
-            ->addColumn('siswa_nama', fn($row) => $row->siswa->nama ?? '-')
-            ->addColumn('nominal_formatted', fn($row) => FormatHelper::currency($row->nominalBayar))
-            ->addColumn('tanggal_formatted', fn($row) => FormatHelper::date($row->tanggalBayar))
-            ->addColumn('status_badge', fn($row) => FormatHelper::statusBadge($row->status, 'pembayaran'))
-            ->addColumn('verifikasi_badge', fn($row) => FormatHelper::statusBadge($row->isVerified ? 1 : 0, 'verifikasi'))
-            ->addColumn('action', function ($row) {
-                $buttons = '<button data-action="detail" data-id="' . $row->id . '" class="px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Detail</button>';
-
-                if (!$row->isVerified && $row->status == 1) {
-                    $buttons .= '<button data-action="verify" data-id="' . $row->id . '" class="px-2 py-1 text-xs font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300">Verifikasi</button>';
-                }
-
-                if ($row->status == 1 && !$row->isVerified) {
-                    $buttons .= '<button data-action="cancel" data-id="' . $row->id . '" class="px-2 py-1 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">Batal</button>';
-                }
-
-                return '<div class="flex gap-1">' . $buttons . '</div>';
-            })
-            ->rawColumns(['status_badge', 'verifikasi_badge', 'action'])
-            ->make(true);
+        return $this->service->getDatatable($filters);
     }
 
     /**

@@ -150,22 +150,43 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('invoice/export', [InvoiceController::class, 'export'])->name('api.invoice.export');
     Route::get('invoice', [InvoiceController::class, 'index'])->name('api.invoice.index');
     Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('api.invoice.show');
-    Route::post('invoice', [InvoiceController::class, 'store'])->middleware('role:1,2')->name('api.invoice.store');
-    Route::put('invoice/{id}', [InvoiceController::class, 'update'])->middleware('role:1,2')->name('api.invoice.update');
-    Route::delete('invoice/{id}', [InvoiceController::class, 'destroy'])->middleware('role:1,2')->name('api.invoice.destroy');
+      // Closing Management Routes
+      Route::get('closing', [App\Http\Controllers\ClosingController::class, 'index'])->name('api.closing.index');
+      Route::get('closing/check', [App\Http\Controllers\ClosingController::class, 'checkStatus'])->name('api.closing.check');
+      Route::post('closing/daily', [App\Http\Controllers\ClosingController::class, 'storeDaily'])->name('api.closing.store-daily');
+      Route::post('closing/monthly', [App\Http\Controllers\ClosingController::class, 'storeMonthly'])->name('api.closing.store-monthly');
+      Route::post('closing/reopen', [App\Http\Controllers\ClosingController::class, 'reopen'])->name('api.closing.reopen');
+
+    // Invoice Routes - Read for all, write only for admin and operator
+    // Apply check.closing middleware to write operations. Dates are in 'tanggalInvoice'
+    Route::middleware(['check.closing:tanggalInvoice'])->group(function () {
+        Route::post('invoice', [InvoiceController::class, 'store'])->middleware('role:1,2')->name('api.invoice.store');
+        Route::put('invoice/{id}', [InvoiceController::class, 'update'])->middleware('role:1,2')->name('api.invoice.update');
+        Route::delete('invoice/{id}', [InvoiceController::class, 'destroy'])->middleware('role:1,2')->name('api.invoice.destroy');
+    });
+    
+    Route::get('invoice/stats', [InvoiceController::class, 'stats'])->name('api.invoice.stats');
+    Route::get('invoice/datatable', [InvoiceController::class, 'datatable'])->name('api.invoice.datatable');
+    Route::get('invoice/export', [InvoiceController::class, 'export'])->name('api.invoice.export');
+    Route::get('invoice', [InvoiceController::class, 'index'])->name('api.invoice.index');
+    Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('api.invoice.show');
 
     // Pembayaran Routes - Read for all, proses/verify only for admin and operator
+    // Apply check.closing middleware. Dates are in 'tanggalBayar'
+    Route::middleware(['check.closing:tanggalBayar'])->group(function () {
+        Route::post('pembayaran/proses', [PembayaranController::class, 'prosesPembayaran'])->middleware('role:1,2')->name('api.pembayaran.proses');
+        Route::post('pembayaran/{id}/verify', [PembayaranController::class, 'verify'])->middleware('role:1,2')->name('api.pembayaran.verify');
+        Route::post('pembayaran/{id}/cancel', [PembayaranController::class, 'cancel'])->middleware('role:1,2')->name('api.pembayaran.cancel');
+        Route::post('pembayaran', [PembayaranController::class, 'store'])->middleware('role:1,2')->name('api.pembayaran.store');
+        Route::put('pembayaran/{id}', [PembayaranController::class, 'update'])->middleware('role:1,2')->name('api.pembayaran.update');
+        Route::delete('pembayaran/{id}', [PembayaranController::class, 'destroy'])->middleware('role:1,2')->name('api.pembayaran.destroy');
+    });
+
     Route::get('pembayaran/stats', [PembayaranController::class, 'stats'])->name('api.pembayaran.stats');
     Route::get('pembayaran/datatable', [PembayaranController::class, 'datatable'])->name('api.pembayaran.datatable');
     Route::get('pembayaran/export', [PembayaranController::class, 'export'])->name('api.pembayaran.export');
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('api.pembayaran.index');
     Route::get('pembayaran/{id}', [PembayaranController::class, 'show'])->name('api.pembayaran.show');
-    Route::post('pembayaran/proses', [PembayaranController::class, 'prosesPembayaran'])->middleware('role:1,2')->name('api.pembayaran.proses');
-    Route::post('pembayaran/{id}/verify', [PembayaranController::class, 'verify'])->middleware('role:1,2')->name('api.pembayaran.verify');
-    Route::post('pembayaran/{id}/cancel', [PembayaranController::class, 'cancel'])->middleware('role:1,2')->name('api.pembayaran.cancel');
-    Route::post('pembayaran', [PembayaranController::class, 'store'])->middleware('role:1,2')->name('api.pembayaran.store');
-    Route::put('pembayaran/{id}', [PembayaranController::class, 'update'])->middleware('role:1,2')->name('api.pembayaran.update');
-    Route::delete('pembayaran/{id}', [PembayaranController::class, 'destroy'])->middleware('role:1,2')->name('api.pembayaran.destroy');
 
       // Import Routes
       Route::prefix('import')->group(function () {
@@ -184,17 +205,26 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('rombel/export', [ReportController::class, 'exportRombelReport'])->name('api.reports.rombel.export');
       });
 
-      // Settings Routes
-      Route::get('settings', [SettingController::class, 'index'])->name('api.settings.index');
-      Route::post('settings', [SettingController::class, 'store'])->name('api.settings.store');
-      Route::get('settings/{id}', [SettingController::class, 'show'])->name('api.settings.show');
-      Route::put('settings/{id}', [SettingController::class, 'update'])->name('api.settings.update');
-      Route::delete('settings/{id}', [SettingController::class, 'destroy'])->name('api.settings.destroy');
+      // Settings Routes - Admin Only
+      Route::middleware('role:1')->group(function () {
+          Route::get('settings', [SettingController::class, 'index'])->name('api.settings.index');
+          Route::post('settings', [SettingController::class, 'store'])->name('api.settings.store');
+          Route::get('settings/{id}', [SettingController::class, 'show'])->name('api.settings.show');
+          Route::put('settings/{id}', [SettingController::class, 'update'])->name('api.settings.update');
+          Route::delete('settings/{id}', [SettingController::class, 'destroy'])->name('api.settings.destroy');
+      
+          // Trash Routes - Admin Only
+          Route::get('trash', [\App\Http\Controllers\TrashController::class, 'index'])->name('api.trash.index');
+          Route::post('trash/{id}/restore', [\App\Http\Controllers\TrashController::class, 'restore'])->name('api.trash.restore');
+          Route::delete('trash/{id}/force-delete', [\App\Http\Controllers\TrashController::class, 'forceDelete'])->name('api.trash.force-delete');
+          Route::post('trash/empty', [\App\Http\Controllers\TrashController::class, 'emptyTrash'])->name('api.trash.empty');
+      });
 
-      // Trash Routes
-      Route::get('trash', [\App\Http\Controllers\TrashController::class, 'index'])->name('api.trash.index');
-      Route::post('trash/{id}/restore', [\App\Http\Controllers\TrashController::class, 'restore'])->name('api.trash.restore');
-      Route::delete('trash/{id}/force-delete', [\App\Http\Controllers\TrashController::class, 'forceDelete'])->name('api.trash.force-delete');
-      // Perbaikan: gunakan method POST untuk empty trash agar aman, atau DELETE pada root trash dengan type query param
-      Route::post('trash/empty', [\App\Http\Controllers\TrashController::class, 'emptyTrash'])->name('api.trash.empty');
+      // Backup Routes - Admin & Operator
+      Route::prefix('backups')->middleware('role:1,2')->group(function () {
+          Route::get('/', [\App\Http\Controllers\BackupController::class, 'index'])->name('api.backups.index');
+          Route::post('/', [\App\Http\Controllers\BackupController::class, 'store'])->name('api.backups.store');
+          Route::get('/{filename}/download', [\App\Http\Controllers\BackupController::class, 'download'])->name('api.backups.download');
+          Route::delete('/{filename}', [\App\Http\Controllers\BackupController::class, 'destroy'])->name('api.backups.destroy');
+      });
   });

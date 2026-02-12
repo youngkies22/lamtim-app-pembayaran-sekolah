@@ -92,18 +92,16 @@ class SekolahController extends Controller
                 'nama' => 'required|string|max:255',
                 'namaYayasan' => 'nullable|string|max:255',
                 'alamat' => 'nullable|string',
-                'kota' => 'nullable|string|max:100',
-                'provinsi' => 'nullable|string|max:100',
-                'akreditasi' => 'nullable|string|max:50',
-                'telepon' => 'nullable|string|max:20',
-                'email' => 'nullable|email|max:100',
-                'website' => 'nullable|url|max:255',
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048', // 2MB max
+                'alamat' => 'nullable|string',
+                'kota' => 'nullable|string',
+                'provinsi' => 'nullable|string',
+                'email' => 'nullable|email',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
             // Handle logo upload
-            if ($request->hasFile('logo')) {
-                $logo = $request->file('logo');
+            if ($request->hasFile('image')) {
+                $logo = $request->file('image');
                 $logoPath = $logo->store('sekolah/logos', 'public');
                 $validated['logo'] = $logoPath;
             }
@@ -145,36 +143,42 @@ class SekolahController extends Controller
     {
         $sekolah = $this->service->find($id);
         if (!$sekolah) abort(404);
+        
+        $this->authorize('update', $sekolah);
+        
         return view('sekolah.edit', compact('sekolah'));
     }
 
     public function update(Request $request, string $id)
     {
+        $sekolah = $this->service->find($id);
+        if (!$sekolah) {
+            if ($request->expectsJson()) return ResponseHelper::notFound('Sekolah tidak ditemukan');
+            return abort(404);
+        }
+
+        $this->authorize('update', $sekolah);
+
         try {
             $validated = $request->validate([
-                'npsn' => 'nullable|string|unique:lamtim_sekolahs,npsn,' . $id,
-                'kode' => 'nullable|string|max:50|unique:lamtim_sekolahs,kode,' . $id,
+                'npsn' => 'sometimes|string|unique:lamtim_sekolahs,npsn,' . $id,
+                'kode' => 'sometimes|string|unique:lamtim_sekolahs,kode,' . $id,
                 'nama' => 'sometimes|string|max:255',
-                'namaYayasan' => 'nullable|string|max:255',
                 'alamat' => 'nullable|string',
-                'kota' => 'nullable|string|max:100',
-                'provinsi' => 'nullable|string|max:100',
-                'akreditasi' => 'nullable|string|max:50',
-                'telepon' => 'nullable|string|max:20',
-                'email' => 'nullable|email|max:100',
-                'website' => 'nullable|url|max:255',
-                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048', // 2MB max
+                'kota' => 'nullable|string',
+                'provinsi' => 'nullable|string',
+                'email' => 'nullable|email',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
-            // Handle logo upload
-            if ($request->hasFile('logo')) {
+            if ($request->hasFile('image')) {
                 // Get existing sekolah to delete old logo
                 $sekolah = $this->service->find($id);
                 if ($sekolah && $sekolah->logo) {
                     Storage::disk('public')->delete($sekolah->logo);
                 }
 
-                $logo = $request->file('logo');
+                $logo = $request->file('image');
                 $logoPath = $logo->store('sekolah/logos', 'public');
                 $validated['logo'] = $logoPath;
             }
@@ -199,13 +203,22 @@ class SekolahController extends Controller
 
     public function destroy(string $id)
     {
+        $sekolah = $this->service->find($id);
+        if (!$sekolah) {
+            if (request()->expectsJson()) {
+                return ResponseHelper::notFound('Sekolah tidak ditemukan');
+            }
+            return back()->withErrors(['error' => 'Sekolah tidak ditemukan']);
+        }
+
+        $this->authorize('delete', $sekolah);
+
         try {
-            // Get sekolah to delete logo file
-            $sekolah = $this->service->find($id);
-            if ($sekolah && $sekolah->logo) {
+            // Delete logo file if exists
+            if ($sekolah->logo) {
                 Storage::disk('public')->delete($sekolah->logo);
             }
-
+            
             $this->service->delete($id);
 
             // Clear public data cache after delete

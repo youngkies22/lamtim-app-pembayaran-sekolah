@@ -61,6 +61,11 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            'dump' => [
+                'dump_binary_path' => env('DB_DUMP_PATH_MYSQL'), // Uses env var if set
+                'use_single_transaction' => true,
+                'timeout' => 60 * 5, // 5 minute timeout
+            ],
         ],
 
         'mariadb' => [
@@ -96,6 +101,11 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'dump' => [
+                'dump_binary_path' => env('DB_DUMP_PATH_PGSQL'), // Uses env var if set
+                'use_single_transaction' => true,
+                'timeout' => 60 * 5, // 5 minute timeout
+            ],
         ],
 
         'sqlsrv' => [

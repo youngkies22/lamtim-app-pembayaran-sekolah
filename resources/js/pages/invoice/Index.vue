@@ -2,14 +2,17 @@
     <Layout :active-menu="'Payments'">
         <div class="space-y-6">
             <!-- Modern Header with Gradient -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 p-8 shadow-xl">
+            <div
+                class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 p-8 shadow-xl">
                 <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
                 <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                         <h1 class="text-3xl font-bold text-white flex items-center gap-3">
                             <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    </path>
                                 </svg>
                             </div>
                             Invoice
@@ -20,12 +23,18 @@
                         <button @click="handleExportExcel" :disabled="exporting"
                             class="relative inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-all duration-300 shadow-sm hover:shadow-md backdrop-blur-sm cursor-pointer border border-white/10 disabled:opacity-50"
                             title="Export Excel">
-                            <svg v-if="!exporting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            <svg v-if="!exporting" class="w-5 h-5" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                </path>
                             </svg>
                             <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
                             </svg>
                             <span class="hidden md:inline">{{ exporting ? 'Exporting...' : 'Export Excel' }}</span>
                         </button>
@@ -33,19 +42,27 @@
                             class="relative inline-flex items-center gap-2 px-5 py-2.5 bg-white text-violet-600 font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:transform-none cursor-pointer"
                             title="Print">
                             <svg v-if="!printing" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                                </path>
                             </svg>
                             <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
                             </svg>
                             <span class="hidden md:inline">{{ printing ? 'Loading...' : 'Print' }}</span>
                         </button>
                         <button @click="showFilter = !showFilter"
                             class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
                             :class="showFilter ? 'bg-white text-violet-600' : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'">
-                            <svg class="w-5 h-5 transition-transform duration-300" :class="{ 'rotate-180': showFilter }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                            <svg class="w-5 h-5 transition-transform duration-300" :class="{ 'rotate-180': showFilter }"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                                </path>
                             </svg>
                         </button>
                         <button @click="loadData"
@@ -62,6 +79,28 @@
                 </div>
             </div>
 
+            <!-- Closing Warning -->
+            <div v-if="isClosed"
+                class="p-4 bg-red-50 dark:bg-red-900/30 border-l-4 border-red-500 rounded-r-xl shadow-sm">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800 dark:text-red-200">
+                            Periode Hari Ini Ditutup
+                        </p>
+                        <p class="text-sm text-red-700 dark:text-red-300 mt-1">
+                            Perubahan data (Create/Update/Delete) tidak diperbolehkan.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filters -->
             <Transition name="slide-fade">
                 <div v-show="showFilter" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
@@ -74,7 +113,9 @@
                             </svg>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Filter Data Invoice</h3>
                         </div>
-                        <button @click="resetFilters" class="text-sm text-purple-600 hover:text-purple-700 font-medium cursor-pointer">Reset Filter</button>
+                        <button @click="resetFilters"
+                            class="text-sm text-purple-600 hover:text-purple-700 font-medium cursor-pointer">Reset
+                            Filter</button>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
@@ -108,24 +149,32 @@
             </Transition>
 
             <!-- DataTable Section -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div
+                class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table ref="tableRef" class="w-full text-sm">
                         <thead class="bg-gray-50 dark:bg-gray-700/80 border-b border-gray-200 dark:border-gray-600">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     #</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     No Invoice</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Siswa</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Tanggal</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Nominal</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Aksi</th>
                             </tr>
                         </thead>
@@ -150,7 +199,8 @@
                             <h3 class="text-xl font-bold text-white">Detail Invoice</h3>
                             <p class="text-sm text-purple-100 mt-1">Informasi lengkap invoice pembayaran</p>
                         </div>
-                        <button @click="showDetailModal = false" class="text-white hover:text-purple-100 transition-colors">
+                        <button @click="showDetailModal = false"
+                            class="text-white hover:text-purple-100 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12"></path>
@@ -164,19 +214,23 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">No Invoice</p>
-                                    <p class="font-bold text-lg text-gray-900 dark:text-white">{{ detailData.noInvoice }}</p>
+                                    <p class="font-bold text-lg text-gray-900 dark:text-white">{{ detailData.noInvoice
+                                        }}</p>
                                 </div>
                                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Tanggal & Waktu</p>
-                                    <p class="font-semibold text-gray-900 dark:text-white">{{ formatDateTime(detailData.created_at) }}</p>
+                                    <p class="font-semibold text-gray-900 dark:text-white">{{
+                                        formatDateTime(detailData.created_at) }}</p>
                                 </div>
                             </div>
 
                             <!-- Siswa Info -->
                             <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Siswa</p>
-                                <p class="font-bold text-lg text-gray-900 dark:text-white">{{ detailData.siswa?.nama || '-' }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">NIS: {{ detailData.siswa?.nis || '-' }}</p>
+                                <p class="font-bold text-lg text-gray-900 dark:text-white">{{ detailData.siswa?.nama ||
+                                    '-' }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">NIS: {{ detailData.siswa?.nis || '-'
+                                    }}</p>
                             </div>
 
                             <!-- Tagihan Info -->
@@ -198,7 +252,8 @@
                             <!-- Total -->
                             <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
                                 <div class="flex justify-between items-center">
-                                    <span class="text-lg font-medium text-gray-700 dark:text-gray-300">Total Invoice</span>
+                                    <span class="text-lg font-medium text-gray-700 dark:text-gray-300">Total
+                                        Invoice</span>
                                     <span class="text-2xl font-bold text-violet-600 dark:text-violet-400">
                                         Rp {{ formatNumber(detailData.nominalInvoice) }}
                                     </span>
@@ -249,8 +304,10 @@ import Toast from '../../components/Toast.vue';
 import InvoicePrintModal from '../../components/InvoicePrintModal.vue';
 import { invoiceAPI } from '../../services/api';
 import { useAppSettings } from '../../composables/useAppSettings';
+import { useClosingCheck } from '../../composables/useClosingCheck';
 
 const { appSettings } = useAppSettings();
+const { isClosed, checkDateStatus } = useClosingCheck();
 
 // Refs
 const tableRef = ref(null);
@@ -569,26 +626,27 @@ onUnmounted(() => {
 onMounted(async () => {
     await nextTick();
     initDataTable();
+    await checkDateStatus(new Date());
 });
 </script>
 
 <style scoped>
 .slide-fade-enter-active {
-  transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
 }
 
 .slide-fade-leave-active {
-  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+    transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
 }
 
 .slide-fade-enter-from,
 .slide-fade-leave-to {
-  transform: translateY(-20px);
-  opacity: 0;
+    transform: translateY(-20px);
+    opacity: 0;
 }
 
 .bg-grid-pattern {
-  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
-  background-size: 20px 20px;
+    background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+    background-size: 20px 20px;
 }
 </style>

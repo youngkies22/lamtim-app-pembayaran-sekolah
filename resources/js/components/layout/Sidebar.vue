@@ -110,6 +110,8 @@ import {
   BanknotesIcon,
   TrashIcon,
   Squares2X2Icon,
+  LockClosedIcon,
+  CircleStackIcon,
 } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
@@ -198,7 +200,9 @@ const menuItems = computed(() => {
         { name: 'Laporan per Rombel', icon: Squares2X2Icon, route: '/reports/rombel' },
       ]
     },
+    { name: 'Closing', icon: LockClosedIcon, route: '/closing' },
     { name: 'Users', icon: UsersIcon, route: '/users' },
+    { name: 'Backups', icon: CircleStackIcon, route: '/backups' },
     { name: 'Trash', icon: TrashIcon, route: '/trash' }
   ];
 
