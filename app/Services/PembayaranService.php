@@ -5,12 +5,16 @@ namespace App\Services;
 use App\Models\LamtimMasterPembayaran;
 use App\Models\LamtimSiswa;
 use App\Models\LamtimInvoice;
+use App\Models\LamtimSekolah;
+use App\Models\LamtimTahunAjaran;
 
 use App\Repositories\Interfaces\PembayaranRepositoryInterface;
 use App\Repositories\Interfaces\TagihanRepositoryInterface;
 use App\Models\LamtimPembayaran;
 use App\Models\LamtimTagihan;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -201,6 +205,101 @@ class PembayaranService
             Log::error('Error cancelling pembayaran', ['id' => $id, 'error' => $e->getMessage()]);
             throw $e;
         }
+    }
+
+    /**
+     * Get cached pembayaran statistics.
+     */
+    public function getStats(): array
+    {
+        $stats = Cache::rememberForever('pembayaran_stats', function () {
+            return LamtimPembayaran::where('isActive', 1)
+                ->selectRaw('
+                    SUM(CASE WHEN "status" = 1 THEN "nominalBayar" ELSE 0 END) as total,
+                    COUNT(CASE WHEN "status" = 1 AND "isVerified" = 1 THEN 1 END) as verified,
+                    COUNT(CASE WHEN "status" = 0 THEN 1 END) as pending,
+                    COUNT(CASE WHEN "status" = 2 THEN 1 END) as cancelled
+                ')
+                ->first()
+                ->toArray();
+        });
+
+        $stats['total'] = (int) ($stats['total'] ?? 0);
+
+        return $stats;
+    }
+
+    /**
+     * Get paginated pembayaran with filters.
+     */
+    public function getPaginated(array $filters = [], int $perPage = 15): LengthAwarePaginator
+    {
+        return $this->pembayaranRepository->paginate($filters, $perPage);
+    }
+
+    /**
+     * Find pembayaran by ID.
+     */
+    public function find(string $id): ?LamtimPembayaran
+    {
+        return $this->pembayaranRepository->find($id);
+    }
+
+    /**
+     * Build filtered query for DataTables.
+     */
+    public function buildDatatableQuery(array $filters = [])
+    {
+        $query = LamtimPembayaran::query()
+            ->with(['siswa', 'invoice', 'tagihan', 'masterPembayaran'])
+            ->select('lamtim_pembayarans.*')
+            ->where('isActive', 1)
+            ->orderBy('tanggalBayar', 'desc');
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (!empty($filters['isVerified'])) {
+            $query->where('isVerified', $filters['isVerified']);
+        }
+        if (!empty($filters['startDate'])) {
+            $query->whereDate('tanggalBayar', '>=', $filters['startDate']);
+        }
+        if (!empty($filters['endDate'])) {
+            $query->whereDate('tanggalBayar', '<=', $filters['endDate']);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Soft delete pembayaran.
+     */
+    public function destroy(string $id): void
+    {
+        $pembayaran = $this->pembayaranRepository->find($id);
+
+        if (!$pembayaran) {
+            throw new \Exception('Pembayaran tidak ditemukan');
+        }
+
+        $pembayaran->softDelete();
+
+        Log::info('Pembayaran soft deleted', ['id' => $id]);
+    }
+
+    /**
+     * Get export context (sekolah name, tahun ajaran).
+     */
+    public function getExportContext(): array
+    {
+        $sekolah = LamtimSekolah::first();
+        $tahunAjaran = LamtimTahunAjaran::active()->first();
+
+        return [
+            'sekolahNama' => $sekolah->nama ?? 'Sekolah',
+            'tahunAjaran' => $tahunAjaran->tahun ?? '',
+        ];
     }
 
     /**

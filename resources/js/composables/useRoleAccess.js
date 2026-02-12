@@ -24,6 +24,8 @@ const MENU_PERMISSIONS = {
   'Jurnal': [ROLES.ADMIN, ROLES.OPERATOR],
   'Reports': [ROLES.ADMIN, ROLES.OPERATOR, ROLES.KEPSEK],
   'Users': [ROLES.ADMIN], // Only Admin can access Users menu
+  'Trash': [ROLES.ADMIN, ROLES.OPERATOR], // Admin & Operator can access Trash
+  'Settings': [ROLES.ADMIN, ROLES.OPERATOR], // Admin & Operator can access Settings
 };
 
 // Action permissions - define which roles can perform which actions

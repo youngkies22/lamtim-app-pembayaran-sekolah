@@ -34,6 +34,7 @@ use App\Models\LamtimSekolah;
 use App\Models\LamtimMasterPembayaran;
 use App\Models\LamtimSemester;
 use App\Models\LamtimPembayaran;
+use App\Models\LamtimSetting;
 use App\Observers\MasterDataObserver;
 use App\Repositories\ImportRepository;
 use App\Repositories\Interfaces\ImportRepositoryInterface;
@@ -143,5 +144,6 @@ class AppServiceProvider extends ServiceProvider
         LamtimMasterPembayaran::observe(MasterDataObserver::class);
         LamtimSemester::observe(MasterDataObserver::class);
         LamtimPembayaran::observe(MasterDataObserver::class);
+        LamtimSetting::observe(MasterDataObserver::class);
     }
 }

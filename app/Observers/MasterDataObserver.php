@@ -91,6 +91,7 @@ class MasterDataObserver
             LamtimSekolah::class => 'sekolah',
             LamtimMasterPembayaran::class => 'master_pembayaran',
             LamtimPembayaran::class => 'pembayaran',
+            \App\Models\LamtimSetting::class => 'app_settings',
         ];
 
         return $map[$class] ?? null;
@@ -101,6 +102,9 @@ class MasterDataObserver
      */
     protected function clearModelCache(string $modelName): void
     {
+        // Clear single key cache (e.g. 'app_settings')
+        Cache::forget($modelName);
+
         try {
             // Get Redis connection
             $redis = Redis::connection();

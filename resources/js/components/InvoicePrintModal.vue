@@ -55,14 +55,25 @@ const formatDateTime = (date) => {
   return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
 };
 
+const getLogoUrl = (logoPath) => {
+  if (!logoPath) return '';
+  if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) return logoPath;
+  return `${window.location.origin}/storage/${logoPath}`;
+};
+
 const print = (type) => {
   if (!props.invoice) return;
 
   const inv = props.invoice;
 
-  // Data dari API - sekolah diambil langsung dari response, tahun ajaran menggunakan field tahun
-  const namaYayasan = inv.sekolah?.namaYayasan || inv.siswa?.sekolah?.namaYayasan || 'YAYASAN PENDIDIKAN';
-  const namaSekolah = inv.sekolah?.nama || inv.siswa?.sekolah?.nama || 'SEKOLAH';
+  // Data dari API - sekolah diambil langsung dari response (dinamis dari database)
+  const sekolah = inv.sekolah || inv.siswa?.sekolah || {};
+  const namaYayasan = sekolah.namaYayasan || 'YAYASAN PENDIDIKAN';
+  const namaSekolah = sekolah.nama || 'SEKOLAH';
+  const alamatSekolah = [sekolah.alamat, sekolah.kota].filter(Boolean).join(', ');
+  const teleponSekolah = sekolah.telepon || '';
+  const emailSekolah = sekolah.email || '';
+  const logoSekolah = sekolah.logo ? getLogoUrl(sekolah.logo) : '';
   const tahunAjaran = inv.tahunAjaran?.tahun || '2025/2026';
   const kelas = inv.siswa?.kelas || inv.siswa?.rombel?.kelas + ' ' + inv.siswa?.rombel?.nama || '-';
 
@@ -89,7 +100,7 @@ const print = (type) => {
   const totalTerbayar = semuaTagihan.reduce((sum, t) => sum + (t.totalSudahBayar || 0), 0);
   const totalSisa = semuaTagihan.reduce((sum, t) => sum + (t.totalSisa || 0), 0);
 
-  // Generate tabel semua tagihan (tanpa kolom kode tagihan)
+  // Generate tabel semua tagihan
   const tagihanRows = semuaTagihan.map(t => {
     const statusClass = t.status === 1 ? 'color:green' : (t.totalSisa > 0 ? 'color:red' : '');
     return `<tr>
@@ -100,23 +111,46 @@ const print = (type) => {
     </tr>`;
   }).join('');
 
+  // Baris kontak sekolah untuk header
+  const kontakParts = [teleponSekolah ? `Telp: ${teleponSekolah}` : '', emailSekolah ? `Email: ${emailSekolah}` : ''].filter(Boolean).join(' | ');
+
+  // Logo HTML helper
+  const logoImg = logoSekolah ? `<img src="${logoSekolah}" style="width:60px;height:60px;object-fit:contain" alt="Logo">` : '';
+  const logoImgSmall = logoSekolah ? `<img src="${logoSekolah}" style="width:40px;height:40px;object-fit:contain" alt="Logo">` : '';
+
   let content = '';
   let style = '';
 
+  // === CSS @media print (shared base) ===
+  const printMediaCSS = `
+    @media print {
+      body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+      .no-print { display: none !important; }
+    }`;
+
   if (type === 'dotmatrix') {
-    style = `@page{size:landscape;margin:5mm}body{font-family:'Courier New',monospace;font-size:10pt;margin:0;padding:10px}
-      .header{text-align:center;color:#8B0000;margin-bottom:10px}
-      .line{border-bottom:1px solid #000;margin:8px 0}
-      table{width:100%;border-collapse:collapse}
-      .info-table td{padding:2px 0}
-      .tagihan-table{margin-top:10px}
-      .tagihan-table th{padding:3px 5px;border:1px solid #000;font-size:9pt;font-weight:bold;text-align:left}
-      .sign{margin-top:20px}`;
+    style = `
+      @page { size: landscape; margin: 5mm; }
+      body { font-family: 'Courier New', monospace; font-size: 10pt; margin: 0; padding: 10px; }
+      .header-wrap { display: table; width: 100%; margin-bottom: 8px; }
+      .header-logo { display: table-cell; width: 50px; vertical-align: middle; padding-right: 8px; }
+      .header-text { display: table-cell; vertical-align: middle; text-align: center; }
+      .line { border-bottom: 1px solid #000; margin: 8px 0; }
+      table { width: 100%; border-collapse: collapse; }
+      .info-table td { padding: 2px 0; }
+      .tagihan-table { margin-top: 10px; }
+      .tagihan-table th { padding: 3px 5px; border: 1px solid #000; font-size: 9pt; font-weight: bold; text-align: left; }
+      .sign { margin-top: 20px; }
+      ${printMediaCSS}`;
     content = `
-      <div class="header">
-        <div style="font-size:11pt;font-weight:bold">${namaYayasan.toUpperCase()}</div>
-        <div style="font-size:10pt;font-weight:bold">${namaSekolah.toUpperCase()}</div>
-        <div style="font-size:9pt">TAHUN AJARAN ${tahunAjaran.toUpperCase()}</div>
+      <div class="header-wrap">
+        ${logoSekolah ? `<div class="header-logo">${logoImgSmall}</div>` : ''}
+        <div class="header-text">
+          <div style="font-size:11pt;font-weight:bold;color:#8B0000">${namaYayasan.toUpperCase()}</div>
+          <div style="font-size:10pt;font-weight:bold;color:#8B0000">${namaSekolah.toUpperCase()}</div>
+          ${alamatSekolah ? `<div style="font-size:8pt">${alamatSekolah}</div>` : ''}
+          <div style="font-size:9pt;font-weight:bold;margin-top:2px">TAHUN AJARAN ${tahunAjaran}</div>
+        </div>
       </div>
       <div class="line"></div>
       <table class="info-table">
@@ -146,31 +180,52 @@ const print = (type) => {
       </table>
       <div class="line"></div>
       <table class="sign"><tr><td width="50%"><div>Penyetor</div><div style="margin-top:40px;color:#8B0000;font-weight:bold">${inv.siswa?.nama || '-'}</div></td><td style="text-align:right"><div>Bendahara,</div><div style="margin-top:40px;font-weight:bold">${namaBendahara}</div></td></tr></table>`;
+
   } else if (type === 'a4') {
-    style = `@page{size:A4 landscape;margin:15mm}body{font-family:Arial,sans-serif;font-size:11pt;margin:0;padding:20px}
-      .header{text-align:center;color:#8B0000;margin-bottom:15px}
-      .line{border-bottom:2px solid #333;margin:12px 0}
-      .line-thin{border-bottom:1px solid #ccc;margin:10px 0}
-      table{width:100%;border-collapse:collapse}
-      .info-table td{padding:4px 0}
-      .tagihan-table{margin-top:15px}
-      .tagihan-table th{background:#7c3aed;color:white;padding:8px;border:1px solid #6b21a8}
-      .tagihan-table td{padding:6px 8px;border:1px solid #ddd}
-      .sign{margin-top:30px}`;
+    style = `
+      @page { size: A4 landscape; margin: 15mm; }
+      body { font-family: Arial, Helvetica, sans-serif; font-size: 11pt; margin: 0; padding: 20px; color: #222; }
+      .header-wrap { display: flex; align-items: center; gap: 16px; padding-bottom: 12px; }
+      .header-logo { flex-shrink: 0; }
+      .header-logo img { width: 70px; height: 70px; object-fit: contain; }
+      .header-text { flex: 1; text-align: center; }
+      .header-divider { border: none; border-top: 3px double #333; margin: 0 0 4px 0; }
+      .header-divider-thin { border: none; border-top: 1px solid #333; margin: 0 0 14px 0; }
+      .ta-badge { display: inline-block; background: #7c3aed; color: #fff; font-size: 10pt; font-weight: bold; padding: 4px 18px; border-radius: 4px; margin-top: 6px; letter-spacing: 0.5px; }
+      .line { border-bottom: 2px solid #333; margin: 12px 0; }
+      .line-thin { border-bottom: 1px solid #ccc; margin: 10px 0; }
+      table { width: 100%; border-collapse: collapse; }
+      .info-table td { padding: 4px 0; }
+      .tagihan-table { margin-top: 15px; }
+      .tagihan-table th { background: #7c3aed; color: #fff; padding: 8px 10px; border: 1px solid #6b21a8; font-size: 10pt; }
+      .tagihan-table td { padding: 6px 8px; border: 1px solid #ddd; }
+      .tagihan-table tr:nth-child(even) { background: #faf5ff; }
+      .sign { margin-top: 30px; }
+      .section-title { font-weight: bold; font-size: 12pt; margin-bottom: 10px; color: #7c3aed; }
+      ${printMediaCSS}`;
     content = `
-      <div class="header">
-        <div style="font-size:16pt;font-weight:bold">${namaYayasan.toUpperCase()}</div>
-        <div style="font-size:14pt;font-weight:bold">${namaSekolah.toUpperCase()}</div>
-        <div style="font-size:11pt">TAHUN AJARAN ${tahunAjaran.toUpperCase()}</div>
+      <div class="header-wrap">
+        ${logoSekolah ? `<div class="header-logo"><img src="${logoSekolah}" alt="Logo Sekolah"></div>` : ''}
+        <div class="header-text">
+          <div style="font-size:13pt;font-weight:bold;text-transform:uppercase;letter-spacing:1px">${namaYayasan.toUpperCase()}</div>
+          <div style="font-size:17pt;font-weight:bold;text-transform:uppercase;color:#7c3aed">${namaSekolah.toUpperCase()}</div>
+          ${alamatSekolah ? `<div style="font-size:9pt;color:#555;margin-top:2px">${alamatSekolah}</div>` : ''}
+          ${kontakParts ? `<div style="font-size:9pt;color:#555">${kontakParts}</div>` : ''}
+        </div>
+        ${logoSekolah ? '<div style="width:70px"></div>' : ''}
       </div>
-      <div class="line"></div>
+      <hr class="header-divider">
+      <hr class="header-divider-thin">
+      <div style="text-align:center;margin-bottom:14px">
+        <span class="ta-badge">TAHUN AJARAN ${tahunAjaran}</span>
+      </div>
       <table class="info-table">
         <tr><td width="160">Telah Di Terima Dari</td><td width="10">:</td><td style="color:#8B0000;font-weight:bold;font-size:12pt">${inv.siswa?.nama || '-'}</td><td width="80">Tanggal</td><td width="10">:</td><td>${formatDateTime(inv.created_at || inv.tanggalInvoice)}</td></tr>
         <tr><td>Uang Sejumlah</td><td>:</td><td style="font-weight:bold;font-size:12pt">Rp ${formatNumber(uangDibayar)}</td><td width="80" style="white-space:nowrap">ID Siswa</td><td>:</td><td style="font-weight:bold">${inv.siswa?.nis || '-'}</td></tr>
-        <tr><td>Untuk Pembayaran</td><td>:</td><td style="color:#8B0000">${namaPembayaran}</td><td>Kelas</td><td>:</td><td>${kelas}</td></tr>
+        <tr><td>Untuk Pembayaran</td><td>:</td><td style="color:#7c3aed;font-weight:bold">${namaPembayaran}</td><td>Kelas</td><td>:</td><td>${kelas}</td></tr>
       </table>
       <div class="line-thin"></div>
-      <div style="font-weight:bold;font-size:12pt;margin-bottom:10px"> Detail Transaksi Invoice Ini</div>
+      <div class="section-title">Detail Transaksi Invoice Ini</div>
       <table style="margin-bottom:15px;font-size:11pt">
         <tr><td width="180">Jenis Pembayaran</td><td width="10">:</td><td style="font-weight:bold;color:#7c3aed">${namaPembayaran}</td></tr>
         <tr><td>Nominal Tagihan</td><td>:</td><td>Rp ${formatNumber(nominalTagihanInvoice)}</td></tr>
@@ -178,11 +233,11 @@ const print = (type) => {
         <tr><td>Sisa Tagihan</td><td>:</td><td style="color:${sisaTagihan > 0 ? '#c00' : '#080'};font-weight:bold;padding-top:5px">Rp ${formatNumber(sisaTagihan)}</td></tr>
       </table>
       <div class="line-thin"></div>
-      <div style="font-weight:bold;font-size:12pt;margin-bottom:10px">📋 Rincian Biaya Pendidikan Siswa</div>
+      <div class="section-title">Rincian Biaya Pendidikan Siswa</div>
       <table class="tagihan-table">
-        <tr><th>Nama Tagihan</th><th style="text-align:right">Nominal</th><th style="text-align:right">Terbayar</th><th style="text-align:right">Sisa</th></tr>
+        <tr><th style="text-align:left">Nama Tagihan</th><th style="text-align:right">Nominal</th><th style="text-align:right">Terbayar</th><th style="text-align:right">Sisa</th></tr>
         ${tagihanRows}
-        <tr style="font-weight:bold;background:#f3e8ff">
+        <tr style="font-weight:bold;background:#ede9fe">
           <td style="text-align:center;font-size:12pt">TOTAL</td>
           <td style="text-align:right">Rp ${formatNumber(totalSemuaTagihan)}</td>
           <td style="text-align:right">Rp ${formatNumber(totalTerbayar)}</td>
@@ -190,21 +245,28 @@ const print = (type) => {
         </tr>
       </table>
       <div class="line"></div>
-      <table class="sign"><tr><td width="50%"><div>Penyetor</div><div style="margin-top:50px;color:#8B0000;font-weight:bold">${inv.siswa?.nama || '-'}</div></td><td style="text-align:right"><div>Bendahara,</div><div style="margin-top:50px;font-weight:bold">${namaBendahara}</div></td></tr></table>`;
+      <table class="sign"><tr><td width="50%"><div>Penyetor,</div><div style="margin-top:50px;color:#8B0000;font-weight:bold;border-top:1px solid #333;display:inline-block;padding-top:4px">${inv.siswa?.nama || '-'}</div></td><td style="text-align:right"><div>Bendahara,</div><div style="margin-top:50px;font-weight:bold;border-top:1px solid #333;display:inline-block;padding-top:4px">${namaBendahara}</div></td></tr></table>`;
+
   } else {
-    // Thermal - format lebih ringkas
+    // Thermal - format ringkas untuk struk 58mm/80mm
     const thermalTagihan = semuaTagihan.map(t =>
       `<div style="display:flex;justify-content:space-between;font-size:8pt;padding:2px 0;border-bottom:1px dotted #ccc"><span>${t.nama}</span><span>Rp ${formatNumber(t.totalSisa)}</span></div>`
     ).join('');
 
-    style = `@page{size:80mm auto;margin:0}body{font-family:Arial,sans-serif;font-size:9pt;margin:0;padding:5px;width:76mm}
-      .header{text-align:center;border-bottom:1px dashed #000;padding-bottom:5px;margin-bottom:8px}
-      .row{display:flex;justify-content:space-between;padding:2px 0}
-      .section{border-top:1px dashed #000;margin-top:8px;padding-top:8px}`;
+    style = `
+      @page { size: 80mm auto; margin: 0; }
+      body { font-family: Arial, sans-serif; font-size: 9pt; margin: 0; padding: 5px; width: 76mm; }
+      .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 6px; margin-bottom: 8px; }
+      .row { display: flex; justify-content: space-between; padding: 2px 0; }
+      .section { border-top: 1px dashed #000; margin-top: 8px; padding-top: 8px; }
+      ${printMediaCSS}`;
     content = `
       <div class="header">
+        ${logoSekolah ? `<div style="margin-bottom:4px"><img src="${logoSekolah}" style="width:36px;height:36px;object-fit:contain" alt="Logo"></div>` : ''}
+        <div style="font-weight:bold;font-size:8pt;text-transform:uppercase">${namaYayasan.toUpperCase()}</div>
         <div style="font-weight:bold;font-size:10pt">${namaSekolah.toUpperCase()}</div>
-        <div style="font-size:7pt">TA. ${tahunAjaran.toUpperCase()}</div>
+        ${alamatSekolah ? `<div style="font-size:7pt;color:#555">${alamatSekolah}</div>` : ''}
+        <div style="font-size:7pt;font-weight:bold;margin-top:2px">TA. ${tahunAjaran}</div>
       </div>
       <div style="text-align:center;font-weight:bold;margin-bottom:8px">KWITANSI</div>
       <div class="row"><span>No:</span><span>${inv.noInvoice}</span></div>
@@ -232,7 +294,7 @@ const print = (type) => {
   }
 
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><title>Print Invoice ${inv.noInvoice}</title><style>${style}</style></head><body>${content}</body></html>`);
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Print Invoice ${inv.noInvoice}</title><style>${style}</style></head><body>${content}</body></html>`);
   win.document.close();
   setTimeout(() => win.print(), 300);
   emit('close');

@@ -123,7 +123,7 @@ class SiswaRepository implements SiswaRepositoryInterface
 
     public function find(string $id): ?LamtimSiswa
     {
-        return $this->model->with(['agama', 'profile', 'rombels', 'currentRombel'])->find($id);
+        return $this->model->with(['agama', 'profile', 'rombels', 'currentRombel.rombel.jurusan', 'currentRombel.rombel.kelas'])->find($id);
     }
 
     public function findByUsername(string $username): ?LamtimSiswa

@@ -13,6 +13,7 @@ class MasterPembayaranResource extends JsonResource
             'id' => $this->id,
             'kode' => $this->kode,
             'nama' => $this->nama,
+            'slug' => $this->slug,
             'jenisPembayaran' => $this->jenisPembayaran,
             'kategori' => $this->kategori,
             'nominal' => (float) $this->nominal,

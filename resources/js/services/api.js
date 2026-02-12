@@ -117,6 +117,7 @@ export const authAPI = {
         const user = localStorage.getItem('auth_user');
         return user ? JSON.parse(user) : null;
     },
+    me: () => api.get('/me'),
     checkAuth: async () => {
         // Verify authentication dengan backend
         try {
@@ -378,11 +379,13 @@ export const tagihanAPI = {
 // Invoice API
 export const invoiceAPI = {
     list: (params = {}) => api.get('/invoice', { params }),
+    stats: () => api.get('/invoice/stats'),
     datatable: (params = {}) => api.get('/invoice/datatable', { params }),
     get: (id) => api.get(`/invoice/${id}`),
     create: (data) => api.post('/invoice', data),
     update: (id, data) => api.put(`/invoice/${id}`, data),
     delete: (id) => api.delete(`/invoice/${id}`),
+    exportExcel: (params = {}) => api.get('/invoice/export', { params, responseType: 'blob' }),
 };
 
 // Pembayaran API
@@ -394,6 +397,8 @@ export const pembayaranAPI = {
     proses: (data) => api.post('/pembayaran/proses', data),
     verify: (id) => api.post(`/pembayaran/${id}/verify`),
     cancel: (id, alasan = null) => api.post(`/pembayaran/${id}/cancel`, { alasan }),
+    delete: (id) => api.delete(`/pembayaran/${id}`),
+    exportExcel: (params = {}) => api.get('/pembayaran/export', { params, responseType: 'blob' }),
 };
 
 // Users API (Admin only)
@@ -408,6 +413,14 @@ export const usersAPI = {
     }),
     delete: (id) => api.delete(`/users/${id}`),
     toggleActive: (id) => api.post(`/users/${id}/toggle-active`),
+};
+
+// Reports API
+export const reportAPI = {
+    rombel: (params = {}) => api.get('/reports/rombel', { params }),
+    rombelHeaders: () => api.get('/reports/rombel/headers'),
+    rombelStats: (params = {}) => api.get('/reports/rombel/stats', { params }),
+    exportRombel: (params = {}) => api.get('/reports/rombel/export', { params, responseType: 'blob' }),
 };
 
 export default api;

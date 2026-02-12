@@ -19,69 +19,110 @@
             </h1>
             <p class="mt-2 text-emerald-100">Generate dan kelola tagihan siswa dengan mudah</p>
           </div>
-          <button @click="openGenerateModal"
-            class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-            <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Generate Tagihan
-          </button>
-        </div>
-      </div>
-
-      <!-- Filters & Search Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-        <!-- Search Bar -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          <div class="flex items-center gap-3">
+            <button @click="showFilter = !showFilter"
+              class="relative inline-flex items-center gap-2.5 px-5 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 overflow-hidden group cursor-pointer"
+              :class="showFilter ? 'bg-white text-emerald-600' : 'bg-white/10 text-white hover:bg-white/20'">
+              <span class="relative z-10 flex items-center gap-2.5">
+                <svg class="w-5 h-5 transition-transform duration-500 group-hover:scale-110" :class="{ 'rotate-180': showFilter }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                <span class="font-bold tracking-wide uppercase text-xs">{{ showFilter ? 'Hide Filters' : 'Show Filters' }}</span>
+              </span>
+            </button>
+            <button @click="openGenerateModal"
+              class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-600 font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300">
+              <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" fill="none"
+                stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
-            </div>
-            <input type="text" v-model="searchQuery" @input="handleSearch"
-              placeholder="Cari kode tagihan, nama siswa, atau master pembayaran..."
-              class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm" />
-          </div>
-        </div>
-
-        <!-- Filters -->
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div class="flex items-center gap-3 mb-3">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
-              </path>
-            </svg>
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Filter</h3>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Status Tagihan</label>
-              <select v-model="filters.status" @change="loadData"
-                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white transition-all">
-                <option value="">Semua Status</option>
-                <option value="0">Belum Bayar</option>
-                <option value="1">Lunas</option>
-                <option value="2">Terlambat</option>
-                <option value="3">Sebagian</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">Master Pembayaran</label>
-              <select v-model="filters.idMasterPembayaran" @change="loadData"
-                class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:bg-gray-700 dark:text-white transition-all">
-                <option value="">Semua Master Pembayaran</option>
-                <option v-for="mp in masterPembayaranList" :key="mp.id" :value="mp.id">
-                  {{ mp.kode }} - {{ mp.nama }}
-                </option>
-              </select>
-            </div>
+              <span>Generate</span>
+            </button>
           </div>
         </div>
       </div>
+
+      <!-- Filters Section -->
+      <Transition name="slide-fade">
+        <div v-show="showFilter" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="font-bold text-gray-900 dark:text-white">Pencarian & Filter</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Gunakan kolom di bawah untuk mempersempit hasil data</p>
+              </div>
+            </div>
+            <button @click="resetFilters" 
+              class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl transition-all cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              </svg>
+              Reset Filter
+            </button>
+          </div>
+          
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+              <!-- Search Input -->
+              <div class="lg:col-span-1 xl:col-span-1">
+                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Cari Data</label>
+                <div class="relative group">
+                  <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                  </div>
+                  <input type="text" v-model="searchQuery" @input="handleSearch"
+                    placeholder="Kode tagihan, nama siswa..."
+                    class="block w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-medium" />
+                </div>
+              </div>
+
+              <!-- Rombel Filter -->
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Rombel</label>
+                <select v-model="filters.idRombel" @change="loadData"
+                  class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-bold appearance-none cursor-pointer">
+                  <option value="">Semua Rombel</option>
+                  <option v-for="r in rombelList" :key="r.id" :value="r.id">
+                    {{ r.nama }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Status Filter -->
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Status</label>
+                <select v-model="filters.status" @change="loadData"
+                  class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-bold appearance-none cursor-pointer">
+                  <option value="">Semua Status</option>
+                  <option value="0">Belum Bayar</option>
+                  <option value="3">Sebagian</option>
+                  <option value="1">Lunas</option>
+                  <option value="2">Terlambat</option>
+                </select>
+              </div>
+
+              <!-- Master Pembayaran Filter -->
+              <div>
+                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Pembayaran</label>
+                <select v-model="filters.idMasterPembayaran" @change="loadData"
+                  class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-bold appearance-none cursor-pointer">
+                  <option value="">Semua Master</option>
+                  <option v-for="mp in masterPembayaranList" :key="mp.id" :value="mp.id">
+                    {{ mp.nama }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
 
       <!-- DataTable Section -->
       <div
@@ -95,13 +136,19 @@
                   #</th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Aksi</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Kode Tagihan</th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Siswa</th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Master Pembayaran</th>
+                  Rombel</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Pembayaran</th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Tanggal</th>
@@ -119,7 +166,7 @@
                   Status</th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Aksi</th>
+                  Angkatan</th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -277,7 +324,7 @@
                   <p class="font-medium text-gray-900 dark:text-white">{{ detailData.masterPembayaran?.nama || '-' }}
                   </p>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ detailData.masterPembayaran?.kode || '-'
-                  }}</p>
+                    }}</p>
                 </div>
               </div>
 
@@ -335,19 +382,30 @@ const loading = ref(false);
 const deleteLoading = ref(false);
 const formError = ref('');
 const detailData = ref(null);
-const deletingItem = ref(null);
 const generateResult = ref(null);
 const searchQuery = ref('');
+const showFilter = ref(false);
+const deletingItem = ref(null);
 
 // Master data
 const masterPembayaranList = ref([]);
 const kelasList = ref([]);
+const rombelList = ref([]);
 
 // Filters
 const filters = reactive({
   status: '',
   idMasterPembayaran: '',
+  idRombel: '',
 });
+
+const resetFilters = () => {
+  filters.status = '';
+  filters.idMasterPembayaran = '';
+  filters.idRombel = '';
+  searchQuery.value = '';
+  loadData();
+};
 
 // Generate Form
 const initialGenerateForm = {
@@ -384,12 +442,14 @@ const getStatusBadge = (status) => {
 // Load master data
 const loadMasterData = async () => {
   try {
-    const [mpRes, kelasRes] = await Promise.all([
+    const [mpRes, kelasRes, rombelRes] = await Promise.all([
       masterPembayaranAPI.list({ isActive: 1 }),
       masterDataAPI.kelas.list(),
+      masterDataAPI.rombel.list(),
     ]);
     masterPembayaranList.value = mpRes.data.data || [];
     kelasList.value = kelasRes.data.data || [];
+    rombelList.value = rombelRes.data.data || [];
   } catch (err) {
     toastRef.value?.error('Gagal memuat data master');
   }
@@ -404,11 +464,50 @@ const handleSearch = () => {
   }, 500);
 };
 
+// Dropdown handler helper
+const setupDropdownHandler = () => {
+  document.addEventListener('click', (e) => {
+    const dropdown = e.target.closest('[data-dropdown]');
+    const allDropdownMenus = document.querySelectorAll('[data-dropdown-menu]');
+    
+    // Auto-hide when selecting an option inside the menu
+    if (e.target.closest('[data-dropdown-menu]')) {
+      allDropdownMenus.forEach(menu => menu.classList.add('hidden', 'scale-95', 'opacity-0'));
+      return;
+    }
+
+    if (!dropdown) {
+      allDropdownMenus.forEach(menu => menu.classList.add('hidden', 'scale-95', 'opacity-0'));
+      return;
+    }
+
+    const currentMenu = dropdown.querySelector('[data-dropdown-menu]');
+    
+    if (e.target.closest('button') && !e.target.closest('[data-dropdown-menu]')) {
+      const isHidden = currentMenu.classList.contains('hidden');
+      
+      // Close all first
+      allDropdownMenus.forEach(menu => menu.classList.add('hidden', 'scale-95', 'opacity-0'));
+      
+      if (isHidden) {
+        currentMenu.classList.remove('hidden');
+        // Small timeout for animation trigger
+        setTimeout(() => {
+          currentMenu.classList.remove('scale-95', 'opacity-0');
+          currentMenu.classList.add('scale-100', 'opacity-100');
+        }, 10);
+      }
+    }
+  });
+};
+
 // Initialize DataTable
 const initDataTable = () => {
   if (!tableRef.value || !window.$ || !window.$.fn.DataTable) {
     return;
   }
+
+  setupDropdownHandler();
 
   dataTable.value = window.$(tableRef.value).DataTable({
     processing: true,
@@ -421,6 +520,7 @@ const initDataTable = () => {
       data: function (d) {
         d.status = filters.status;
         d.idMasterPembayaran = filters.idMasterPembayaran;
+        d.idRombel = filters.idRombel;
         d.search = { value: searchQuery.value };
       },
       error: function (xhr) {
@@ -431,37 +531,23 @@ const initDataTable = () => {
     },
     columns: [
       { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false },
+      { 
+        data: 'action', 
+        name: 'action', 
+        orderable: false, 
+        searchable: false,
+        className: 'text-center' 
+      },
       { data: 'kodeTagihan', name: 'kodeTagihan' },
       { data: 'siswa_nama', name: 'siswa.nama' },
+      { data: 'rombel_nama', name: 'rombel.nama' },
       { data: 'master_nama', name: 'masterPembayaran.nama' },
       { data: 'tanggal_formatted', name: 'tanggalTagihan' },
       { data: 'nominal_formatted', name: 'nominalTagihan', orderable: false },
       { data: 'terbayar_formatted', name: 'totalSudahBayar', orderable: false },
       { data: 'sisa_formatted', name: 'totalSisa', orderable: false },
       { data: 'status_badge', name: 'status', orderable: false },
-      {
-        data: null,
-        name: 'action',
-        orderable: false,
-        searchable: false,
-        render: function (data) {
-          let buttons = `
-            <button data-action="detail" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
-              Detail
-            </button>
-          `;
-
-          if (data.status === 0) {
-            buttons += `
-              <button data-action="delete" data-id="${data.id}" data-kode="${data.kodeTagihan}" class="px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">
-                Hapus
-              </button>
-            `;
-          }
-
-          return `<div class="flex gap-2">${buttons}</div>`;
-        }
-      },
+      { data: 'siswa_angkatan', name: 'siswa.tahunAngkatan' },
     ],
     order: [[4, 'desc']],
     pageLength: 10,
@@ -604,8 +690,29 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
-  await loadMasterData();
   await nextTick();
   initDataTable();
+  loadMasterData();
 });
 </script>
+
+<style scoped>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.bg-grid-pattern {
+  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+</style>

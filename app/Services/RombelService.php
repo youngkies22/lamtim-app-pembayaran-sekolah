@@ -6,6 +6,7 @@ use App\Repositories\Interfaces\RombelRepositoryInterface;
 use App\Models\LamtimRombel;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -52,7 +53,7 @@ class RombelService
 
             DB::commit();
 
-            Log::info('Rombel created', ['id' => $rombel->id, 'kode' => $rombel->kode]);
+
 
             return $rombel;
         } catch (\Exception $e) {
@@ -83,7 +84,7 @@ class RombelService
 
             DB::commit();
 
-            Log::info('Rombel updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -107,7 +108,7 @@ class RombelService
 
             DB::commit();
 
-            Log::info('Rombel deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {
@@ -135,5 +136,92 @@ class RombelService
     public function getBySekolah(string $idSekolah): Collection
     {
         return $this->repository->getBySekolah($idSekolah);
+    }
+
+    /**
+     * Get cached rombel list for API.
+     */
+    public function getCachedList(array $filters = []): Collection
+    {
+        $version = $this->getCacheVersion();
+        $cacheKey = "rombel_list_v{$version}_" . md5(json_encode($filters));
+
+        return Cache::remember($cacheKey, 3600, function () use ($filters) {
+            return $this->getAll($filters);
+        });
+    }
+
+    /**
+     * Get select options (id, kode, nama) with caching.
+     */
+    public function getSelectOptions(array $filters = [], bool $bustCache = false): array
+    {
+        $version = $this->getCacheVersion();
+        $cacheKey = "rombel_select_v{$version}_" . md5(json_encode($filters));
+
+        if (!$bustCache) {
+            $cached = Cache::get($cacheKey);
+            if ($cached) {
+                return $cached;
+            }
+        }
+
+        $query = LamtimRombel::query()->select('id', 'kode', 'nama');
+
+        if (!empty($filters['idSekolah'])) {
+            $query->where('idSekolah', $filters['idSekolah']);
+        }
+        if (!empty($filters['idJurusan'])) {
+            $query->where('idJurusan', $filters['idJurusan']);
+        }
+        if (!empty($filters['idKelas'])) {
+            $query->where('idKelas', $filters['idKelas']);
+        }
+
+        $result = $query->orderBy('kode')->get()->toArray();
+
+        Cache::put($cacheKey, $result, 3600);
+
+        return $result;
+    }
+
+    /**
+     * Build query for DataTables.
+     */
+    public function buildDatatableQuery(?string $searchTerm = null)
+    {
+        $query = LamtimRombel::query()
+            ->select('lamtim_rombels.id', 'lamtim_rombels.kode', 'lamtim_rombels.nama', 'lamtim_rombels.idSekolah', 'lamtim_rombels.idJurusan', 'lamtim_rombels.idKelas', 'lamtim_rombels.isActive')
+            ->with([
+                'sekolah:id,kode,nama',
+                'jurusan:id,kode,nama',
+                'kelas:id,kode,nama',
+            ]);
+
+        if (!empty($searchTerm)) {
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('kode', 'like', "%{$searchTerm}%")
+                    ->orWhere('nama', 'like', "%{$searchTerm}%");
+            });
+        }
+
+        return $query;
+    }
+
+    /**
+     * Invalidate all rombel-related caches.
+     */
+    public function invalidateCache(): void
+    {
+        $version = Cache::get('rombel_cache_version', 1);
+        Cache::put('rombel_cache_version', $version + 1);
+    }
+
+    /**
+     * Get current cache version.
+     */
+    public function getCacheVersion(): int
+    {
+        return (int) Cache::get('rombel_cache_version', 1);
     }
 }

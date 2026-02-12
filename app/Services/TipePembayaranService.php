@@ -53,7 +53,7 @@ class TipePembayaranService
 
             DB::commit();
 
-            Log::info('Tipe Pembayaran created', ['id' => $tipe->id, 'kode' => $tipe->kode]);
+
 
             return $tipe;
         } catch (\Exception $e) {
@@ -85,7 +85,7 @@ class TipePembayaranService
 
             DB::commit();
 
-            Log::info('Tipe Pembayaran updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -109,7 +109,7 @@ class TipePembayaranService
 
             DB::commit();
 
-            Log::info('Tipe Pembayaran deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {

@@ -54,7 +54,7 @@ class SekolahService
 
             DB::commit();
 
-            Log::info('Sekolah created', ['id' => $sekolah->id, 'nama' => $sekolah->nama]);
+
 
             return $sekolah;
         } catch (\Exception $e) {
@@ -85,7 +85,7 @@ class SekolahService
 
             DB::commit();
 
-            Log::info('Sekolah updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -109,7 +109,7 @@ class SekolahService
 
             DB::commit();
 
-            Log::info('Sekolah deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {

@@ -53,7 +53,7 @@ class KategoriPembayaranService
 
             DB::commit();
 
-            Log::info('Kategori Pembayaran created', ['id' => $kategori->id, 'kode' => $kategori->kode]);
+
 
             return $kategori;
         } catch (\Exception $e) {
@@ -85,7 +85,7 @@ class KategoriPembayaranService
 
             DB::commit();
 
-            Log::info('Kategori Pembayaran updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -109,7 +109,7 @@ class KategoriPembayaranService
 
             DB::commit();
 
-            Log::info('Kategori Pembayaran deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {

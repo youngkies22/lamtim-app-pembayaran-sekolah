@@ -2,7 +2,7 @@
   <Layout :active-menu="'Payments'">
     <div class="space-y-6">
       <!-- Modern Header with Gradient -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8 shadow-xl">
+      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-600 via-orange-600 to-red-600 p-8 shadow-xl">
         <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -12,11 +12,11 @@
               </div>
               Master Pembayaran
             </h1>
-            <p class="mt-2 text-emerald-100">Kelola template pembayaran (SPP, PKL, KI, UKOM, dll)</p>
+            <p class="mt-2 text-amber-100">Kelola template pembayaran (SPP, PKL, KI, UKOM, dll)</p>
           </div>
           <button
             @click="openCreateModal"
-            class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-emerald-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+            class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-amber-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
           >
             <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -29,8 +29,8 @@
       <!-- Modern Filter Card -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6">
         <div class="flex items-center gap-2 mb-4">
-          <div class="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg">
-            <FunnelIcon class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div class="p-2 bg-amber-50 dark:bg-amber-900/30 rounded-lg">
+            <FunnelIcon class="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
           <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Filter & Pencarian</h3>
         </div>
@@ -42,14 +42,14 @@
               v-model="searchQuery"
               @input="debouncedSearch"
               placeholder="Cari kode atau nama..."
-              class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 dark:text-white transition-all duration-200"
+              class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 dark:text-white transition-all duration-200"
             />
           </div>
           <div>
             <select
               v-model="filters.jenisPembayaran"
               @change="loadData"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
             >
               <option value="">Semua Jenis</option>
               <option v-for="jenis in jenisList" :key="jenis.id" :value="jenis.kode">{{ jenis.nama }}</option>
@@ -59,7 +59,7 @@
             <select
               v-model="filters.kategori"
               @change="loadData"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
             >
               <option value="">Semua Kategori</option>
               <option v-for="kategori in kategoriList" :key="kategori.id" :value="kategori.kode">{{ kategori.nama }}</option>
@@ -69,7 +69,7 @@
             <select
               v-model="filters.isActive"
               @change="loadData"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
             >
               <option value="">Semua Status</option>
               <option value="1">Aktif</option>
@@ -93,6 +93,7 @@
                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">No</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kode</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nama</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Slug</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Jenis</th>
                 <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Kategori</th>
                 <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Nominal</th>
@@ -105,7 +106,7 @@
               <tr v-if="loading">
                 <td colspan="9" class="px-6 py-16 text-center">
                   <div class="flex flex-col items-center justify-center gap-3">
-                    <svg class="animate-spin h-10 w-10 text-emerald-600" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin h-10 w-10 text-amber-600" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
@@ -133,6 +134,9 @@
                     <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ item.nama }}</p>
                     <p v-if="item.keterangan" class="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">{{ item.keterangan }}</p>
                   </div>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="text-xs font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-gray-600 dark:text-gray-300 font-bold uppercase tracking-tight">{{ item.slug || '-' }}</span>
                 </td>
                 <td class="px-6 py-4">
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
@@ -202,7 +206,7 @@
                 <button
                   type="button"
                   @click="generateKode"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 text-xs font-medium text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300 bg-amber-50 dark:bg-amber-900/30 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors"
                 >
                   Generate
                 </button>
@@ -214,7 +218,7 @@
                 v-model="form.jenisPembayaran"
                 @change="generateKode"
                 required
-                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
               >
                 <option value="">Pilih Jenis</option>
                 <option v-for="jenis in jenisList" :key="jenis.id" :value="jenis.kode">{{ jenis.nama }}</option>
@@ -228,8 +232,20 @@
               v-model="form.nama"
               type="text"
               required
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+              @input="autoSlug"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
               placeholder="Nama pembayaran"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Slug * <span class="text-xs text-gray-500">(Digunakan sebagai kolom laporan)</span></label>
+            <input
+              v-model="form.slug"
+              type="text"
+              required
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white font-mono"
+              placeholder="contoh: spp, gedung, pkl"
             />
           </div>
 
@@ -240,7 +256,7 @@
                 v-model="form.kategori"
                 @change="generateKode"
                 required
-                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
               >
                 <option value="">Pilih Kategori</option>
                 <option v-for="kategori in kategoriList" :key="kategori.id" :value="kategori.kode">{{ kategori.nama }}</option>
@@ -256,7 +272,7 @@
                   required
                   min="0"
                   step="0.01"
-                  class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+                  class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
                   placeholder="0"
                 />
               </div>
@@ -269,7 +285,7 @@
                 <input
                   type="checkbox"
                   v-model="form.isCicilan"
-                  class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                  class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
                 />
                 <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Bisa Dicicil</span>
               </label>
@@ -279,7 +295,7 @@
                 <input
                   type="checkbox"
                   v-model="form.isWajib"
-                  class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                  class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
                 />
                 <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Wajib</span>
               </label>
@@ -296,7 +312,7 @@
                   type="number"
                   min="0"
                   step="0.01"
-                  class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+                  class="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
                   placeholder="0"
                 />
               </div>
@@ -307,7 +323,7 @@
                 v-model.number="form.jumlahBulan"
                 type="number"
                 min="1"
-                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white"
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white"
                 placeholder="12"
               />
             </div>
@@ -318,7 +334,7 @@
             <textarea
               v-model="form.keterangan"
               rows="3"
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-emerald-500 dark:text-white resize-none"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-amber-500 dark:text-white resize-none"
               placeholder="Deskripsi pembayaran (opsional)"
             ></textarea>
           </div>
@@ -328,7 +344,7 @@
               <input
                 type="checkbox"
                 v-model="form.isActive"
-                class="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
               />
               <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">Aktif</span>
             </label>
@@ -392,6 +408,7 @@ const filters = reactive({
 const initialForm = {
   kode: '',
   nama: '',
+  slug: '',
   jenisPembayaran: '',
   kategori: '',
   nominal: 0,
@@ -410,6 +427,17 @@ let searchTimer = null;
 const getInitials = (name) => {
   if (!name) return '?';
   return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+};
+
+const autoSlug = () => {
+  if (!editingId.value) {
+    form.slug = form.nama
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
 };
 
 const formatCurrency = (amount) => {
@@ -506,6 +534,7 @@ const handleEdit = async (item) => {
     Object.assign(form, {
       kode: data.kode || '',
       nama: data.nama || '',
+      slug: data.slug || '',
       jenisPembayaran: data.jenisPembayaran || '',
       kategori: data.kategori || '',
       nominal: data.nominal || 0,
@@ -622,6 +651,7 @@ onMounted(async () => {
 
 <style>
 .bg-grid-pattern {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.1)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 </style>

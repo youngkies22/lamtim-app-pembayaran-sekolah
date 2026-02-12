@@ -168,9 +168,9 @@ class LamtimPembayaran extends Model
             'deletedBy' => $deletedBy,
         ]);
         
-        // Update invoice status
+        // Hapus invoice juga (Cascade Soft Delete)
         if ($this->invoice) {
-            $this->invoice->updateStatus();
+            $this->invoice->softDelete($deletedBy);
         }
     }
 
@@ -181,9 +181,9 @@ class LamtimPembayaran extends Model
     {
         $this->update(['isActive' => 1]);
         
-        // Update invoice status
+        // Restore invoice juga
         if ($this->invoice) {
-            $this->invoice->updateStatus();
+            $this->invoice->restore();
         }
     }
 

@@ -46,6 +46,30 @@ class TagihanService
     }
 
     /**
+     * Build filtered query for DataTables.
+     */
+    public function buildDatatableQuery(array $filters = [])
+    {
+        $query = LamtimTagihan::query()
+            ->with(['siswa', 'masterPembayaran', 'rombel'])
+            ->select('lamtim_tagihans.*')
+            ->where('lamtim_tagihans.isActive', 1)
+            ->orderBy('lamtim_tagihans.tanggalTagihan', 'desc');
+
+        if (!empty($filters['status'])) {
+            $query->where('lamtim_tagihans.status', $filters['status']);
+        }
+        if (!empty($filters['idMasterPembayaran'])) {
+            $query->where('lamtim_tagihans.idMasterPembayaran', $filters['idMasterPembayaran']);
+        }
+        if (!empty($filters['idRombel'])) {
+            $query->where('lamtim_tagihans.idRombel', $filters['idRombel']);
+        }
+
+        return $query;
+    }
+
+    /**
      * Generate tagihan untuk siswa dari master pembayaran
      */
     public function generateTagihanUntukSiswa(
@@ -241,5 +265,20 @@ class TagihanService
     public function getByMasterPembayaran(string $idMasterPembayaran): Collection
     {
         return $this->repository->getByMasterPembayaran($idMasterPembayaran);
+    }
+
+    /**
+     * Get unpaid tagihan for a specific siswa (for billing page).
+     */
+    public function getUnpaidBySiswa(string $idSiswa): Collection
+    {
+        return LamtimTagihan::query()
+            ->where('idSiswa', $idSiswa)
+            ->whereIn('status', [0, 3])
+            ->where('totalSisa', '>', 0)
+            ->where('isActive', 1)
+            ->with(['masterPembayaran:id,kode,nama,jenisPembayaran,kategori'])
+            ->orderBy('tanggalTagihan', 'desc')
+            ->get();
     }
 }

@@ -238,8 +238,7 @@
                             <div id="billing-preview" class="bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-700 rounded-xl p-6 space-y-4">
                                 <!-- Header -->
                                 <div class="text-center border-b-2 border-gray-200 dark:border-gray-700 pb-4">
-                                    <h3 class="text-lg font-bold text-gray-900 dark:text-white">BUKTI PEMBAYARAN</h3>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ appSettings.nama_aplikasi || 'Sistem Pembayaran SPP' }}</p>
+                                    <p class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ appSettings.nama_aplikasi || 'Sistem Pembayaran SPP' }}</p>
                                 </div>
 
                                 <!-- Info Siswa -->
@@ -260,8 +259,11 @@
                                 <!-- Info Pembayaran -->
                                 <div v-if="selectedTagihan" class="space-y-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                                     <div class="flex justify-between text-sm">
-                                        <span class="text-gray-600 dark:text-gray-400">Jenis:</span>
-                                        <span class="font-semibold text-gray-900 dark:text-white">{{ selectedTagihan.masterPembayaran?.nama || '-' }}</span>
+                                        <span class="text-gray-600 dark:text-gray-400 shrink-0">Jenis:</span>
+                                        <span
+                                            class="font-semibold text-gray-900 dark:text-white text-right ml-2"
+                                            :style="jenisTextStyle"
+                                        >{{ selectedTagihan.masterPembayaran?.nama || '-' }}</span>
                                     </div>
                                     <div class="flex justify-between text-sm">
                                         <span class="text-gray-600 dark:text-gray-400">Kode:</span>
@@ -308,17 +310,6 @@
                                 </div>
                             </div>
 
-                            <!-- Print Button -->
-                            <button
-                                v-if="form.idSiswa && form.idTagihan && form.nominalBayar > 0"
-                                @click="printBilling"
-                                class="w-full mt-4 px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
-                            >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                                </svg>
-                                Print Billing
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -371,6 +362,13 @@ const selectedSiswa = computed(() => {
 
 const selectedTagihan = computed(() => {
     return tagihanList.value.find(t => t && t.id === form.idTagihan);
+});
+
+const jenisTextStyle = computed(() => {
+    const nama = selectedTagihan.value?.masterPembayaran?.nama || '';
+    if (nama.length > 30) return { fontSize: '0.7rem', lineHeight: '1.3' };
+    if (nama.length > 20) return { fontSize: '0.75rem', lineHeight: '1.3' };
+    return {};
 });
 
 const filteredSiswaList = computed(() => {
@@ -518,66 +516,6 @@ const resetForm = () => {
     formError.value = '';
 };
 
-const printBilling = () => {
-    const printContent = document.getElementById('billing-preview');
-    if (!printContent) return;
-    
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Billing Pembayaran</title>
-            <style>
-                @media print {
-                    @page {
-                        size: 80mm auto;
-                        margin: 0;
-                    }
-                    body {
-                        margin: 0;
-                        padding: 10px;
-                    }
-                }
-                body {
-                    font-family: Arial, sans-serif;
-                    max-width: 80mm;
-                    margin: 0 auto;
-                    padding: 20px;
-                }
-                .text-center { text-align: center; }
-                .border-b-2 { border-bottom: 2px solid #e5e7eb; }
-                .border-t { border-top: 1px solid #e5e7eb; }
-                .pb-4 { padding-bottom: 1rem; }
-                .pt-2 { padding-top: 0.5rem; }
-                .pt-4 { padding-top: 1rem; }
-                .space-y-2 > * + * { margin-top: 0.5rem; }
-                .space-y-4 > * + * { margin-top: 1rem; }
-                .flex { display: flex; }
-                .justify-between { justify-content: space-between; }
-                .text-sm { font-size: 0.875rem; }
-                .text-xs { font-size: 0.75rem; }
-                .text-lg { font-size: 1.125rem; }
-                .text-2xl { font-size: 1.5rem; }
-                .font-bold { font-weight: 700; }
-                .font-semibold { font-weight: 600; }
-                .text-gray-600 { color: #4b5563; }
-                .text-gray-900 { color: #111827; }
-                .text-emerald-600 { color: #059669; }
-            </style>
-        </head>
-        <body>
-            ${printContent.innerHTML}
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-    
-    setTimeout(() => {
-        printWindow.print();
-    }, 250);
-};
-
 onMounted(async () => {
     // Set document title
     document.title = 'Billing Pembayaran - ' + (appSettings.nama_aplikasi || 'Sistem Pembayaran SPP');
@@ -585,15 +523,3 @@ onMounted(async () => {
 });
 </script>
 
-<style>
-@media print {
-    @page {
-        size: 80mm auto;
-        margin: 0;
-    }
-    body {
-        margin: 0;
-        padding: 10px;
-    }
-}
-</style>

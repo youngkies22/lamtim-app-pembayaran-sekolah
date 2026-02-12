@@ -73,7 +73,7 @@ class SiswaService
 
             DB::commit();
 
-            Log::info('Siswa created', ['id' => $siswa->id, 'username' => $siswa->username]);
+
 
             return $siswa;
         } catch (\Exception $e) {
@@ -121,7 +121,7 @@ class SiswaService
 
             DB::commit();
 
-            Log::info('Siswa updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -145,7 +145,7 @@ class SiswaService
 
             DB::commit();
 
-            Log::info('Siswa deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {
@@ -164,7 +164,7 @@ class SiswaService
 
             DB::commit();
 
-            Log::info('Siswa restored', ['id' => $id]);
+
 
             return $result;
         } catch (\Exception $e) {

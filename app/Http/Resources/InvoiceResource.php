@@ -81,6 +81,11 @@ class InvoiceResource extends JsonResource
                 'id' => $sekolah->id,
                 'nama' => $sekolah->nama,
                 'namaYayasan' => $sekolah->namaYayasan,
+                'alamat' => $sekolah->alamat,
+                'kota' => $sekolah->kota,
+                'telepon' => $sekolah->telepon,
+                'email' => $sekolah->email,
+                'logo' => $sekolah->logo,
             ] : null,
             
             // Siswa dengan Sekolah dan Rombel
@@ -100,6 +105,11 @@ class InvoiceResource extends JsonResource
                         'id' => $sekolah->id,
                         'nama' => $sekolah->nama,
                         'namaYayasan' => $sekolah->namaYayasan ?? $sekolah->nama,
+                        'alamat' => $sekolah->alamat,
+                        'kota' => $sekolah->kota,
+                        'telepon' => $sekolah->telepon,
+                        'email' => $sekolah->email,
+                        'logo' => $sekolah->logo,
                     ] : null,
                 ];
             }),

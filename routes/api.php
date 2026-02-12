@@ -23,6 +23,7 @@ use App\Http\Controllers\KategoriPembayaranController;
 use App\Http\Controllers\TipePembayaranController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReportController;
 
 // Public Auth Routes
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
@@ -34,7 +35,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::match(['put', 'post'], '/profile', [AuthController::class, 'updateProfile'])->name('api.profile.update');
 });
 
-  // Public Routes (no auth needed)
+  // Public Routes
   Route::get('config', [ConfigController::class, 'index'])->name('api.config');
   Route::get('public/settings', [ConfigController::class, 'publicSettings'])->name('api.public.settings');
   Route::get('public/sekolah', [ConfigController::class, 'publicSekolah'])->name('api.public.sekolah');
@@ -144,7 +145,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('tagihan/{id}', [TagihanController::class, 'destroy'])->middleware('role:1,2')->name('api.tagihan.destroy');
 
     // Invoice Routes - Read for all, write only for admin and operator
+    Route::get('invoice/stats', [InvoiceController::class, 'stats'])->name('api.invoice.stats');
     Route::get('invoice/datatable', [InvoiceController::class, 'datatable'])->name('api.invoice.datatable');
+    Route::get('invoice/export', [InvoiceController::class, 'export'])->name('api.invoice.export');
     Route::get('invoice', [InvoiceController::class, 'index'])->name('api.invoice.index');
     Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('api.invoice.show');
     Route::post('invoice', [InvoiceController::class, 'store'])->middleware('role:1,2')->name('api.invoice.store');
@@ -154,6 +157,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Pembayaran Routes - Read for all, proses/verify only for admin and operator
     Route::get('pembayaran/stats', [PembayaranController::class, 'stats'])->name('api.pembayaran.stats');
     Route::get('pembayaran/datatable', [PembayaranController::class, 'datatable'])->name('api.pembayaran.datatable');
+    Route::get('pembayaran/export', [PembayaranController::class, 'export'])->name('api.pembayaran.export');
     Route::get('pembayaran', [PembayaranController::class, 'index'])->name('api.pembayaran.index');
     Route::get('pembayaran/{id}', [PembayaranController::class, 'show'])->name('api.pembayaran.show');
     Route::post('pembayaran/proses', [PembayaranController::class, 'prosesPembayaran'])->middleware('role:1,2')->name('api.pembayaran.proses');
@@ -172,10 +176,25 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('logs', [ImportController::class, 'index'])->name('api.import.logs');
       });
 
+      // Report Routes
+      Route::prefix('reports')->group(function () {
+          Route::get('rombel', [ReportController::class, 'rombelReport'])->name('api.reports.rombel');
+          Route::get('rombel/headers', [ReportController::class, 'rombelReportHeaders'])->name('api.reports.rombel.headers');
+          Route::get('rombel/stats', [ReportController::class, 'rombelReportStats'])->name('api.reports.rombel.stats');
+          Route::get('rombel/export', [ReportController::class, 'exportRombelReport'])->name('api.reports.rombel.export');
+      });
+
       // Settings Routes
       Route::get('settings', [SettingController::class, 'index'])->name('api.settings.index');
       Route::post('settings', [SettingController::class, 'store'])->name('api.settings.store');
       Route::get('settings/{id}', [SettingController::class, 'show'])->name('api.settings.show');
       Route::put('settings/{id}', [SettingController::class, 'update'])->name('api.settings.update');
       Route::delete('settings/{id}', [SettingController::class, 'destroy'])->name('api.settings.destroy');
+
+      // Trash Routes
+      Route::get('trash', [\App\Http\Controllers\TrashController::class, 'index'])->name('api.trash.index');
+      Route::post('trash/{id}/restore', [\App\Http\Controllers\TrashController::class, 'restore'])->name('api.trash.restore');
+      Route::delete('trash/{id}/force-delete', [\App\Http\Controllers\TrashController::class, 'forceDelete'])->name('api.trash.force-delete');
+      // Perbaikan: gunakan method POST untuk empty trash agar aman, atau DELETE pada root trash dengan type query param
+      Route::post('trash/empty', [\App\Http\Controllers\TrashController::class, 'emptyTrash'])->name('api.trash.empty');
   });

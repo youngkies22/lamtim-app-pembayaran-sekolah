@@ -1,21 +1,64 @@
 <template>
     <Layout :active-menu="'Payments'">
         <div class="space-y-6">
-            <!-- Header dengan Card Modern -->
-            <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl shadow-lg p-6 text-white">
-                <div class="flex justify-between items-center">
+            <!-- Modern Header with Gradient -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-500 via-sky-500 to-cyan-500 p-8 shadow-xl">
+                <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
+                <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
-                        <h1 class="text-3xl font-bold mb-2">Pembayaran</h1>
-                        <p class="text-blue-100">Kelola dan proses pembayaran siswa dengan mudah</p>
+                        <h1 class="text-3xl font-bold text-white flex items-center gap-3">
+                            <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            Pembayaran
+                        </h1>
+                        <p class="mt-2 text-sky-100">Kelola dan proses pembayaran siswa dengan mudah</p>
                     </div>
-                    <!-- <button @click="openProsesModal"
-                        class="px-6 py-3 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition-all duration-200 flex items-center gap-2 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
-                            </path>
-                        </svg>
-                        Proses Pembayaran Baru
-                    </button> -->
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <button @click="handleExportExcel" :disabled="exporting"
+                            class="relative inline-flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium rounded-xl transition-all duration-300 shadow-sm hover:shadow-md backdrop-blur-sm cursor-pointer border border-white/10 disabled:opacity-50"
+                            title="Export Excel">
+                            <svg v-if="!exporting" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="hidden md:inline">{{ exporting ? 'Exporting...' : 'Export Excel' }}</span>
+                        </button>
+                        <button @click="handlePrint" :disabled="printing"
+                            class="relative inline-flex items-center gap-2 px-5 py-2.5 bg-white text-sky-600 font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-50 disabled:transform-none cursor-pointer"
+                            title="Print">
+                            <svg v-if="!printing" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            <svg v-else class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="hidden md:inline">{{ printing ? 'Loading...' : 'Print' }}</span>
+                        </button>
+                        <button @click="showFilter = !showFilter"
+                            class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all duration-300 shadow-sm hover:shadow-md cursor-pointer"
+                            :class="showFilter ? 'bg-white text-sky-600' : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'">
+                            <svg class="w-5 h-5 transition-transform duration-300" :class="{ 'rotate-180': showFilter }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                            </svg>
+                        </button>
+                        <button @click="loadData"
+                            class="relative inline-flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-300 shadow-sm hover:shadow-md backdrop-blur-sm cursor-pointer border border-white/10 group"
+                            title="Reload Data">
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -88,90 +131,87 @@
                 </div>
             </div>
 
-            <!-- Filters dengan Design Modern -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
-                <div class="flex items-center gap-4 mb-4">
-                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
-                        </path>
-                    </svg>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Filter</h3>
+            <!-- Filters -->
+            <Transition name="slide-fade">
+                <div v-show="showFilter" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-4">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                                </path>
+                            </svg>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Filter Data Pembayaran</h3>
+                        </div>
+                        <button @click="resetFilters" class="text-sm text-blue-600 hover:text-blue-700 font-medium cursor-pointer">Reset Filter</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status
+                                Pembayaran</label>
+                            <select v-model="filters.status"
+                                class="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                @change="loadData">
+                                <option value="">Semua Status</option>
+                                <option value="1">Berhasil</option>
+                                <option value="0">Pending</option>
+                                <option value="2">Dibatalkan</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status
+                                Verifikasi</label>
+                            <select v-model="filters.isVerified"
+                                class="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                @change="loadData">
+                                <option value="">Semua</option>
+                                <option value="1">Terverifikasi</option>
+                                <option value="0">Belum Verifikasi</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Periode
+                                Awal</label>
+                            <input v-model="filters.startDate" type="date"
+                                class="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                @change="loadData" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Periode
+                                Akhir</label>
+                            <input v-model="filters.endDate" type="date"
+                                class="w-full px-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                @change="loadData" />
+                        </div>
+                    </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status
-                            Pembayaran</label>
-                        <select v-model="filters.status"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            @change="loadData">
-                            <option value="">Semua Status</option>
-                            <option value="1">Berhasil</option>
-                            <option value="0">Pending</option>
-                            <option value="2">Dibatalkan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Status
-                            Verifikasi</label>
-                        <select v-model="filters.isVerified"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            @change="loadData">
-                            <option value="">Semua</option>
-                            <option value="1">Terverifikasi</option>
-                            <option value="0">Belum Verifikasi</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Periode
-                            Awal</label>
-                        <input v-model="filters.startDate" type="date"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            @change="loadData" />
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Periode
-                            Akhir</label>
-                        <input v-model="filters.endDate" type="date"
-                            class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                            @change="loadData" />
-                    </div>
-                </div>
-            </div>
+            </Transition>
 
-            <!-- DataTable dengan Design Modern -->
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+            <!-- DataTable Section -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
-                    <table ref="tableRef" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                    <table ref="tableRef" class="w-full text-sm">
+                        <thead class="bg-gray-50 dark:bg-gray-700/80 border-b border-gray-200 dark:border-gray-600">
                             <tr>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
-                                    No</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    #</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Kode</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Siswa</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Nominal</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Tanggal</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Status</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Verifikasi</th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700/50">
                         </tbody>
                     </table>
                 </div>
@@ -187,12 +227,12 @@
                     class="relative mx-auto w-full max-w-3xl shadow-2xl rounded-2xl bg-white dark:bg-gray-800 max-h-[90vh] overflow-y-auto">
                     <!-- Header Modal -->
                     <div
-                        class="sticky top-0 bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 rounded-t-2xl flex items-center justify-between">
+                        class="sticky top-0 bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-5 rounded-t-2xl flex items-center justify-between z-10">
                         <div>
                             <h3 class="text-xl font-bold text-white">Proses Pembayaran Baru</h3>
-                            <p class="text-sm text-blue-100 mt-1">Input pembayaran siswa dengan mudah</p>
+                            <p class="text-sm text-sky-100 mt-1">Input pembayaran siswa dengan mudah</p>
                         </div>
-                        <button @click="closeProsesModal" class="text-white hover:text-blue-100 transition-colors">
+                        <button @click="closeProsesModal" class="text-white hover:text-sky-100 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12"></path>
@@ -379,10 +419,13 @@
                 @click.self="showDetailModal = false">
                 <div class="relative mx-auto w-full max-w-2xl shadow-2xl rounded-2xl bg-white dark:bg-gray-800">
                     <div
-                        class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 rounded-t-2xl flex items-center justify-between">
-                        <h3 class="text-xl font-bold text-white">Detail Pembayaran</h3>
+                        class="sticky top-0 bg-gradient-to-r from-blue-500 to-cyan-500 px-6 py-5 rounded-t-2xl flex items-center justify-between z-10">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">Detail Pembayaran</h3>
+                            <p class="text-sm text-sky-100 mt-1">Informasi lengkap transaksi</p>
+                        </div>
                         <button @click="showDetailModal = false"
-                            class="text-white hover:text-blue-100 transition-colors">
+                            class="text-white hover:text-sky-100 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M6 18L18 6M6 6l12 12">
@@ -446,6 +489,12 @@
             confirm-text="Ya, Batalkan" :loading="actionLoading" @confirm="confirmCancel"
             @cancel="showCancelModal = false" />
 
+        <!-- Confirm Delete Modal -->
+        <ConfirmModal :show="showDeleteModal" type="danger" title="Hapus Pembayaran"
+            message="Apakah Anda yakin ingin menghapus pembayaran ini? Data akan dipindahkan ke Trash."
+            confirm-text="Ya, Hapus" :loading="actionLoading" @confirm="confirmDelete"
+            @cancel="showDeleteModal = false" />
+
         <Toast ref="toastRef" />
     </Layout>
 </template>
@@ -456,20 +505,28 @@ import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
 import Toast from '../../components/Toast.vue';
 import { pembayaranAPI, siswaAPI, masterPembayaranAPI } from '../../services/api';
+import { useRoleAccess } from '../../composables/useRoleAccess';
+import { useAppSettings } from '../../composables/useAppSettings';
+
+const { appSettings } = useAppSettings();
 
 // Refs
 const tableRef = ref(null);
 const dataTable = ref(null);
 const toastRef = ref(null);
+const exporting = ref(false);
+const printing = ref(false);
 const showProsesModal = ref(false);
 const showDetailModal = ref(false);
 const showVerifyModal = ref(false);
 const showCancelModal = ref(false);
+const showDeleteModal = ref(false);
 const loading = ref(false);
 const actionLoading = ref(false);
 const formError = ref('');
 const detailData = ref(null);
 const selectedPembayaranId = ref(null);
+const showFilter = ref(false);
 
 // Master data
 const siswaList = ref([]);
@@ -490,6 +547,14 @@ const filters = reactive({
     startDate: new Date().toISOString().split('T')[0], // Hari ini
     endDate: new Date().toISOString().split('T')[0],   // Hari ini
 });
+
+const resetFilters = () => {
+    filters.status = '';
+    filters.isVerified = '';
+    filters.startDate = new Date().toISOString().split('T')[0];
+    filters.endDate = new Date().toISOString().split('T')[0];
+    loadData();
+};
 
 // Proses Form
 const initialProsesForm = {
@@ -616,14 +681,23 @@ const initDataTable = () => {
                 orderable: false,
                 searchable: false,
                 render: function (data) {
-                    let buttons = `<button data-action="detail" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">Detail</button>`;
+                    const { currentRole, ROLES } = useRoleAccess();
+                    const userRole = currentRole.value;
+                    const isAdmin = userRole === ROLES.ADMIN;
+
+                    let buttons = `<button data-action="detail" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer">Detail</button>`;
 
                     if (!data.isVerified && data.status === 1) {
-                        buttons += `<button data-action="verify" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors">Verifikasi</button>`;
+                        buttons += `<button data-action="verify" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors cursor-pointer ml-1">Verifikasi</button>`;
                     }
 
                     if (data.status === 1 && !data.isVerified) {
-                        buttons += `<button data-action="cancel" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors">Batal</button>`;
+                        buttons += `<button data-action="cancel" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors cursor-pointer ml-1">Batal</button>`;
+                    }
+
+                    // Tombol Hapus: Admin selalu bisa, Operator hanya jika status batal (2) atau pending (0)
+                    if (isAdmin || data.status === 0 || data.status === 2) {
+                        buttons += `<button data-action="delete" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors ml-1 cursor-pointer">Hapus</button>`;
                     }
 
                     return `<div class="flex gap-2">${buttons}</div>`;
@@ -665,6 +739,8 @@ const initDataTable = () => {
                     handleVerify(id);
                 } else if (action === 'cancel') {
                     handleCancel(id);
+                } else if (action === 'delete') {
+                    handleDelete(id);
                 }
             });
         }
@@ -766,6 +842,159 @@ const confirmCancel = async () => {
     } finally {
         actionLoading.value = false;
     }
+
+};
+
+const handleDelete = (id) => {
+    selectedPembayaranId.value = id;
+    showDeleteModal.value = true;
+};
+
+const confirmDelete = async () => {
+    try {
+        actionLoading.value = true;
+        await pembayaranAPI.delete(selectedPembayaranId.value);
+        showDeleteModal.value = false;
+        toastRef.value?.success('Pembayaran berhasil dihapus');
+        loadData();
+        loadStats();
+    } catch (err) {
+        toastRef.value?.error(err.response?.data?.message || 'Gagal menghapus pembayaran');
+    } finally {
+        actionLoading.value = false;
+    }
+};
+
+// Export Excel
+const handleExportExcel = async () => {
+    try {
+        exporting.value = true;
+        const response = await pembayaranAPI.exportExcel({
+            status: filters.status,
+            isVerified: filters.isVerified,
+            startDate: filters.startDate,
+            endDate: filters.endDate,
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `pembayaran_${new Date().toISOString().slice(0, 10)}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        toastRef.value?.success('Export berhasil');
+    } catch (err) {
+        toastRef.value?.error('Gagal export data');
+    } finally {
+        exporting.value = false;
+    }
+};
+
+// Print
+const handlePrint = async () => {
+    try {
+        printing.value = true;
+        const response = await pembayaranAPI.list({
+            status: filters.status,
+            isVerified: filters.isVerified,
+            startDate: filters.startDate,
+            endDate: filters.endDate,
+            per_page: 9999,
+        });
+
+        const items = response.data?.data?.data || response.data?.data || [];
+        const sekolahNama = appSettings.value?.sekolah?.nama || 'Sekolah';
+        const tahunAjaran = appSettings.value?.tahun_ajaran?.tahun || '';
+        const namaAplikasi = appSettings.value?.nama_aplikasi || 'SPP Management';
+
+        const statusLabels = { 0: 'Pending', 1: 'Berhasil', 2: 'Dibatalkan' };
+        const verifikasiLabels = { 0: 'Belum', 1: 'Terverifikasi' };
+
+        let totalNominal = 0;
+        const rows = items.map((item, idx) => {
+            const nominal = parseFloat(item.nominalBayar) || 0;
+            totalNominal += nominal;
+            return `<tr>
+                <td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${idx + 1}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd">${item.kodePembayaran || '-'}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd">${item.siswa?.nama || '-'}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd">${item.siswa?.nis || '-'}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd;text-align:right">Rp ${formatNumber(nominal)}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd">${item.metodeBayar || '-'}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${item.tanggalBayarFormatted || formatDateTime(item.tanggalBayar)}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${statusLabels[item.status] || '-'}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${verifikasiLabels[item.isVerified ? 1 : 0]}</td>
+            </tr>`;
+        }).join('');
+
+        const periodeLabel = filters.startDate && filters.endDate
+            ? `Periode: ${filters.startDate} s/d ${filters.endDate}`
+            : 'Semua Periode';
+
+        const win = window.open('', '_blank');
+        win.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Laporan Pembayaran</title>
+<style>
+  @page { size: A4 landscape; margin: 12mm; }
+  body { font-family: Arial, Helvetica, sans-serif; font-size: 10pt; margin: 0; padding: 20px; color: #222; }
+  .header { text-align: center; margin-bottom: 16px; }
+  .header h2 { margin: 0; font-size: 14pt; }
+  .header h3 { margin: 4px 0 0; font-size: 12pt; color: #2563eb; }
+  .header p { margin: 4px 0 0; font-size: 9pt; color: #666; }
+  .divider { border: none; border-top: 2px solid #333; margin: 12px 0 6px; }
+  .divider-thin { border: none; border-top: 1px solid #333; margin: 0 0 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { background: #2563eb; color: #fff; padding: 8px 10px; border: 1px solid #1d4ed8; font-size: 9pt; text-align: left; }
+  td { font-size: 9pt; }
+  tr:nth-child(even) { background: #f0f7ff; }
+  .total-row td { background: #dbeafe; font-weight: bold; border-top: 2px solid #2563eb; }
+  .footer { margin-top: 16px; font-size: 8pt; color: #888; text-align: center; }
+  @media print {
+    body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  }
+</style></head><body>
+  <div class="header">
+    <h2>${sekolahNama.toUpperCase()}</h2>
+    <h3>LAPORAN PEMBAYARAN</h3>
+    ${tahunAjaran ? `<p>Tahun Ajaran ${tahunAjaran}</p>` : ''}
+    <p>${periodeLabel}</p>
+  </div>
+  <hr class="divider"><hr class="divider-thin">
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:center;width:30px">No</th>
+        <th>Kode</th>
+        <th>Nama Siswa</th>
+        <th>NIS</th>
+        <th style="text-align:right">Nominal</th>
+        <th>Metode</th>
+        <th style="text-align:center">Tanggal</th>
+        <th style="text-align:center">Status</th>
+        <th style="text-align:center">Verifikasi</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows || '<tr><td colspan="9" style="text-align:center;padding:20px;border:1px solid #ddd;color:#999">Tidak ada data</td></tr>'}
+      ${items.length > 0 ? `<tr class="total-row">
+        <td colspan="4" style="padding:8px 10px;border:1px solid #ddd;text-align:center">TOTAL (${items.length} transaksi)</td>
+        <td style="padding:8px 10px;border:1px solid #ddd;text-align:right">Rp ${formatNumber(totalNominal)}</td>
+        <td colspan="4" style="padding:8px 10px;border:1px solid #ddd"></td>
+      </tr>` : ''}
+    </tbody>
+  </table>
+  <div class="footer">
+    <p>Dicetak pada: ${new Date().toLocaleString('id-ID')} | ${namaAplikasi}</p>
+  </div>
+</body></html>`);
+        win.document.close();
+        setTimeout(() => win.print(), 400);
+    } catch (err) {
+        toastRef.value?.error('Gagal memuat data untuk print');
+    } finally {
+        printing.value = false;
+    }
 };
 
 onUnmounted(() => {
@@ -776,9 +1005,30 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
-    await loadMasterData();
-    loadStats();
     await nextTick();
+    loadStats();
     initDataTable();
+    loadMasterData();
 });
 </script>
+
+<style scoped>
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.bg-grid-pattern {
+  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+</style>

@@ -89,6 +89,9 @@ const loadAppSettings = async () => {
       appSettings.value = {
         nama_aplikasi: settings.nama_aplikasi || 'SPP Management',
         logo_aplikasi: settings.logo_aplikasi || null,
+        label_jurusan: settings.label_jurusan || 'Jurusan',
+        sekolah: settings.sekolah || null,
+        tahun_ajaran: settings.tahun_ajaran || null,
       };
 
       // Update title and favicon

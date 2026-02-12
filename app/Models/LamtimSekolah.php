@@ -29,6 +29,8 @@ class LamtimSekolah extends Model
         'email',
         'website',
         'logo',
+        'kepala_sekolah',
+        'nip_kepsek',
     ];
 
     protected $casts = [

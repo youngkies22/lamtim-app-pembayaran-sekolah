@@ -52,7 +52,7 @@ class AgamaService
 
             DB::commit();
 
-            Log::info('Agama created', ['id' => $agama->id, 'kode' => $agama->kode]);
+
 
             return $agama;
         } catch (\Exception $e) {
@@ -83,7 +83,7 @@ class AgamaService
 
             DB::commit();
 
-            Log::info('Agama updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -107,7 +107,7 @@ class AgamaService
 
             DB::commit();
 
-            Log::info('Agama deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {

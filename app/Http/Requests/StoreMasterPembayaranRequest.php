@@ -17,9 +17,10 @@ class StoreMasterPembayaranRequest extends FormRequest
         return [
             'kode' => ['nullable', 'string', 'max:100', 'unique:lamtim_master_pembayarans,kode'],
             'nama' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:100'],
             'jenisPembayaran' => ['required', 'string', Rule::exists('lamtim_jenis_pembayarans', 'kode')->where('isActive', 1)],
             'kategori' => ['required', 'string', Rule::exists('lamtim_kategori_pembayarans', 'kode')->where('isActive', 1)],
-            'nominal' => ['required', 'numeric', 'min:0'],
+            'nominal' => ['required', 'numeric', 'min:1'],
             'isCicilan' => ['sometimes', 'boolean'],
             'minCicilan' => ['nullable', 'numeric', 'min:0'],
             'jumlahBulan' => ['nullable', 'integer', 'min:1'],

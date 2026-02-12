@@ -52,7 +52,7 @@ class JurusanService
 
             DB::commit();
 
-            Log::info('Jurusan created', ['id' => $jurusan->id, 'kode' => $jurusan->kode]);
+
 
             return $jurusan;
         } catch (\Exception $e) {
@@ -83,7 +83,7 @@ class JurusanService
 
             DB::commit();
 
-            Log::info('Jurusan updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -107,7 +107,7 @@ class JurusanService
 
             DB::commit();
 
-            Log::info('Jurusan deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {

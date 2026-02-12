@@ -24,6 +24,7 @@ class LamtimMasterPembayaran extends Model
         'idKelas',
         'kode',
         'nama',
+        'slug',
         'jenisPembayaran',
         'kategori',
         'nominal',

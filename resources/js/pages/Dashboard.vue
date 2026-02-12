@@ -49,100 +49,29 @@
         </div>
       </div>
 
-      <!-- Recent Payments Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Pembayaran Terbaru
-          </h3>
-          <router-link 
-            to="/pembayaran" 
-            class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Lihat Semua →
-          </router-link>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-              <tr>
-                <th scope="col" class="px-6 py-3">Nama Siswa</th>
-                <th scope="col" class="px-6 py-3">Nominal</th>
-                <th scope="col" class="px-6 py-3">Jenis</th>
-                <th scope="col" class="px-6 py-3">Status</th>
-                <th scope="col" class="px-6 py-3">Tanggal</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Loading state -->
-              <tr v-if="loadingPayments" v-for="n in 5" :key="n" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32 animate-pulse"></div></td>
-                <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div></td>
-                <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20 animate-pulse"></div></td>
-                <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16 animate-pulse"></div></td>
-                <td class="px-6 py-4"><div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 animate-pulse"></div></td>
-              </tr>
-              
-              <!-- Empty state -->
-              <tr v-else-if="recentPayments.length === 0">
-                <td colspan="5" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
-                  Belum ada pembayaran terbaru
-                </td>
-              </tr>
-              
-              <!-- Data -->
-              <tr
-                v-else
-                v-for="payment in recentPayments"
-                :key="payment.id"
-                class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-              >
-                <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
-                  {{ payment.siswa?.nama || '-' }}
-                </td>
-                <td class="px-6 py-4">
-                  {{ formatCurrency(payment.nominalBayar) }}
-                </td>
-                <td class="px-6 py-4">{{ payment.metodeBayar || '-' }}</td>
-                <td class="px-6 py-4">
-                  <span
-                    :class="[
-                      'px-2 py-1 text-xs font-medium rounded',
-                      getStatusClass(payment.status)
-                    ]"
-                  >
-                    {{ getStatusText(payment.status) }}
-                  </span>
-                </td>
-                <td class="px-6 py-4">{{ formatDate(payment.tanggalBayar) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <!-- Quick Actions -->
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div
           v-for="action in quickActions"
           :key="action.name"
-          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1"
+          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1 group"
           @click="handleAction(action)"
         >
           <div class="flex items-center gap-4">
             <div
               :class="[
-                'p-3 rounded-lg',
+                'p-3 rounded-xl transition-all group-hover:scale-110',
                 action.color
               ]"
             >
               <component :is="action.icon" class="w-6 h-6" />
             </div>
             <div>
-              <h4 class="font-semibold text-gray-900 dark:text-white">
+              <h4 class="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {{ action.name }}
               </h4>
-              <p class="text-sm text-gray-600 dark:text-gray-400">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 {{ action.description }}
               </p>
             </div>
@@ -157,21 +86,25 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Layout from '../components/layout/Layout.vue';
-import { dashboardAPI, pembayaranAPI } from '../services/api';
+import { dashboardAPI } from '../services/api';
 import {
   UserGroupIcon,
   CreditCardIcon,
   ChartBarIcon,
   ExclamationTriangleIcon,
-  PlusIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  BanknotesIcon,
+  DocumentDuplicateIcon,
+  ChartPieIcon,
+  UserIcon,
+  ClipboardDocumentCheckIcon
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 
 // Loading states
 const loadingStats = ref(true);
-const loadingPayments = ref(true);
+
 
 // Stats data
 const stats = ref([
@@ -205,29 +138,57 @@ const stats = ref([
   }
 ]);
 
-const recentPayments = ref([]);
+
 
 const quickActions = ref([
   {
-    name: 'Tambah Siswa',
-    description: 'Daftarkan siswa baru',
-    icon: PlusIcon,
-    color: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300',
-    route: '/siswa'
+    name: 'Billing',
+    description: 'Kelola penagihan',
+    icon: BanknotesIcon,
+    color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
+    route: '/billing'
   },
   {
-    name: 'Proses Pembayaran',
-    description: 'Catat pembayaran baru',
+    name: 'Tagihan',
+    description: 'Daftar tagihan',
+    icon: DocumentTextIcon,
+    color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
+    route: '/tagihan'
+  },
+  {
+    name: 'Invoice',
+    description: 'Cetak invoice',
+    icon: DocumentDuplicateIcon,
+    color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
+    route: '/invoice'
+  },
+  {
+    name: 'Pembayaran',
+    description: 'Entri pembayaran',
     icon: CreditCardIcon,
-    color: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300',
+    color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
     route: '/pembayaran'
   },
   {
-    name: 'Generate Tagihan',
-    description: 'Buat tagihan batch',
-    icon: DocumentTextIcon,
-    color: 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300',
-    route: '/tagihan'
+    name: 'Report Harian',
+    description: 'Rekap harian',
+    icon: ChartPieIcon,
+    color: 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400',
+    route: '/reports'
+  },
+  {
+    name: 'Report Per Siswa',
+    description: 'Detail per siswa',
+    icon: UserIcon,
+    color: 'bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400',
+    route: '/reports/siswa'
+  },
+  {
+    name: 'Report Per Rombel',
+    description: 'Rekap per kelas',
+    icon: ClipboardDocumentCheckIcon,
+    color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
+    route: '/reports/rombel'
   }
 ]);
 
@@ -310,22 +271,10 @@ const loadStats = async () => {
   }
 };
 
-// Load recent payments
-const loadRecentPayments = async () => {
-  try {
-    loadingPayments.value = true;
-    const response = await pembayaranAPI.list({ per_page: 5 });
-    recentPayments.value = response.data.data || [];
-  } catch (err) {
-    recentPayments.value = [];
-  } finally {
-    loadingPayments.value = false;
-  }
-};
+
 
 onMounted(() => {
   loadStats();
-  loadRecentPayments();
 });
 </script>
 

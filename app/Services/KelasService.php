@@ -52,7 +52,7 @@ class KelasService
 
             DB::commit();
 
-            Log::info('Kelas created', ['id' => $kelas->id, 'kode' => $kelas->kode]);
+
 
             return $kelas;
         } catch (\Exception $e) {
@@ -83,7 +83,7 @@ class KelasService
 
             DB::commit();
 
-            Log::info('Kelas updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -110,7 +110,7 @@ class KelasService
 
             DB::commit();
 
-            Log::info('Kelas deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {

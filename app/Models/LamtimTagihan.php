@@ -84,6 +84,14 @@ class LamtimTagihan extends Model
     }
 
     /**
+     * Relationship dengan rombel
+     */
+    public function rombel(): BelongsTo
+    {
+        return $this->belongsTo(LamtimRombel::class, 'idRombel', 'id');
+    }
+
+    /**
      * Relationship dengan invoices
      */
     public function invoices(): HasMany

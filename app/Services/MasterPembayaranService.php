@@ -68,7 +68,7 @@ class MasterPembayaranService
 
             DB::commit();
 
-            Log::info('Master pembayaran created', ['id' => $master->id, 'kode' => $master->kode]);
+
 
             return $master;
         } catch (\Exception $e) {
@@ -132,7 +132,7 @@ class MasterPembayaranService
 
             DB::commit();
 
-            Log::info('Master pembayaran updated', ['id' => $id]);
+
 
             return $this->repository->find($id);
         } catch (\Exception $e) {
@@ -161,7 +161,7 @@ class MasterPembayaranService
 
             DB::commit();
 
-            Log::info('Master pembayaran deleted', ['id' => $id]);
+
 
             return true;
         } catch (\Exception $e) {
@@ -180,7 +180,7 @@ class MasterPembayaranService
 
             DB::commit();
 
-            Log::info('Master pembayaran restored', ['id' => $id]);
+
 
             return $result;
         } catch (\Exception $e) {

@@ -54,11 +54,8 @@ class ImportService
 
             DB::commit();
 
-            Log::info('Import file uploaded', [
-                'import_log_id' => $importLog->id,
-                'type' => $type,
-                'filename' => $filename,
-            ]);
+
+
 
             return $importLog;
         } catch (\Exception $e) {
