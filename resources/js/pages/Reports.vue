@@ -12,7 +12,7 @@
             </div>
             Laporan & Analitik
           </h1>
-          <p class="mt-2 text-indigo-100">Analisis data pembayaran dan tagihan sekolah</p>
+          <p class="mt-2 text-indigo-100">Analisis data pembayaran dan biaya sekolah</p>
         </div>
       </div>
 
@@ -89,8 +89,8 @@
         <div
           class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Detail Laporan</h3>
-          <button @click="exportReport"
-            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
+          <button @click="exportReport" :disabled="loading"
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors cursor-pointer disabled:opacity-50">
             <ArrowDownTrayIcon class="w-4 h-4" />
             Export Excel
           </button>
@@ -190,9 +190,15 @@ const loading = ref(false);
 const reportData = ref([]);
 const jenisPembayaranList = ref([]);
 
+const getLocalToday = () => {
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+};
+
 const filters = reactive({
-  startDate: new Date().toISOString().split('T')[0], // Hari ini
-  endDate: new Date().toISOString().split('T')[0],   // Hari ini
+  startDate: getLocalToday(), // Hari ini (local)
+  endDate: getLocalToday(),   // Hari ini (local)
   jenisPembayaran: '',
 });
 
@@ -320,9 +326,37 @@ const loadReport = async () => {
   }
 };
 
-const exportReport = () => {
-  // TODO: Implement export to Excel
-  alert('Fitur export akan segera tersedia');
+const exportReport = async () => {
+  try {
+    loading.value = true;
+    // Map filters to backend expectations (startDate/endDate camelCase)
+    // Note: The PembayaranController expects startDate, endDate, jenisPembayaran
+    const params = {
+      startDate: filters.startDate,
+      endDate: filters.endDate,
+      jenisPembayaran: filters.jenisPembayaran,
+    };
+
+    const response = await pembayaranAPI.exportExcel(params);
+    
+    // Create download link from blob
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Generate filename with date
+    const dateStr = new Date().toISOString().split('T')[0];
+    link.setAttribute('download', `Laporan_Pembayaran_${dateStr}.xlsx`);
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error('Error exporting report:', err);
+    alert('Gagal mengexport laporan');
+  } finally {
+    loading.value = false;
+  }
 };
 
 onMounted(async () => {

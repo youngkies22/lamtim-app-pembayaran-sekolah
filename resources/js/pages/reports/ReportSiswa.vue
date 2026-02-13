@@ -95,11 +95,6 @@
 
             <!-- Actions -->
             <div class="flex items-center gap-3 no-print">
-              <button @click="printSimple"
-                class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 transition-colors">
-                <PrinterIcon class="w-4 h-4" />
-                Print
-              </button>
               <button @click="printDetail"
                 class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 transition-colors">
                 <PrinterIcon class="w-4 h-4" />
@@ -304,7 +299,7 @@ import {
   PrinterIcon,
   ArrowDownTrayIcon,
 } from '@heroicons/vue/24/outline';
-import { siswaAPI, tagihanAPI, pembayaranAPI } from '../../services/api';
+import { siswaAPI, tagihanAPI, pembayaranAPI, reportAPI } from '../../services/api';
 
 // ... (refs and data)
 
@@ -463,58 +458,35 @@ const printDetail = () => {
   window.open(url, '_blank');
 };
 
-const printSimple = () => {
-  window.print();
-};
+const exportExcel = async () => {
+  if (!selectedSiswaId.value) return;
 
-const exportExcel = () => {
-  const fileName = `Laporan_Siswa_${siswaData.value?.nama?.replace(/[^a-z0-9]/gi, '_') || 'Siswa'}_${new Date().toLocaleDateString('id-ID').replace(/\//g, '-')}`;
+  try {
+    const response = await reportAPI.exportSiswa({
+      idSiswa: selectedSiswaId.value
+    });
 
-  // Clone wrapper
-  const original = document.getElementById('report-content');
-  if (!original) return;
-
-  const clone = original.cloneNode(true);
-
-  // Remove no-print elements
-  const noPrints = clone.querySelectorAll('.no-print');
-  noPrints.forEach(el => el.remove());
-
-  // Add simple styling for Excel
-  const style = `
-    <style>
-      table { border-collapse: collapse; width: 100%; font-family: Arial, sans-serif; }
-      th, td { border: 1px solid #000000; padding: 8px; text-align: left; }
-      th { background-color: #f3f4f6; font-weight: bold; }
-      .text-right { text-align: right; }
-      .text-center { text-align: center; }
-      h2 { font-size: 18px; margin-bottom: 5px; }
-      p { margin: 5px 0; }
-    </style>
-  `;
-
-  // Create HTML content
-  const html = `
-    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-    <head>
-      <meta charset="utf-8">
-      ${style}
-    </head>
-    <body>
-      ${clone.innerHTML}
-    </body>
-    </html>
-  `;
-
-  const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${fileName}.xls`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    
+    // Attempt to extract filename from Content-Disposition header
+    const contentDisposition = response.headers['content-disposition'];
+    let fileName = `Laporan_Siswa_${new Date().getTime()}.xlsx`;
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+      if (fileNameMatch?.[1]) fileName = fileNameMatch[1];
+    }
+    
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Export error:', err);
+    alert('Gagal mengunduh laporan Excel');
+  }
 };
 
 const handleClickOutside = (event) => {

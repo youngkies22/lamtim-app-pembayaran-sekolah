@@ -48,10 +48,10 @@ class TagihanRepository implements TagihanRepositoryInterface
 
         // Filter by date range
         if (isset($filters['start_date'])) {
-            $query->where('tanggalTagihan', '>=', $filters['start_date']);
+            $query->whereDate('tanggalTagihan', '>=', $filters['start_date']);
         }
         if (isset($filters['end_date'])) {
-            $query->where('tanggalTagihan', '<=', $filters['end_date']);
+            $query->whereDate('tanggalTagihan', '<=', $filters['end_date']);
         }
 
         // Filter by jenis pembayaran (dari master pembayaran)
@@ -96,10 +96,10 @@ class TagihanRepository implements TagihanRepositoryInterface
 
         // Filter by date range
         if (isset($filters['start_date'])) {
-            $query->where('tanggalTagihan', '>=', $filters['start_date']);
+            $query->whereDate('tanggalTagihan', '>=', $filters['start_date']);
         }
         if (isset($filters['end_date'])) {
-            $query->where('tanggalTagihan', '<=', $filters['end_date']);
+            $query->whereDate('tanggalTagihan', '<=', $filters['end_date']);
         }
 
         // Filter by jenis pembayaran (dari master pembayaran)

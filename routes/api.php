@@ -203,6 +203,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('rombel/headers', [ReportController::class, 'rombelReportHeaders'])->name('api.reports.rombel.headers');
           Route::get('rombel/stats', [ReportController::class, 'rombelReportStats'])->name('api.reports.rombel.stats');
           Route::get('rombel/export', [ReportController::class, 'exportRombelReport'])->name('api.reports.rombel.export');
+          Route::get('siswa/export', [ReportController::class, 'exportSiswaReport'])->name('api.reports.siswa.export');
       });
 
       // Settings Routes - Admin Only

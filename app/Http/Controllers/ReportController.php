@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\ReportService;
 use App\Exports\RombelReportExport;
+use App\Exports\SiswaReportExport;
 use App\Helpers\ResponseHelper;
 use App\Helpers\FormatHelper;
 use Illuminate\Http\Request;
@@ -93,7 +94,29 @@ class ReportController extends Controller
         $fileName = 'Laporan_Tagihan_Rombel_' . date('Ymd_His') . '.xlsx';
 
         return Excel::download(
-            new RombelReportExport($filters, $context['sekolahNama'], $context['rombelNama']),
+            new RombelReportExport($filters, $context['sekolahNama'], $context['rombelNama'], $context['logo'] ?? null),
+            $fileName
+        );
+    }
+
+    /**
+     * Export siswa report to Excel.
+     */
+    public function exportSiswaReport(Request $request)
+    {
+        $idSiswa = $request->idSiswa;
+        
+        if (empty($idSiswa)) {
+            return ResponseHelper::error('ID Siswa tidak ditemukan');
+        }
+
+        $context = $this->service->getRombelExportContext(null); // Getting school name only
+        $siswa = \App\Models\LamtimSiswa::find($idSiswa);
+        $cleanName = preg_replace('/[^a-zA-Z0-9]/', '_', $siswa->nama ?? 'Siswa');
+        $fileName = 'Laporan_Biaya_' . $cleanName . '_' . date('Ymd_His') . '.xlsx';
+
+        return Excel::download(
+            new SiswaReportExport($idSiswa, $context['sekolahNama'], $context['logo'] ?? null),
             $fileName
         );
     }

@@ -5,7 +5,7 @@ namespace App\Policies;
 use App\Models\LamtimKelas;
 use App\Models\User;
 
-class KelasPolicy
+class LamtimKelasPolicy
 {
     /**
      * Determine whether the user can view any models.

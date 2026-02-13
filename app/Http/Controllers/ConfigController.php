@@ -24,6 +24,7 @@ class ConfigController extends Controller
         $config = \Illuminate\Support\Facades\Cache::remember('app_config', 3600, function () {
             return [
                 'label_jurusan' => config('app.label_jurusan', 'Jurusan'),
+                'label_nip' => config('app.label_nip', 'NIP'),
             ];
         });
 

@@ -16,20 +16,24 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Maatwebsite\Excel\Concerns\WithDrawings;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
-class RombelReportExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithEvents, WithCustomStartCell, ShouldAutoSize
+class RombelReportExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithEvents, WithCustomStartCell, ShouldAutoSize, WithDrawings
 {
     protected array $filters;
     protected int $rowNumber = 0;
     protected string $sekolahNama;
     protected string $rombelNama;
     protected $masters;
+    protected ?string $logo;
 
-    public function __construct(array $filters = [], string $sekolahNama = '', string $rombelNama = '')
+    public function __construct(array $filters = [], string $sekolahNama = '', string $rombelNama = '', ?string $logo = null)
     {
         $this->filters = $filters;
         $this->sekolahNama = $sekolahNama ?: 'Sekolah';
         $this->rombelNama = $rombelNama;
+        $this->logo = $logo;
         
         // Group by slug (Requirement 4 & 9)
         $this->masters = \App\Models\LamtimMasterPembayaran::where('isActive', 1)
@@ -337,5 +341,35 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
                 ]);
             },
         ];
+    }
+
+    public function drawings()
+    {
+        $drawings = [];
+        $logoPath = null;
+
+        if ($this->logo) {
+            if (file_exists(storage_path('app/public/' . $this->logo))) {
+                $logoPath = storage_path('app/public/' . $this->logo);
+            } elseif (file_exists(public_path('storage/' . $this->logo))) {
+                $logoPath = public_path('storage/' . $this->logo);
+            } elseif (file_exists(public_path($this->logo))) {
+                $logoPath = public_path($this->logo);
+            }
+        }
+
+        if ($logoPath) {
+            $drawing = new Drawing();
+            $drawing->setName('Logo Sekolah');
+            $drawing->setDescription('Logo');
+            $drawing->setPath($logoPath);
+            $drawing->setHeight(60);
+            $drawing->setCoordinates('B1');
+            $drawing->setOffsetX(10);
+            $drawing->setOffsetY(5);
+            $drawings[] = $drawing;
+        }
+
+        return $drawings;
     }
 }

@@ -302,6 +302,7 @@ class PembayaranService
         return [
             'sekolahNama' => $sekolah->nama ?? 'Sekolah',
             'tahunAjaran' => $tahunAjaran->tahun ?? '',
+            'logo' => $sekolah->logo ?? null,
         ];
     }
 

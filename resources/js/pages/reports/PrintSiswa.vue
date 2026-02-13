@@ -68,12 +68,9 @@
 
     <!-- JUDUL LAPORAN -->
     <div class="text-center mb-6">
-      <h2 class="text-base font-bold uppercase tracking-wider">LAPORAN KEUANGAN SISWA</h2>
+      <h2 class="text-base font-bold uppercase tracking-wider">LAPORAN BIAYA PENDIDIKAN SISWA</h2>
       <p v-if="tahunAjaran" class="text-[11px] font-semibold mt-1">
         Tahun Ajaran {{ tahunAjaran.tahun }}
-      </p>
-      <p class="text-[10px] mt-1 text-gray-500">
-        Dicetak pada: {{ currentDateTime }}
       </p>
     </div>
 
@@ -103,12 +100,17 @@
           <tr>
             <td class="w-28 py-0.5 font-semibold align-top">Rombel</td>
             <td class="w-3 align-top">:</td>
-            <td>{{ siswaData.currentRombel?.rombel?.nama || '-' }}</td>
+            <td>
+              <span v-if="siswaData.currentRombel?.rombel?.kelas?.kode || siswaData.current_rombel?.rombel?.kelas?.kode">
+                {{ siswaData.currentRombel?.rombel?.kelas?.kode || siswaData.current_rombel?.rombel?.kelas?.kode }} - 
+              </span>
+              {{ siswaData.rombel?.nama || siswaData.rombel || siswaData.currentRombel?.rombel?.nama || siswaData.current_rombel?.rombel?.nama || '-' }}
+            </td>
           </tr>
           <tr>
             <td class="py-0.5 font-semibold align-top">{{ labelJurusan }}</td>
             <td class="align-top">:</td>
-            <td>{{ siswaData.currentRombel?.rombel?.jurusan?.nama || '-' }}</td>
+            <td>{{ siswaData.currentRombel?.rombel?.jurusan?.nama || siswaData.current_rombel?.rombel?.jurusan?.nama || '-' }}</td>
           </tr>
           <tr>
             <td class="py-0.5 font-semibold align-top">Angkatan</td>
@@ -122,7 +124,7 @@
     <!-- RINGKASAN KEUANGAN -->
     <div class="grid grid-cols-4 gap-2 mb-6">
       <div class="border border-blue-300 bg-blue-50 text-center py-2 px-1 rounded print-color-exact">
-        <div class="text-[9px] text-blue-600 uppercase tracking-wider font-semibold mb-0.5">Total Tagihan</div>
+        <div class="text-[9px] text-blue-600 uppercase tracking-wider font-semibold mb-0.5">Total Biaya</div>
         <div class="font-bold text-sm text-blue-800">{{ formatCurrency(summary.totalTagihan) }}</div>
       </div>
       <div class="border border-emerald-300 bg-emerald-50 text-center py-2 px-1 rounded print-color-exact">
@@ -141,22 +143,22 @@
 
     <!-- TABEL RINCIAN TAGIHAN -->
     <div class="mb-6">
-      <h3 class="font-bold text-xs mb-2 border-l-4 border-black pl-2 uppercase tracking-wide">Rincian Tagihan</h3>
+      <h3 class="font-bold text-xs mb-2 border-l-4 border-black pl-2 uppercase tracking-wide">Rincian Biaya</h3>
       <table class="w-full text-[11px] border-collapse">
         <thead>
           <tr class="bg-gray-800 text-white print-color-exact">
             <th class="border border-gray-600 px-2 py-1.5 text-center w-8">No</th>
-            <th class="border border-gray-600 px-2 py-1.5 text-left">Uraian Pembayaran</th>
-            <th class="border border-gray-600 px-2 py-1.5 text-right w-24">Tagihan</th>
+            <th class="border border-gray-600 px-2 py-1.5 text-left">Nama Pembayaran</th>
+            <th class="border border-gray-600 px-2 py-1.5 text-right w-24">Biaya</th>
             <th class="border border-gray-600 px-2 py-1.5 text-right w-24">Terbayar</th>
-            <th class="border border-gray-600 px-2 py-1.5 text-right w-24">Sisa</th>
+            <th class="border border-gray-600 px-2 py-1.5 text-right w-24">Tunggakan</th>
             <th class="border border-gray-600 px-2 py-1.5 text-center w-16">Status</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="tagihanList.length === 0">
             <td colspan="6" class="border border-gray-300 px-2 py-4 text-center text-gray-400 italic">
-              Belum ada data tagihan
+              Belum ada data biaya
             </td>
           </tr>
           <tr v-else v-for="(item, index) in tagihanList" :key="item.id"
@@ -210,9 +212,9 @@
             <th class="border border-gray-600 px-2 py-1.5 text-center w-8">No</th>
             <th class="border border-gray-600 px-2 py-1.5 text-left w-20">Kode</th>
             <th class="border border-gray-600 px-2 py-1.5 text-center w-24">Tanggal</th>
-            <th class="border border-gray-600 px-2 py-1.5 text-left">Uraian</th>
+            <th class="border border-gray-600 px-2 py-1.5 text-left">Nama Pembayaran</th>
             <th class="border border-gray-600 px-2 py-1.5 text-right w-24">Nominal</th>
-            <th class="border border-gray-600 px-2 py-1.5 text-center w-16">Via</th>
+            <th class="border border-gray-600 px-2 py-1.5 text-center w-16">Metode</th>
             <th class="border border-gray-600 px-2 py-1.5 text-center w-16">Status</th>
           </tr>
         </thead>
@@ -249,21 +251,30 @@
       </table>
     </div>
 
-    <!-- TANDA TANGAN (conditional) -->
-    <div v-if="showSignature" class="mt-8 break-inside-avoid print:break-inside-avoid w-full flex justify-end">
-        <div class="text-center w-64 text-[11px] relative">
+
+
+    <!-- SIGNATURE SECTION -->
+    <div v-if="showSignature" class="mt-8 break-inside-avoid print:break-inside-avoid w-full flex justify-between">
+        <!-- Bendahara (Left) -->
+        <div class="text-center w-64 text-[11px]">
+          <p class="mb-2">&nbsp;</p> <!-- Align with date -->
+          <p class="mb-4 font-medium">Bendahara,</p>
+          <div class="signature-space w-full h-24 print:h-[100px] print:block"></div>
+          <p class="font-bold underline uppercase">..................................</p>
+          <p class="text-[10px] mt-1">&nbsp;</p> <!-- Align with NIP -->
+        </div>
+
+        <!-- Kepala Sekolah (Right) -->
+        <div class="text-center w-64 text-[11px]">
           <!-- Location and Date -->
           <p class="mb-2">{{ sekolah?.kota || '-' }}, {{ currentDateOnly }}</p>
-
           <!-- Title -->
           <p class="mb-4 font-medium">Mengetahui,</p>
-
           <!-- Signature Space -->
           <div class="signature-space w-full h-24 print:h-[100px] print:block"></div>
-
           <!-- Name and NIP -->
           <p class="font-bold underline uppercase">{{ sekolah?.kepala_sekolah || 'Kepala Sekolah' }}</p>
-          <p v-if="sekolah?.nip_kepsek" class="text-[10px] mt-1">NIP. {{ sekolah.nip_kepsek }}</p>
+          <p v-if="sekolah?.nip_kepsek" class="text-[10px] mt-1">{{ labelNip }}. {{ sekolah.nip_kepsek }}</p>
         </div>
     </div>
   </div>
@@ -283,7 +294,7 @@
       class="flex items-center gap-2 bg-white px-4 py-2.5 rounded-xl shadow-lg border border-gray-200 cursor-pointer hover:bg-gray-50 select-none transition-colors">
       <input type="checkbox" v-model="showSignature"
         class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300" />
-      <span class="text-sm font-medium text-gray-700">TTD Kepala Sekolah</span>
+      <span class="text-sm font-medium text-gray-700">Tampilkan TTD</span>
     </label>
   </div>
 </template>
@@ -315,6 +326,7 @@ const summary = reactive({
 const sekolah = computed(() => settings.value?.sekolah || null);
 const tahunAjaran = computed(() => settings.value?.tahun_ajaran || null);
 const labelJurusan = computed(() => settings.value?.label_jurusan || 'Jurusan');
+const labelNip = computed(() => settings.value?.label_nip || 'NIP');
 
 // Current date+time (full)
 const currentDateTime = computed(() => {

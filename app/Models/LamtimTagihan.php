@@ -92,6 +92,14 @@ class LamtimTagihan extends Model
     }
 
     /**
+     * Relationship dengan tahun ajaran
+     */
+    public function tahunAjaran(): BelongsTo
+    {
+        return $this->belongsTo(LamtimTahunAjaran::class, 'idTahunAjaran', 'id');
+    }
+
+    /**
      * Relationship dengan invoices
      */
     public function invoices(): HasMany

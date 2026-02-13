@@ -421,6 +421,7 @@ export const reportAPI = {
     rombelHeaders: () => api.get('/reports/rombel/headers'),
     rombelStats: (params = {}) => api.get('/reports/rombel/stats', { params }),
     exportRombel: (params = {}) => api.get('/reports/rombel/export', { params, responseType: 'blob' }),
+    exportSiswa: (params = {}) => api.get('/reports/siswa/export', { params, responseType: 'blob' }),
 };
 
 export default api;

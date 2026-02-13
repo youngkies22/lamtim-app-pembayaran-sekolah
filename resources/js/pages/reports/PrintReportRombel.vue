@@ -17,6 +17,11 @@
             <input type="checkbox" v-model="showTotals" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300">
             <span class="text-sm font-medium text-gray-700">Tampilkan Total</span>
         </label>
+
+        <label class="flex items-center gap-2 bg-white px-4 py-2 rounded-lg shadow-lg border border-gray-200 cursor-pointer hover:bg-gray-50 select-none">
+            <input type="checkbox" v-model="showPrintInfo" class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300">
+            <span class="text-sm font-medium text-gray-700">Tampilkan Info Cetak</span>
+        </label>
     </div>
     <div v-if="loading" class="flex items-center justify-center min-h-[50vh]">
         <div class="text-center">
@@ -27,14 +32,23 @@
     
     <div v-else class="max-w-[297mm] mx-auto">
       <!-- Header -->
-      <div class="text-center mb-8 border-b-2 border-emerald-600 pb-4">
-        <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">{{ sekolahNama }}</h1>
-        <h2 class="text-xl font-bold text-emerald-700 mt-2">LAPORAN TAGIHAN PER ROMBEL</h2>
+      <div class="flex items-center gap-6 mb-8 border-b-2 border-emerald-600 pb-4">
+        <!-- Logo -->
+        <div v-if="sekolahLogo" class="w-20 h-20 flex-shrink-0">
+          <img :src="getLogoUrl(sekolahLogo)" class="w-full h-full object-contain" alt="Logo Sekolah" />
+        </div>
         
-            <div>
-                <span class="block text-gray-400 text-xs uppercase">Rombel</span>
-                <span class="text-lg text-gray-900">{{ rombelNama }}</span>
-            </div>
+        <!-- Title -->
+        <div class="flex-1 text-center" :class="{ 'pr-20': sekolahLogo }">
+          <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">{{ sekolahNama }}</h1>
+          <h2 class="text-xl font-bold text-emerald-700 mt-2 uppercase">LAPORAN BIAYA PENDIDIKAN PER ROMBEL</h2>
+          
+          <div class="mt-4">
+              <span class="text-2xl font-bold text-gray-900 uppercase">
+                  {{ rombelInfo?.kelas?.kode ? rombelInfo.kelas.kode + ' - ' : '' }}{{ rombelNama }}
+              </span>
+          </div>
+        </div>
       </div>
 
       <!-- Table -->
@@ -49,9 +63,9 @@
               {{ header.slug }}
             </th>
             
-            <th class="border border-gray-300 px-3 py-2 text-right">Total</th>
-            <th class="border border-gray-300 px-3 py-2 text-right">Bayar</th>
-            <th class="border border-gray-300 px-3 py-2 text-right">Sisa</th>
+            <th class="border border-gray-300 px-3 py-2 text-right">Biaya</th>
+            <th class="border border-gray-300 px-3 py-2 text-right">Terbayar</th>
+            <th class="border border-gray-300 px-3 py-2 text-right">Tunggakan</th>
             <th class="border border-gray-300 px-3 py-2 text-center">Ket</th>
           </tr>
         </thead>
@@ -94,7 +108,7 @@
       </table>
 
       <!-- Footer -->
-      <div class="mt-8 flex justify-between text-xs text-gray-500">
+      <div v-if="showPrintInfo" class="mt-8 flex justify-between text-xs text-gray-500">
           <div>Dicetak oleh: {{ userName }}</div>
           <div>Tanggal: {{ printDate }}</div>
       </div>
@@ -106,16 +120,22 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { reportAPI, masterDataAPI, authAPI, configAPI } from '../../services/api';
+import { useAppSettings } from '../../composables/useAppSettings';
 
 const route = useRoute();
 const loading = ref(true);
 const reportData = ref([]);
 const dynamicHeaders = ref([]);
 const rombelNama = ref('');
-const sekolahNama = ref('Sekolah');
+const rombelInfo = ref(null);
 const userName = ref('');
+const { appSettings: settings, getLogoUrl, loadAppSettings } = useAppSettings();
+const sekolah = computed(() => settings.value?.sekolah || null);
+const sekolahNama = computed(() => sekolah.value?.nama || 'Sekolah');
+const sekolahLogo = computed(() => sekolah.value?.logo || null);
 const printDate = ref('');
 const showTotals = ref(true);
+const showPrintInfo = ref(true);
 
 const print = () => {
     window.print();
@@ -155,13 +175,15 @@ const fetchData = async () => {
     }
 
     try {
+        // Load app settings first (for school logo/name)
+        await loadAppSettings();
+
         // Parallel requests
-        const [reportRes, headerRes, rombelRes, userRes, sekolahRes] = await Promise.all([
+        const [reportRes, headerRes, rombelRes, userRes] = await Promise.all([
             reportAPI.rombel({ idRombel, length: 1000 }), // Fetch ALL data for print
             reportAPI.rombelHeaders(),
-            masterDataAPI.rombel.select({ id: idRombel }),
+            masterDataAPI.rombel.get(idRombel),
             authAPI.me(),
-            configAPI.getPublicSekolah()
         ]);
 
         // Process Report Data
@@ -174,19 +196,14 @@ const fetchData = async () => {
         dynamicHeaders.value = headerRes.data.data || [];
         
         // Rombel Name
-        const rombel = rombelRes.data.data.find(r => r.id == idRombel);
+        const rombel = rombelRes.data.data || rombelRes.data || null;
+        rombelInfo.value = rombel;
         rombelNama.value = rombel ? rombel.nama : 'Unknown Rombel';
 
         // Meta
-        userName.value = userRes.data.name || 'Admin';
+        const user = userRes.data.data || userRes.data;
+        userName.value = user.nama || user.name || 'Administrator';
         printDate.value = new Date().toLocaleString('id-ID');
-        
-        // School Info
-        if (sekolahRes.data && sekolahRes.data.data) {
-             sekolahNama.value = sekolahRes.data.data.nama;
-        } else if (sekolahRes.data && sekolahRes.data.nama) {
-             sekolahNama.value = sekolahRes.data.nama;
-        }
 
     } catch (err) {
         console.error('Print Error:', err);

@@ -16,19 +16,23 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Maatwebsite\Excel\Concerns\WithDrawings;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
-class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithEvents, WithCustomStartCell, ShouldAutoSize
+class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithEvents, WithCustomStartCell, ShouldAutoSize, WithDrawings
 {
     protected array $filters;
     protected int $rowNumber = 0;
     protected string $sekolahNama;
     protected string $tahunAjaran;
+    protected ?string $logo;
 
-    public function __construct(array $filters = [], string $sekolahNama = '', string $tahunAjaran = '')
+    public function __construct(array $filters = [], string $sekolahNama = '', string $tahunAjaran = '', ?string $logo = null)
     {
         $this->filters = $filters;
         $this->sekolahNama = $sekolahNama ?: 'Sekolah';
         $this->tahunAjaran = $tahunAjaran;
+        $this->logo = $logo;
     }
 
     public function startCell(): string
@@ -57,6 +61,13 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyl
 
         if (!empty($this->filters['endDate'])) {
             $query->whereDate('tanggalBayar', '<=', $this->filters['endDate']);
+        }
+
+        if (isset($this->filters['jenisPembayaran']) && $this->filters['jenisPembayaran'] !== '') {
+            $kode = $this->filters['jenisPembayaran'];
+            $query->whereHas('masterPembayaran', function ($q) use ($kode) {
+                $q->where('kode', $kode);
+            });
         }
 
         return $query;
@@ -232,5 +243,40 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyl
                 ]);
             },
         ];
+    }
+
+    public function drawings()
+    {
+        $drawings = [];
+        $logoPath = null;
+
+        if ($this->logo) {
+            // Check storage path (recommended for uploaded files)
+            if (file_exists(storage_path('app/public/' . $this->logo))) {
+                $logoPath = storage_path('app/public/' . $this->logo);
+            } 
+            // Check public storage symlink
+            elseif (file_exists(public_path('storage/' . $this->logo))) {
+                $logoPath = public_path('storage/' . $this->logo);
+            }
+            // Check direct public path
+            elseif (file_exists(public_path($this->logo))) {
+                $logoPath = public_path($this->logo);
+            }
+        }
+
+        if ($logoPath) {
+            $drawing = new Drawing();
+            $drawing->setName('Logo Sekolah');
+            $drawing->setDescription('Logo');
+            $drawing->setPath($logoPath);
+            $drawing->setHeight(60);
+            $drawing->setCoordinates('B1'); // Slightly offset to B1 or keep at A1 but with offset
+            $drawing->setOffsetX(10);
+            $drawing->setOffsetY(5);
+            $drawings[] = $drawing;
+        }
+
+        return $drawings;
     }
 }

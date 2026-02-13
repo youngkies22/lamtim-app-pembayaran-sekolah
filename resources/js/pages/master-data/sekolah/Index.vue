@@ -146,6 +146,19 @@
                 <span class="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[150px]">{{ item.email }}</span>
               </div>
             </div>
+
+            <div v-if="item.kepala_sekolah" class="mt-2 pt-2 border-t border-gray-50 dark:border-gray-700/50">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                <div>
+                  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ item.kepala_sekolah }}</p>
+                  <p v-if="item.nip_kepsek" class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ appSettings.label_nip }}: {{ item.nip_kepsek }}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Card Footer -->
@@ -233,6 +246,21 @@
             </div>
           </div>
 
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Kepala Sekolah</label>
+              <input v-model="form.kepala_sekolah" type="text"
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white"
+                placeholder="Nama kepala sekolah" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ appSettings.label_nip }} Kepala Sekolah</label>
+              <input v-model="form.nip_kepsek" type="text"
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white"
+                :placeholder="`${appSettings.label_nip} kepala sekolah`" />
+            </div>
+          </div>
+
           <!-- Logo Upload -->
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Logo Sekolah</label>
@@ -295,8 +323,10 @@ import ConfirmModal from '../../../components/ConfirmModal.vue';
 import Toast from '../../../components/Toast.vue';
 import { masterDataAPI } from '../../../services/api';
 import { useRoleAccess } from '../../../composables/useRoleAccess';
+import { useAppSettings } from '../../../composables/useAppSettings';
 
 const { canCreateData, canEditData, canDeleteData, isAdminUser } = useRoleAccess();
+const { appSettings } = useAppSettings();
 
 const toastRef = ref(null);
 const showModal = ref(false);
@@ -319,6 +349,8 @@ const initialForm = {
   alamat: '',
   telepon: '',
   email: '',
+  kepala_sekolah: '',
+  nip_kepsek: '',
   logo: null,
 };
 
@@ -426,6 +458,8 @@ const handleEdit = async (item) => {
       alamat: sekolah.alamat || '',
       telepon: sekolah.telepon || '',
       email: sekolah.email || '',
+      kepala_sekolah: sekolah.kepala_sekolah || '',
+      nip_kepsek: sekolah.nip_kepsek || '',
       logo: sekolah.logo || null,
     });
     // Set logo preview if exists
@@ -479,6 +513,8 @@ const handleSubmit = async () => {
     if (form.alamat) formData.append('alamat', form.alamat);
     if (form.telepon) formData.append('telepon', form.telepon);
     if (form.email) formData.append('email', form.email);
+    if (form.kepala_sekolah) formData.append('kepala_sekolah', form.kepala_sekolah);
+    if (form.nip_kepsek) formData.append('nip_kepsek', form.nip_kepsek);
 
     // Append logo file if selected
     if (logoFile.value) {

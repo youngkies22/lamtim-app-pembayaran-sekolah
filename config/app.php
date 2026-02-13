@@ -27,6 +27,7 @@ return [
     */
 
     'label_jurusan' => env('LABEL_JURUSAN', 'Jurusan'),
+    'label_nip' => env('LABEL_NIP', 'NIP'),
 
     /*
     |--------------------------------------------------------------------------

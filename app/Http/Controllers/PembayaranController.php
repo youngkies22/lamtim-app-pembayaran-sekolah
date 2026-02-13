@@ -35,7 +35,7 @@ class PembayaranController extends Controller
     public function index(Request $request)
     {
         if ($request->is('api/*') || $request->expectsJson()) {
-            $filters = $request->only(['search', 'idSiswa', 'idInvoice', 'idTagihan', 'idMasterPembayaran', 'jenisPembayaran', 'status', 'isVerified', 'isActive', 'startDate', 'endDate']);
+            $filters = $request->only(['search', 'idSiswa', 'idInvoice', 'idTagihan', 'idMasterPembayaran', 'jenisPembayaran', 'status', 'isVerified', 'isActive', 'start_date', 'end_date']);
             $pembayarans = $this->service->getPaginated($filters, $request->get('per_page', 15));
 
             return ResponseHelper::success(PembayaranResource::collection($pembayarans));
@@ -135,12 +135,12 @@ class PembayaranController extends Controller
      */
     public function export(Request $request)
     {
-        $filters = $request->only(['status', 'isVerified', 'startDate', 'endDate']);
+        $filters = $request->only(['status', 'isVerified', 'startDate', 'endDate', 'jenisPembayaran']);
         $context = $this->service->getExportContext();
         $filename = 'pembayaran_' . date('Y-m-d_His') . '.xlsx';
 
         return Excel::download(
-            new PembayaranExport($filters, $context['sekolahNama'], $context['tahunAjaran']),
+            new PembayaranExport($filters, $context['sekolahNama'], $context['tahunAjaran'], $context['logo'] ?? null),
             $filename
         );
     }

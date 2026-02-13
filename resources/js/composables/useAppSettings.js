@@ -90,6 +90,7 @@ const loadAppSettings = async () => {
         nama_aplikasi: settings.nama_aplikasi || 'SPP Management',
         logo_aplikasi: settings.logo_aplikasi || null,
         label_jurusan: settings.label_jurusan || 'Jurusan',
+        label_nip: settings.label_nip || 'NIP',
         sekolah: settings.sekolah || null,
         tahun_ajaran: settings.tahun_ajaran || null,
       };

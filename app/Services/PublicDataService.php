@@ -33,6 +33,10 @@ class PublicDataService
             
             return [
                 'nama' => $sekolah->nama ?? 'Sekolah',
+                'logo' => $sekolah->logo ?? null,
+                'alamat' => $sekolah->alamat ?? null,
+                'kota' => $sekolah->kota ?? null,
+                'provinsi' => $sekolah->provinsi ?? null,
             ];
         });
     }

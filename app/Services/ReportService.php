@@ -103,6 +103,7 @@ class ReportService
         return [
             'sekolahNama' => $sekolah->nama ?? 'Sekolah',
             'rombelNama' => $rombel->nama ?? 'Semua Rombel',
+            'logo' => $sekolah->logo ?? null,
         ];
     }
 }

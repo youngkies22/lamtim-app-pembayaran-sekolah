@@ -46,6 +46,20 @@ class PembayaranRepository implements PembayaranRepositoryInterface
             $query->where('isVerified', $filters['isVerified']);
         }
 
+        if (isset($filters['start_date'])) {
+            $query->whereDate('tanggalBayar', '>=', $filters['start_date']);
+        }
+
+        if (isset($filters['end_date'])) {
+            $query->whereDate('tanggalBayar', '<=', $filters['end_date']);
+        }
+
+        if (isset($filters['jenisPembayaran'])) {
+            $query->whereHas('masterPembayaran', function($q) use ($filters) {
+                $q->where('jenisPembayaran', $filters['jenisPembayaran']);
+            });
+        }
+
         if (isset($filters['search'])) {
             $search = $filters['search'];
             $query->where(function($q) use ($search) {
@@ -88,6 +102,20 @@ class PembayaranRepository implements PembayaranRepositoryInterface
 
         if (isset($filters['isVerified'])) {
             $query->where('isVerified', $filters['isVerified']);
+        }
+
+        if (isset($filters['start_date'])) {
+            $query->whereDate('tanggalBayar', '>=', $filters['start_date']);
+        }
+
+        if (isset($filters['end_date'])) {
+            $query->whereDate('tanggalBayar', '<=', $filters['end_date']);
+        }
+
+        if (isset($filters['jenisPembayaran'])) {
+            $query->whereHas('masterPembayaran', function($q) use ($filters) {
+                $q->where('jenisPembayaran', $filters['jenisPembayaran']);
+            });
         }
 
         if (isset($filters['search'])) {

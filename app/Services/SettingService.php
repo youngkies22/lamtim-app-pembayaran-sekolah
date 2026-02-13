@@ -27,6 +27,7 @@ class SettingService
 
         if ($settings) {
             $settings->label_jurusan = env('LABEL_JURUSAN', 'Jurusan');
+            $settings->label_nip = env('LABEL_NIP', 'NIP');
             $settings->sekolah = LamtimSekolah::first();
             $settings->tahun_ajaran = LamtimTahunAjaran::active()->first();
         }

@@ -2,10 +2,10 @@
 
 namespace App\Policies;
 
-use App\Models\LamtimRombel;
+use App\Models\LamtimJurusan;
 use App\Models\User;
 
-class RombelPolicy
+class LamtimJurusanPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -18,7 +18,7 @@ class RombelPolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, LamtimRombel $lamtimRombel): bool
+    public function view(User $user, LamtimJurusan $lamtimJurusan): bool
     {
         return true;
     }
@@ -28,25 +28,25 @@ class RombelPolicy
      */
     public function create(User $user): bool
     {
-        // Only Admin
-        return $user->isAdmin();
+        // Blocked for everyone (Only Edit allowed)
+        return false;
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, LamtimRombel $lamtimRombel): bool
+    public function update(User $user, LamtimJurusan $lamtimJurusan): bool
     {
-        // Only Admin
+        // Only Admin can update
         return $user->isAdmin();
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, LamtimRombel $lamtimRombel): bool
+    public function delete(User $user, LamtimJurusan $lamtimJurusan): bool
     {
-        // Only Admin
-        return $user->isAdmin();
+        // Blocked for everyone (Only Edit allowed)
+        return false;
     }
 }
