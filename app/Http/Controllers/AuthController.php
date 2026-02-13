@@ -47,14 +47,8 @@ class AuthController extends Controller
                     $request->session()->regenerate();
                 }
 
-                // Log untuk debugging
-                Log::info('Login successful', [
-                    'user_id' => $result['user']['id'],
-                    'username' => $result['user']['username'],
-                    'has_session' => $request->hasSession(),
-                ]);
-
                 // Return response dengan user data
+
                 // Session cookie akan otomatis dikirim oleh Laravel
                 $responseData = [
                     'user' => $result['user'],

@@ -82,10 +82,7 @@ class AuthService
         $user = $request->user();
 
         if ($user) {
-            Log::info('User logged out', [
-                'user_id' => $user->id,
-                'username' => $user->username,
-            ]);
+            // Log removed as per user request
         }
 
         // Logout user (akan menghapus session)
@@ -126,10 +123,6 @@ class AuthService
     public function revokeAllTokens(User $user): void
     {
         $user->tokens()->delete();
-        
-        Log::info('All tokens revoked for user', [
-            'user_id' => $user->id,
-        ]);
     }
 
     /**
@@ -144,7 +137,6 @@ class AuthService
         
         if ($token) {
             $token->delete();
-            Log::info('Token revoked', ['token_id' => $tokenId]);
             return true;
         }
 
