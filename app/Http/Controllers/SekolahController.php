@@ -97,6 +97,7 @@ class SekolahController extends Controller
                 'email' => 'nullable|email',
                 'kepala_sekolah' => 'nullable|string|max:255',
                 'nip_kepsek' => 'nullable|string|max:50',
+                'telepon' => 'nullable|string|max:20',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 
@@ -171,6 +172,7 @@ class SekolahController extends Controller
                 'email' => 'nullable|email',
                 'kepala_sekolah' => 'nullable|string|max:255',
                 'nip_kepsek' => 'nullable|string|max:50',
+                'telepon' => 'nullable|string|max:20',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
 

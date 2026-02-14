@@ -509,6 +509,7 @@ const handleSubmit = async () => {
     const formData = new FormData();
     formData.append('nama', form.nama);
     if (form.namaYayasan) formData.append('namaYayasan', form.namaYayasan);
+    if (form.kode) formData.append('kode', form.kode);
     if (form.npsn) formData.append('npsn', form.npsn);
     if (form.alamat) formData.append('alamat', form.alamat);
     if (form.telepon) formData.append('telepon', form.telepon);
@@ -518,7 +519,7 @@ const handleSubmit = async () => {
 
     // Append logo file if selected
     if (logoFile.value) {
-      formData.append('logo', logoFile.value);
+      formData.append('image', logoFile.value);
     }
 
     if (editingId.value) {
