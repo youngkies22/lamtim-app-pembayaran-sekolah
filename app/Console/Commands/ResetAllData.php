@@ -68,23 +68,19 @@ class ResetAllData extends Command
             $bar = $this->output->createProgressBar(count($tablesToTruncate));
             $bar->start();
 
-            // Disable FK constraints, truncate, re-enable
-            DB::statement('SET session_replication_role = replica;');
-
             $truncated = [];
             $errors = [];
 
             foreach ($tablesToTruncate as $table) {
                 try {
-                    DB::table($table)->truncate();
+                    // Use TRUNCATE CASCADE to handle FK constraints without superuser
+                    DB::statement("TRUNCATE TABLE \"{$table}\" RESTART IDENTITY CASCADE;");
                     $truncated[] = $table;
                 } catch (\Exception $e) {
                     $errors[] = "{$table}: {$e->getMessage()}";
                 }
                 $bar->advance();
             }
-
-            DB::statement('SET session_replication_role = DEFAULT;');
 
             $bar->finish();
             $this->newLine(2);
@@ -104,8 +100,6 @@ class ResetAllData extends Command
 
             return empty($errors) ? Command::SUCCESS : Command::FAILURE;
         } catch (\Exception $e) {
-            // Make sure FK constraints are re-enabled
-            DB::statement('SET session_replication_role = DEFAULT;');
             $this->error('Error: ' . $e->getMessage());
             return Command::FAILURE;
         }
