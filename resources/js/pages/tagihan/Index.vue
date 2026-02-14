@@ -24,10 +24,14 @@
               class="relative inline-flex items-center gap-2.5 px-5 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 overflow-hidden group cursor-pointer"
               :class="showFilter ? 'bg-white text-emerald-600' : 'bg-white/10 text-white hover:bg-white/20'">
               <span class="relative z-10 flex items-center gap-2.5">
-                <svg class="w-5 h-5 transition-transform duration-500 group-hover:scale-110" :class="{ 'rotate-180': showFilter }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                <svg class="w-5 h-5 transition-transform duration-500 group-hover:scale-110"
+                  :class="{ 'rotate-180': showFilter }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                  </path>
                 </svg>
-                <span class="font-bold tracking-wide uppercase text-xs">{{ showFilter ? 'Hide Filters' : 'Show Filters' }}</span>
+                <span class="font-bold tracking-wide uppercase text-xs">{{ showFilter ? 'Hide Filters' : 'Show Filters'
+                }}</span>
               </span>
             </button>
             <button @click="openGenerateModal"
@@ -44,37 +48,49 @@
 
       <!-- Filters Section -->
       <Transition name="slide-fade">
-        <div v-show="showFilter" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div class="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
+        <div v-show="showFilter"
+          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div
+            class="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
             <div class="flex items-center gap-3">
               <div class="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z">
+                  </path>
                 </svg>
               </div>
               <div>
                 <h3 class="font-bold text-gray-900 dark:text-white">Pencarian & Filter</h3>
-                <p class="text-xs text-gray-500 dark:text-gray-400">Gunakan kolom di bawah untuk mempersempit hasil data</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Gunakan kolom di bawah untuk mempersempit hasil data
+                </p>
               </div>
             </div>
-            <button @click="resetFilters" 
+            <button @click="resetFilters"
               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl transition-all cursor-pointer">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                </path>
               </svg>
               Reset Filter
             </button>
           </div>
-          
+
           <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
               <!-- Search Input -->
               <div class="lg:col-span-1 xl:col-span-1">
-                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Cari Data</label>
+                <label
+                  class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Cari
+                  Data</label>
                 <div class="relative group">
                   <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    <svg class="h-5 w-5 text-gray-400 group-focus-within:text-emerald-500 transition-colors" fill="none"
+                      stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                   </div>
                   <input type="text" v-model="searchQuery" @input="handleSearch"
@@ -85,19 +101,21 @@
 
               <!-- Rombel Filter -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Rombel</label>
+                <label
+                  class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Rombel</label>
                 <select v-model="filters.idRombel" @change="loadData"
                   class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-bold appearance-none cursor-pointer">
                   <option value="">Semua Rombel</option>
                   <option v-for="r in rombelList" :key="r.id" :value="r.id">
-                    {{ r.nama }}
+                    {{ r.kelas ? r.kelas.kode + ' ' : '' }}{{ r.nama }}
                   </option>
                 </select>
               </div>
 
               <!-- Status Filter -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Status</label>
+                <label
+                  class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Status</label>
                 <select v-model="filters.status" @change="loadData"
                   class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-bold appearance-none cursor-pointer">
                   <option value="">Semua Status</option>
@@ -110,7 +128,8 @@
 
               <!-- Master Pembayaran Filter -->
               <div>
-                <label class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Pembayaran</label>
+                <label
+                  class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Pembayaran</label>
                 <select v-model="filters.idMasterPembayaran" @change="loadData"
                   class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-bold appearance-none cursor-pointer">
                   <option value="">Semua Master</option>
@@ -445,7 +464,7 @@ const loadMasterData = async () => {
     const [mpRes, kelasRes, rombelRes] = await Promise.all([
       masterPembayaranAPI.list({ isActive: 1 }),
       masterDataAPI.kelas.list(),
-      masterDataAPI.rombel.list(),
+      masterDataAPI.rombel.select(),
     ]);
     masterPembayaranList.value = mpRes.data.data || [];
     kelasList.value = kelasRes.data.data || [];
@@ -469,7 +488,7 @@ const setupDropdownHandler = () => {
   document.addEventListener('click', (e) => {
     const dropdown = e.target.closest('[data-dropdown]');
     const allDropdownMenus = document.querySelectorAll('[data-dropdown-menu]');
-    
+
     // Auto-hide when selecting an option inside the menu
     if (e.target.closest('[data-dropdown-menu]')) {
       allDropdownMenus.forEach(menu => menu.classList.add('hidden', 'scale-95', 'opacity-0'));
@@ -482,13 +501,13 @@ const setupDropdownHandler = () => {
     }
 
     const currentMenu = dropdown.querySelector('[data-dropdown-menu]');
-    
+
     if (e.target.closest('button') && !e.target.closest('[data-dropdown-menu]')) {
       const isHidden = currentMenu.classList.contains('hidden');
-      
+
       // Close all first
       allDropdownMenus.forEach(menu => menu.classList.add('hidden', 'scale-95', 'opacity-0'));
-      
+
       if (isHidden) {
         currentMenu.classList.remove('hidden');
         // Small timeout for animation trigger
@@ -531,12 +550,12 @@ const initDataTable = () => {
     },
     columns: [
       { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false },
-      { 
-        data: 'action', 
-        name: 'action', 
-        orderable: false, 
+      {
+        data: 'action',
+        name: 'action',
+        orderable: false,
         searchable: false,
-        className: 'text-center' 
+        className: 'text-center'
       },
       { data: 'kodeTagihan', name: 'kodeTagihan' },
       { data: 'siswa_nama', name: 'siswa.nama' },

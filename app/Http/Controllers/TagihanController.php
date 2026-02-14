@@ -45,7 +45,13 @@ class TagihanController extends Controller
             ->addIndexColumn()
             ->addColumn('siswa_nama', fn($row) => $row->siswa->nama ?? '-')
             ->addColumn('siswa_angkatan', fn($row) => $row->siswa->tahunAngkatan ?? '-')
-            ->addColumn('rombel_nama', fn($row) => $row->rombel->nama ?? '-')
+            ->addColumn('rombel_nama', function ($row) {
+                if ($row->rombel) {
+                    $kelasKode = $row->rombel->kelas->kode ?? '';
+                    return trim(($kelasKode ? "$kelasKode " : "") . ($row->rombel->nama ?? ''));
+                }
+                return '-';
+            })
             ->addColumn('master_nama', fn($row) => $row->masterPembayaran->nama ?? '-')
             ->addColumn('tanggal_formatted', fn($row) => FormatHelper::date($row->tanggalTagihan))
             ->addColumn('nominal_formatted', fn($row) => FormatHelper::currency($row->nominalTagihan))

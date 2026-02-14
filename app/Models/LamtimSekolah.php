@@ -17,6 +17,7 @@ class LamtimSekolah extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'external_id',
         'npsn',
         'kode',
         'nama',

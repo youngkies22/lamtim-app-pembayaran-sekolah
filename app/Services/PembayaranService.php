@@ -254,7 +254,7 @@ class PembayaranService
     public function buildDatatableQuery(array $filters = [])
     {
         $query = LamtimPembayaran::query()
-            ->with(['siswa', 'invoice', 'tagihan', 'masterPembayaran'])
+            ->with(['siswa.currentRombel.rombel.kelas', 'invoice', 'tagihan', 'masterPembayaran'])
             ->select('lamtim_pembayarans.*')
             ->where('isActive', 1)
             ->orderBy('tanggalBayar', 'desc');
@@ -273,6 +273,49 @@ class PembayaranService
         }
 
         return $query;
+    }
+
+    /**
+     * DataTables processor for pembayaran.
+     */
+    public function getDatatable(array $filters = [])
+    {
+        $query = $this->buildDatatableQuery($filters);
+
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->addColumn('nominal_formatted', function ($row) {
+                return 'Rp ' . number_format($row->nominalBayar ?? 0, 0, ',', '.');
+            })
+            ->addColumn('tanggal_formatted', function ($row) {
+                if (!$row->tanggalBayar) return '-';
+                // If cast to date, we might not have time, but let's try to handle both
+                $date = $row->tanggalBayar;
+                return $date instanceof \Carbon\Carbon ? $date->format('d/m/Y H:i:s') : \Carbon\Carbon::parse($date)->format('d/m/Y H:i:s');
+            })
+            ->addColumn('status_badge', function ($row) {
+                return FormatHelper::pembayaranStatusBadge($row->status);
+            })
+            ->addColumn('verifikasi_badge', function ($row) {
+                return FormatHelper::verifikasiStatusBadge($row->isVerified);
+            })
+            ->addColumn('siswa_nama', function ($row) {
+                return $row->siswa->nama ?? '-';
+            })
+            ->addColumn('rombel_nama', function($row) {
+                if ($row->siswa && $row->siswa->currentRombel && $row->siswa->currentRombel->rombel) {
+                    $rombel = $row->siswa->currentRombel->rombel;
+                    $kelasKode = $rombel->kelas->kode ?? '';
+                    return trim(($kelasKode ? "$kelasKode " : "") . ($rombel->nama ?? ''));
+                }
+                return '-';
+            })
+            ->addColumn('is_closed', function ($row) {
+                // Check if the date of payment is already closed
+                return Closing::isDateClosed($row->tanggalBayar);
+            })
+            ->rawColumns(['status_badge', 'verifikasi_badge'])
+            ->make(true);
     }
 
     /**

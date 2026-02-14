@@ -5,8 +5,7 @@
       <div class="flex items-center justify-between">
         <!-- Left: Logo and Mobile Menu Button -->
         <div class="flex items-center gap-4">
-          <button @click="toggleSidebar" type="button" data-drawer-target="drawer-navigation"
-            data-drawer-toggle="drawer-navigation" aria-controls="drawer-navigation"
+          <button @click="$emit('toggle-sidebar')" type="button"
             class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-400 transition-colors"
             aria-label="Toggle sidebar">
             <Bars3Icon class="w-6 h-6" />
@@ -37,6 +36,9 @@
             <SunIcon v-if="isDark" class="w-5 h-5" />
             <MoonIcon v-else class="w-5 h-5" />
           </button>
+
+          <!-- Cache Manager (Admin Only) -->
+          <CacheManager v-if="isAdminUser" />
 
           <!-- User Dropdown -->
           <div class="relative" ref="dropdownRef">
@@ -111,11 +113,11 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { initDrawers } from 'flowbite'
 import { useDarkMode } from '../../composables/useDarkMode'
 import { useAppSettings } from '../../composables/useAppSettings'
 import { useRoleAccess } from '../../composables/useRoleAccess'
 import { authAPI } from '../../services/api'
+import CacheManager from '../CacheManager.vue'
 import {
   Bars3Icon,
   SunIcon,
@@ -160,9 +162,7 @@ const closeDropdown = () => {
   dropdownOpen.value = false
 }
 
-const toggleSidebar = () => {
-  // Flowbite will handle the drawer toggle via data attributes
-}
+
 
 // Handle profile click
 const handleProfile = () => {
@@ -218,7 +218,6 @@ const handleClickOutside = (event) => {
 }
 
 onMounted(async () => {
-  initDrawers()
   document.addEventListener('click', handleClickOutside)
   // Load app settings to get logo
   await loadAppSettings()

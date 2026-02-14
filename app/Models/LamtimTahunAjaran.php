@@ -17,6 +17,7 @@ class LamtimTahunAjaran extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'external_id',
         'kode',
         'tahun',
         'tanggalMulai',

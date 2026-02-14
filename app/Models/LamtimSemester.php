@@ -17,6 +17,7 @@ class LamtimSemester extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'external_id',
         'kode',
         'nama',
         'namaSingkat',

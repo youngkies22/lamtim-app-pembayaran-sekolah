@@ -155,8 +155,8 @@ const print = (type) => {
       <div class="line"></div>
       <table class="info-table">
         <tr><td width="140">Di Terima Dari</td><td width="10">:</td><td style="color:#8B0000;font-weight:bold">${inv.siswa?.nama || '-'}</td><td width="60">Tanggal</td><td width="10">:</td><td>${formatDateTime(inv.created_at || inv.tanggalInvoice)}</td></tr>
-        <tr><td>Uang Sejumlah</td><td>:</td><td style="font-weight:bold">Rp ${formatNumber(uangDibayar)}</td><td width="70" style="white-space:nowrap">ID Siswa</td><td>:</td><td style="font-weight:bold">${inv.siswa?.nis || '-'}</td></tr>
-        <tr><td>Untuk Pembayaran</td><td>:</td><td style="color:#8B0000">${namaPembayaran}</td><td>Kelas</td><td>:</td><td>${kelas}</td></tr>
+        <tr><td>Uang Sejumlah</td><td>:</td><td style="font-weight:bold">Rp ${formatNumber(uangDibayar)}</td><td width="70" style="white-space:nowrap">ID Siswa</td><td>:</td><td style="font-weight:bold">${inv.siswa?.username || inv.siswa?.nis || '-'}</td></tr>
+        <tr><td>Untuk Pembayaran</td><td>:</td><td style="color:#8B0000">${namaPembayaran}</td><td style="white-space:nowrap">Kelas | NIS/NISN</td><td>:</td><td style="white-space:nowrap">${kelas} | ${inv.siswa?.nis || '-'}/${inv.siswa?.nisn || '-'}</td></tr>
       </table>
       <div class="line"></div>
       <div style="font-weight:bold;text-decoration:underline;margin-bottom:5px">Detail Transaksi Invoice Ini</div>
@@ -221,8 +221,8 @@ const print = (type) => {
       </div>
       <table class="info-table">
         <tr><td width="160">Telah Di Terima Dari</td><td width="10">:</td><td style="color:#8B0000;font-weight:bold;font-size:12pt">${inv.siswa?.nama || '-'}</td><td width="80">Tanggal</td><td width="10">:</td><td>${formatDateTime(inv.created_at || inv.tanggalInvoice)}</td></tr>
-        <tr><td>Uang Sejumlah</td><td>:</td><td style="font-weight:bold;font-size:12pt">Rp ${formatNumber(uangDibayar)}</td><td width="80" style="white-space:nowrap">ID Siswa</td><td>:</td><td style="font-weight:bold">${inv.siswa?.nis || '-'}</td></tr>
-        <tr><td>Untuk Pembayaran</td><td>:</td><td style="color:#7c3aed;font-weight:bold">${namaPembayaran}</td><td>Kelas</td><td>:</td><td>${kelas}</td></tr>
+        <tr><td>Uang Sejumlah</td><td>:</td><td style="font-weight:bold;font-size:12pt">Rp ${formatNumber(uangDibayar)}</td><td width="80" style="white-space:nowrap">ID Siswa</td><td>:</td><td style="font-weight:bold">${inv.siswa?.username || inv.siswa?.nis || '-'}</td></tr>
+        <tr><td>Untuk Pembayaran</td><td>:</td><td style="color:#7c3aed;font-weight:bold">${namaPembayaran}</td><td style="white-space:nowrap">Kelas | NIS/NISN</td><td>:</td><td style="white-space:nowrap">${kelas} | ${inv.siswa?.nis || '-'}/${inv.siswa?.nisn || '-'}</td></tr>
       </table>
       <div class="line-thin"></div>
       <div class="section-title">Detail Transaksi Invoice Ini</div>
@@ -272,7 +272,8 @@ const print = (type) => {
       <div class="row"><span>No:</span><span>${inv.noInvoice}</span></div>
       <div class="row"><span>Tgl:</span><span>${formatDateTime(inv.created_at || inv.tanggalInvoice)}</span></div>
       <div class="row"><span>Siswa:</span><span>${inv.siswa?.nama || '-'}</span></div>
-      <div class="row"><span>NIS:</span><span>${inv.siswa?.nis || '-'}</span></div>
+      <div class="row"><span>ID Siswa:</span><span>${inv.siswa?.username || inv.siswa?.nis || '-'}</span></div>
+      <div class="row"><span>NIS/NISN:</span><span>${inv.siswa?.nis || '-'}/${inv.siswa?.nisn || '-'}</span></div>
       <div class="row"><span>Kelas:</span><span>${kelas}</span></div>
       <div class="row"><span>Pembayaran:</span><span>${namaPembayaran}</span></div>
       <div class="section">

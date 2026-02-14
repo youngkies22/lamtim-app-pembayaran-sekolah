@@ -5,8 +5,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * CONSOLIDATED MIGRATION: All Foreign Keys
- * Menggabungkan semua foreign key constraints menjadi satu file
+ * Consolidated Migration: All Foreign Key Constraints.
+ *
+ * Tables affected:
+ *  - lamtim_jurusans
+ *  - lamtim_rombels
+ *  - lamtim_siswas
+ *  - lamtim_siswa_profiles
+ *  - lamtim_siswa_rombels
+ *  - lamtim_master_pembayarans
+ *  - lamtim_tagihans
+ *  - lamtim_invoices
+ *  - lamtim_pembayarans
+ *  - lamtim_import_logs
  */
 return new class extends Migration
 {

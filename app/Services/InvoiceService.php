@@ -42,7 +42,7 @@ class InvoiceService
     public function getPaginated(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = LamtimInvoice::query()
-            ->with(['siswa', 'tagihan', 'masterPembayaran'])
+            ->with(['siswa.currentRombel.rombel.kelas', 'tagihan', 'masterPembayaran'])
             ->where('isActive', 1);
 
         if (isset($filters['idSiswa'])) {
@@ -78,7 +78,7 @@ class InvoiceService
     public function buildDatatableQuery(array $filters = [])
     {
         $query = LamtimInvoice::query()
-            ->with(['siswa', 'tagihan', 'masterPembayaran'])
+            ->with(['siswa.currentRombel.rombel.kelas', 'tagihan', 'masterPembayaran'])
             ->select('lamtim_invoices.*')
             ->where('isActive', 1)
             ->orderBy('tanggalInvoice', 'desc');

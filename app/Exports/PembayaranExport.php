@@ -43,7 +43,7 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyl
     public function query()
     {
         $query = LamtimPembayaran::query()
-            ->with(['siswa', 'masterPembayaran'])
+            ->with(['siswa.currentRombel.rombel.kelas', 'masterPembayaran'])
             ->where('isActive', 1)
             ->orderBy('tanggalBayar', 'desc');
 
@@ -79,6 +79,7 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyl
             'No',
             'Kode Pembayaran',
             'Nama Siswa',
+            'Rombel',
             'NIS',
             'Jenis Pembayaran',
             'Nominal',
@@ -101,6 +102,7 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyl
             $this->rowNumber,
             $pembayaran->kodePembayaran,
             $pembayaran->siswa->nama ?? '-',
+            $pembayaran->siswa->getFormattedRombel() ?? '-',
             $pembayaran->siswa->nis ?? '-',
             $pembayaran->masterPembayaran->nama ?? '-',
             $pembayaran->nominalBayar,
@@ -139,7 +141,7 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyl
         return [
             AfterSheet::class => function (AfterSheet $event) use ($sekolahNama, $tahunAjaran, $filters) {
                 $sheet = $event->sheet->getDelegate();
-                $lastCol = 'K'; // 11 columns (A-K)
+                $lastCol = 'L'; // 12 columns (A-L)
 
                 // Row 1: School Name
                 $sheet->mergeCells("A1:{$lastCol}1");
@@ -220,17 +222,17 @@ class PembayaranExport implements FromQuery, WithHeadings, WithMapping, WithStyl
                         }
                     }
 
-                    // Nominal column (F) right-aligned
-                    $sheet->getStyle("F8:F{$lastRow}")->applyFromArray([
+                    // Nominal column (G) right-aligned
+                    $sheet->getStyle("G8:G{$lastRow}")->applyFromArray([
                         'alignment' => ['horizontal' => Alignment::HORIZONTAL_RIGHT],
                         'numberFormat' => ['formatCode' => '#,##0'],
                     ]);
 
                     // Center-align No, Tanggal, Status, Verifikasi columns
                     $sheet->getStyle("A8:A{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("H8:H{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle("I8:I{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                     $sheet->getStyle("J8:J{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("K8:K{$lastRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
                 }
 
                 // Footer row: Print date

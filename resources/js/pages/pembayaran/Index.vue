@@ -246,6 +246,9 @@
                                     Siswa</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Rombel</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Nominal</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -723,6 +726,7 @@ const initDataTable = () => {
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false },
             { data: 'kodePembayaran', name: 'kodePembayaran' },
             { data: 'siswa_nama', name: 'siswa.nama' },
+            { data: 'rombel_nama', name: 'siswa.currentRombel.rombel.nama', orderable: false },
             { data: 'nominal_formatted', name: 'nominalBayar', orderable: false },
             { data: 'tanggal_formatted', name: 'tanggalBayar' },
             { data: 'status_badge', name: 'status', orderable: false },
@@ -972,6 +976,7 @@ const handlePrint = async () => {
                 <td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${idx + 1}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd">${item.kodePembayaran || '-'}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd">${item.siswa?.nama || '-'}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd">${item.rombel_nama || '-'}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd">${item.siswa?.nis || '-'}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd;text-align:right">Rp ${formatNumber(nominal)}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd">${item.metodeBayar || '-'}</td>
@@ -1019,6 +1024,7 @@ const handlePrint = async () => {
         <th style="text-align:center;width:30px">No</th>
         <th>Kode</th>
         <th>Nama Siswa</th>
+        <th>Rombel</th>
         <th>NIS</th>
         <th style="text-align:right">Nominal</th>
         <th>Metode</th>

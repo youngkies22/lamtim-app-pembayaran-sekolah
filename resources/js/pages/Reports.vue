@@ -60,7 +60,7 @@
       </div>
 
       <!-- Summary Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
         <div v-for="stat in summaryStats" :key="stat.name"
           class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all">
           <div class="flex items-center justify-between">
@@ -110,6 +110,9 @@
                   Nama Siswa</th>
                 <th
                   class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  Rombel</th>
+                <th
+                  class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Jenis</th>
                 <th
                   class="px-6 py-4 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -121,7 +124,7 @@
             </thead>
             <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
               <tr v-if="loading">
-                <td colspan="6" class="px-6 py-16 text-center">
+                <td colspan="7" class="px-6 py-16 text-center">
                   <div class="flex flex-col items-center justify-center gap-3">
                     <svg class="animate-spin h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -133,7 +136,7 @@
                 </td>
               </tr>
               <tr v-else-if="reportData.length === 0">
-                <td colspan="6" class="px-6 py-16 text-center">
+                <td colspan="7" class="px-6 py-16 text-center">
                   <div class="flex flex-col items-center justify-center gap-3">
                     <div class="p-4 bg-gray-100 dark:bg-gray-700 rounded-full">
                       <ChartBarIcon class="w-10 h-10 text-gray-400" />
@@ -150,6 +153,7 @@
                   item.tanggalTagihan || item.tanggal) }}</td>
                 <td class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{{ item.siswa?.nama || item.nama
                   || '-' }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ item.siswa?.rombel_nama || '-' }}</td>
                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ item.masterPembayaran?.nama ||
                   item.jenis || '-' }}</td>
                 <td class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white text-right">{{
@@ -184,16 +188,16 @@ import {
   UserGroupIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/vue/24/outline';
-import { pembayaranAPI, tagihanAPI, masterDataAPI } from '../services/api';
+import { pembayaranAPI, tagihanAPI, masterDataAPI, reportAPI } from '../services/api';
 
 const loading = ref(false);
 const reportData = ref([]);
 const jenisPembayaranList = ref([]);
 
 const getLocalToday = () => {
-    const today = new Date();
-    const offset = today.getTimezoneOffset();
-    return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
+  const today = new Date();
+  const offset = today.getTimezoneOffset();
+  return new Date(today.getTime() - (offset * 60 * 1000)).toISOString().split('T')[0];
 };
 
 const filters = reactive({
@@ -204,6 +208,7 @@ const filters = reactive({
 
 const summaryStats = ref([
   {
+    key: 'totalPembayaran',
     name: 'Total Pembayaran',
     value: '-',
     change: null,
@@ -211,25 +216,12 @@ const summaryStats = ref([
     color: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
   },
   {
-    name: 'Total Tagihan',
-    value: '-',
-    change: null,
-    icon: DocumentTextIcon,
-    color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-  },
-  {
+    key: 'jumlahTransaksi',
     name: 'Jumlah Transaksi',
     value: '-',
     change: null,
     icon: UserGroupIcon,
     color: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-  },
-  {
-    name: 'Belum Lunas',
-    value: '-',
-    change: null,
-    icon: ExclamationTriangleIcon,
-    color: 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400',
   },
 ]);
 
@@ -289,35 +281,12 @@ const loadReport = async () => {
     const response = await pembayaranAPI.list(params);
     reportData.value = response.data.data || response.data || [];
 
-    // Load both pembayaran and tagihan data for summary
-    const [pembayaranRes, tagihanRes] = await Promise.all([
-      pembayaranAPI.list(params),
-      tagihanAPI.list(params),
-    ]);
+    // Load stats from backend (accurate)
+    const statsRes = await reportAPI.analyticsStats(params);
+    const apiStats = statsRes.data.data || statsRes.data;
 
-    const pembayaranData = pembayaranRes.data.data || pembayaranRes.data || [];
-    const tagihanData = tagihanRes.data.data || tagihanRes.data || [];
-
-    // Calculate summary stats
-    // Total Pembayaran: sum of all nominalBayar from pembayaran with status 1 (sukses)
-    const totalPembayaran = pembayaranData
-      .filter(item => item.status === 1)
-      .reduce((sum, item) => sum + (item.nominalBayar || 0), 0);
-
-    // Total Tagihan: sum of all nominalTagihan from tagihan
-    const totalTagihan = tagihanData
-      .reduce((sum, item) => sum + (item.nominalTagihan || 0), 0);
-
-    // Jumlah Transaksi: count of completed payments
-    const jumlahTransaksi = pembayaranData.filter(item => item.status === 1).length;
-
-    // Belum Lunas: count of tagihan with status 0 (belum bayar) or 3 (sebagian)
-    const belumLunas = tagihanData.filter(item => item.status === 0 || item.status === 3).length;
-
-    summaryStats.value[0].value = formatCurrency(totalPembayaran);
-    summaryStats.value[1].value = formatCurrency(totalTagihan);
-    summaryStats.value[2].value = jumlahTransaksi.toLocaleString('id-ID');
-    summaryStats.value[3].value = belumLunas.toLocaleString('id-ID');
+    summaryStats.value[0].value = formatCurrency(apiStats.totalPembayaran);
+    summaryStats.value[1].value = (apiStats.jumlahTransaksi || 0).toLocaleString('id-ID');
   } catch (err) {
     console.error('Error loading report:', err);
     reportData.value = [];
@@ -338,16 +307,16 @@ const exportReport = async () => {
     };
 
     const response = await pembayaranAPI.exportExcel(params);
-    
+
     // Create download link from blob
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    
+
     // Generate filename with date
     const dateStr = new Date().toISOString().split('T')[0];
     link.setAttribute('download', `Laporan_Pembayaran_${dateStr}.xlsx`);
-    
+
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

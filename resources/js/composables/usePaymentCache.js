@@ -8,6 +8,7 @@ const cache = {
     loaded: false,
     loading: false,
     lastUpdate: null,
+    params: null, // Track filter params for cache invalidation
   },
   masterPembayaran: {
     data: [],
@@ -27,17 +28,18 @@ const cache = {
 const CACHE_EXPIRY = 5 * 60 * 1000;
 
 export function usePaymentCache() {
-  // Load Siswa
-  const loadSiswa = async (force = false) => {
-    // Check if cache is still valid
+  // Load Siswa with optional filters (idSekolah, mode)
+  const loadSiswa = async (filters = {}, force = false) => {
     const now = Date.now();
     const isExpired = cache.siswa.lastUpdate && (now - cache.siswa.lastUpdate) > CACHE_EXPIRY;
-    
-    if (cache.siswa.loaded && !force && !isExpired) {
+    const paramsKey = JSON.stringify(filters);
+    const paramsChanged = cache.siswa.params !== paramsKey;
+
+    if (cache.siswa.loaded && !force && !isExpired && !paramsChanged) {
       return cache.siswa.data;
     }
 
-    if (cache.siswa.loading) {
+    if (cache.siswa.loading && !paramsChanged) {
       // Wait for ongoing request
       return new Promise((resolve) => {
         const checkInterval = setInterval(() => {
@@ -51,10 +53,12 @@ export function usePaymentCache() {
 
     try {
       cache.siswa.loading = true;
-      const response = await siswaAPI.select({ isActive: 1 });
+      const params = { isActive: 1, ...filters };
+      const response = await siswaAPI.select(params);
       cache.siswa.data = response.data?.data || response.data || [];
       cache.siswa.loaded = true;
       cache.siswa.lastUpdate = Date.now();
+      cache.siswa.params = paramsKey;
       return cache.siswa.data;
     } catch (err) {
       console.error('Error loading siswa:', err);
@@ -139,9 +143,9 @@ export function usePaymentCache() {
   };
 
   // Load all payment data in parallel
-  const loadAll = async (force = false) => {
+  const loadAll = async (siswaFilters = {}, force = false) => {
     const [siswa, masterPembayaran, kategoriPembayaran] = await Promise.all([
-      loadSiswa(force),
+      loadSiswa(siswaFilters, force),
       loadMasterPembayaran(force),
       loadKategoriPembayaran(force),
     ]);
@@ -159,6 +163,7 @@ export function usePaymentCache() {
       cache.siswa.loaded = false;
       cache.siswa.data = [];
       cache.siswa.lastUpdate = null;
+      cache.siswa.params = null;
     } else if (type === 'masterPembayaran') {
       cache.masterPembayaran.loaded = false;
       cache.masterPembayaran.data = [];
@@ -172,6 +177,7 @@ export function usePaymentCache() {
       cache.siswa.loaded = false;
       cache.siswa.data = [];
       cache.siswa.lastUpdate = null;
+      cache.siswa.params = null;
       cache.masterPembayaran.loaded = false;
       cache.masterPembayaran.data = [];
       cache.masterPembayaran.lastUpdate = null;
@@ -211,4 +217,3 @@ export function usePaymentCache() {
     getKategoriNama,
   };
 }
-

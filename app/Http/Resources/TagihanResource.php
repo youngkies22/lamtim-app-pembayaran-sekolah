@@ -52,6 +52,14 @@ class TagihanResource extends JsonResource
                     'kategori' => $this->masterPembayaran->kategori,
                 ];
             }),
+            'rombel' => $this->whenLoaded('rombel', function() {
+                $kelasKode = $this->rombel->kelas->kode ?? '';
+                return [
+                    'id' => $this->rombel->id,
+                    'kode' => $this->rombel->kode,
+                    'nama' => trim(($kelasKode ? "$kelasKode " : "") . ($this->rombel->nama ?? '')),
+                ];
+            }),
             'invoices' => InvoiceResource::collection($this->whenLoaded('invoices')),
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),

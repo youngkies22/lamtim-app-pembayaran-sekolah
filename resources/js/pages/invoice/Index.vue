@@ -166,6 +166,9 @@
                                     Siswa</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Rombel</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Tanggal</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
@@ -215,7 +218,7 @@
                                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">No Invoice</p>
                                     <p class="font-bold text-lg text-gray-900 dark:text-white">{{ detailData.noInvoice
-                                        }}</p>
+                                    }}</p>
                                 </div>
                                 <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
                                     <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Tanggal & Waktu</p>
@@ -230,7 +233,7 @@
                                 <p class="font-bold text-lg text-gray-900 dark:text-white">{{ detailData.siswa?.nama ||
                                     '-' }}</p>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">NIS: {{ detailData.siswa?.nis || '-'
-                                    }}</p>
+                                }}</p>
                             </div>
 
                             <!-- Tagihan Info -->
@@ -403,6 +406,7 @@ const initDataTable = () => {
             { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false },
             { data: 'noInvoice', name: 'noInvoice' },
             { data: 'siswa_nama', name: 'siswa.nama' },
+            { data: 'rombel_nama', name: 'siswa.currentRombel.rombel.nama', orderable: false },
             { data: 'tanggal_formatted', name: 'tanggalInvoice' },
             { data: 'nominal_formatted', name: 'nominalInvoice', orderable: false },
             { data: 'status_badge', name: 'status', orderable: false },
@@ -543,6 +547,7 @@ const handlePrint = async () => {
                 <td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${idx + 1}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd">${item.noInvoice || '-'}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd">${item.siswa?.nama || '-'}</td>
+                <td style="padding:6px 10px;border:1px solid #ddd">${item.rombel_nama || '-'}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd">${item.siswa?.nis || '-'}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd;text-align:right">Rp ${formatNumber(nominal)}</td>
                 <td style="padding:6px 10px;border:1px solid #ddd;text-align:center">${item.tanggalInvoiceFormatted || formatDateTime(item.tanggalInvoice)}</td>
@@ -588,6 +593,7 @@ const handlePrint = async () => {
         <th style="text-align:center;width:30px">No</th>
         <th>No Invoice</th>
         <th>Nama Siswa</th>
+        <th>Rombel</th>
         <th>NIS</th>
         <th style="text-align:right">Nominal</th>
         <th style="text-align:center">Tanggal</th>

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class LamtimRombel extends Model
@@ -18,6 +19,7 @@ class LamtimRombel extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'external_id',
         'idSekolah',
         'idJurusan',
         'idKelas',
@@ -70,6 +72,14 @@ class LamtimRombel extends Model
     public function kelas(): BelongsTo
     {
         return $this->belongsTo(LamtimKelas::class, 'idKelas', 'id');
+    }
+
+    /**
+     * Relationship dengan siswa (one-to-many via mapping)
+     */
+    public function siswaRombels(): HasMany
+    {
+        return $this->hasMany(LamtimSiswaRombel::class, 'idRombel', 'id');
     }
 
     /**

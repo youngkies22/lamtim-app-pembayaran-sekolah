@@ -25,12 +25,14 @@ class SettingService
             return LamtimSetting::first();
         });
 
-        if ($settings) {
-            $settings->label_jurusan = env('LABEL_JURUSAN', 'Jurusan');
-            $settings->label_nip = env('LABEL_NIP', 'NIP');
-            $settings->sekolah = LamtimSekolah::first();
-            $settings->tahun_ajaran = LamtimTahunAjaran::active()->first();
+        if (!$settings) {
+            $settings = new LamtimSetting();
         }
+
+        $settings->label_jurusan = env('LABEL_JURUSAN', 'Jurusan');
+        $settings->label_nip = env('LABEL_NIP', 'NIP');
+        $settings->sekolah = LamtimSekolah::first();
+        $settings->tahun_ajaran = LamtimTahunAjaran::active()->first();
 
         return $settings;
     }
@@ -45,8 +47,8 @@ class SettingService
         });
 
         return [
-            'logo_aplikasi' => $settings->logo_aplikasi ?? null,
-            'nama_aplikasi' => $settings->nama_aplikasi ?? 'Sistem Manajemen SPP',
+            'logo_aplikasi' => $settings?->logo_aplikasi ?? null,
+            'nama_aplikasi' => $settings?->nama_aplikasi ?? 'Sistem Manajemen SPP',
         ];
     }
 

@@ -19,7 +19,7 @@ class PembayaranRepository implements PembayaranRepositoryInterface
     public function all(array $filters = []): Collection
     {
         $query = $this->model->newQuery()
-            ->with(['siswa', 'invoice', 'tagihan', 'masterPembayaran']); // Eager load to prevent N+1
+            ->with(['siswa.currentRombel.rombel.kelas', 'invoice', 'tagihan', 'masterPembayaran']); // Eager load to prevent N+1
 
         // Apply filters
         if (isset($filters['isActive'])) {
@@ -77,7 +77,7 @@ class PembayaranRepository implements PembayaranRepositoryInterface
     public function paginate(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = $this->model->newQuery()
-            ->with(['siswa', 'invoice', 'tagihan', 'masterPembayaran']); // Eager load to prevent N+1
+            ->with(['siswa.currentRombel.rombel.kelas', 'invoice', 'tagihan', 'masterPembayaran']); // Eager load to prevent N+1
 
         // Apply filters (same as all method)
         if (isset($filters['isActive'])) {
@@ -134,7 +134,7 @@ class PembayaranRepository implements PembayaranRepositoryInterface
 
     public function find(string $id): ?LamtimPembayaran
     {
-        return $this->model->with(['siswa', 'invoice', 'tagihan', 'masterPembayaran'])->find($id);
+        return $this->model->with(['siswa.currentRombel.rombel.kelas', 'invoice', 'tagihan', 'masterPembayaran'])->find($id);
     }
 
     public function create(array $data): LamtimPembayaran

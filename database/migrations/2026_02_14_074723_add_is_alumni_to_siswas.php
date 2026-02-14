@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('lamtim_master_pembayarans', function (Blueprint $table) {
-            $table->string('slug')->nullable()->unique()->after('nama');
+        Schema::table('lamtim_siswas', function (Blueprint $table) {
+            $table->boolean('isAlumni')->default(0)->after('tahunAngkatan');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('lamtim_master_pembayarans', function (Blueprint $table) {
-            $table->dropColumn('slug');
+        Schema::table('lamtim_siswas', function (Blueprint $table) {
+            $table->dropColumn('isAlumni');
         });
     }
 };

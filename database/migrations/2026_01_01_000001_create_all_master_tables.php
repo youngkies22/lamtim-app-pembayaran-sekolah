@@ -5,8 +5,21 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * CONSOLIDATED MIGRATION: All Master Tables
- * Menggabungkan semua migration master data menjadi satu file
+ * Consolidated Migration: All Master & Reference Tables.
+ *
+ * Tables created:
+ *  - lamtim_tahun_ajarans
+ *  - lamtim_sekolahs
+ *  - lamtim_jurusans
+ *  - lamtim_kelas
+ *  - lamtim_agama
+ *  - lamtim_semesters
+ *  - lamtim_rombels
+ *  - lamtim_jenis_pembayarans
+ *  - lamtim_kategori_pembayarans
+ *  - lamtim_tipe_pembayarans
+ *  - lamtim_settings
+ *  - lamtim_import_logs
  */
 return new class extends Migration
 {
@@ -20,22 +33,25 @@ return new class extends Migration
         // ============================================
         Schema::create('lamtim_tahun_ajarans', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('external_id', 100)->nullable();
             $table->string('kode', 50)->unique();
             $table->string('tahun', 20)->comment('2025/2026');
             $table->date('tanggalMulai')->nullable();
             $table->date('tanggalSelesai')->nullable();
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=hapus');
             $table->timestamps();
-            
+
+            $table->index('external_id');
             $table->index('tahun');
             $table->index('isActive');
         });
 
         // ============================================
-        // SEKOLAH (dengan kode, logo, namaYayasan)
+        // SEKOLAH
         // ============================================
         Schema::create('lamtim_sekolahs', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('external_id', 100)->nullable();
             $table->string('npsn', 20)->nullable();
             $table->string('kode', 50)->nullable()->unique();
             $table->string('nama', 255);
@@ -48,8 +64,11 @@ return new class extends Migration
             $table->string('email', 100)->nullable();
             $table->string('website', 255)->nullable();
             $table->string('logo')->nullable();
+            $table->string('kepala_sekolah', 255)->nullable();
+            $table->string('nip_kepsek', 50)->nullable();
             $table->timestamps();
-            
+
+            $table->index('external_id');
             $table->index('npsn');
             $table->index('kode');
         });
@@ -59,12 +78,14 @@ return new class extends Migration
         // ============================================
         Schema::create('lamtim_jurusans', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('external_id', 100)->nullable();
             $table->uuid('idSekolah')->nullable();
             $table->string('kode', 50)->unique();
             $table->string('nama', 255);
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=hapus');
             $table->timestamps();
-            
+
+            $table->index('external_id');
             $table->index('idSekolah');
             $table->index('isActive');
         });
@@ -74,11 +95,13 @@ return new class extends Migration
         // ============================================
         Schema::create('lamtim_kelas', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('external_id', 100)->nullable();
             $table->string('kode', 50)->unique();
             $table->string('nama', 100);
             $table->tinyInteger('isActive')->default(1);
             $table->timestamps();
-            
+
+            $table->index('external_id');
             $table->index('isActive');
         });
 
@@ -91,7 +114,7 @@ return new class extends Migration
             $table->string('nama', 100);
             $table->tinyInteger('isActive')->default(1);
             $table->timestamps();
-            
+
             $table->index('isActive');
         });
 
@@ -100,12 +123,14 @@ return new class extends Migration
         // ============================================
         Schema::create('lamtim_semesters', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('external_id', 100)->nullable();
             $table->string('kode', 100)->unique()->comment('Ganjil, Genap');
             $table->string('nama', 255)->comment('Semester Ganjil, Semester Genap');
             $table->string('namaSingkat', 50)->nullable()->comment('Ganjil, Genap');
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=nonaktif');
             $table->timestamps();
-            
+
+            $table->index('external_id');
             $table->index('kode');
             $table->index('isActive');
         });
@@ -115,6 +140,7 @@ return new class extends Migration
         // ============================================
         Schema::create('lamtim_rombels', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('external_id', 100)->nullable();
             $table->uuid('idSekolah')->nullable();
             $table->uuid('idJurusan')->nullable();
             $table->uuid('idTahunAjaran')->nullable();
@@ -124,7 +150,8 @@ return new class extends Migration
             $table->string('tingkat', 20)->nullable()->comment('X, XI, XII');
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=hapus');
             $table->timestamps();
-            
+
+            $table->index('external_id');
             $table->index('idSekolah');
             $table->index('idJurusan');
             $table->index('idTahunAjaran');
@@ -143,7 +170,7 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=nonaktif');
             $table->timestamps();
-            
+
             $table->index('kode');
             $table->index('isActive');
         });
@@ -158,7 +185,7 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=nonaktif');
             $table->timestamps();
-            
+
             $table->index('kode');
             $table->index('isActive');
         });
@@ -173,23 +200,19 @@ return new class extends Migration
             $table->text('keterangan')->nullable();
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=nonaktif');
             $table->timestamps();
-            
+
             $table->index('kode');
             $table->index('isActive');
         });
 
         // ============================================
-        // SETTINGS
+        // SETTINGS (kolom langsung, bukan key-value)
         // ============================================
         Schema::create('lamtim_settings', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('key', 100)->unique();
-            $table->text('value')->nullable();
-            $table->string('group', 50)->nullable();
+            $table->string('nama_aplikasi', 255)->nullable();
+            $table->string('logo_aplikasi', 500)->nullable();
             $table->timestamps();
-            
-            $table->index('key');
-            $table->index('group');
         });
 
         // ============================================
@@ -206,7 +229,7 @@ return new class extends Migration
             $table->string('status', 20)->default('processing')->comment('processing, completed, failed');
             $table->uuid('createdBy')->nullable();
             $table->timestamps();
-            
+
             $table->index('type');
             $table->index('status');
             $table->index('createdBy');

@@ -152,7 +152,7 @@ class RombelService
     }
 
     /**
-     * Get select options (id, kode, nama) with caching.
+     * Get select options (id, kode, nama, kelas, jurusan) with caching.
      */
     public function getSelectOptions(array $filters = [], bool $bustCache = false): array
     {
@@ -166,7 +166,9 @@ class RombelService
             }
         }
 
-        $query = LamtimRombel::query()->select('id', 'kode', 'nama');
+        $query = LamtimRombel::query()
+            ->select('id', 'kode', 'nama', 'idKelas', 'idJurusan', 'idSekolah')
+            ->with(['kelas:id,kode', 'jurusan:id,nama']);
 
         if (!empty($filters['idSekolah'])) {
             $query->where('idSekolah', $filters['idSekolah']);
@@ -177,8 +179,32 @@ class RombelService
         if (!empty($filters['idKelas'])) {
             $query->where('idKelas', $filters['idKelas']);
         }
+        if (isset($filters['isActive'])) {
+            $query->where('isActive', $filters['isActive']);
+        }
+        if (!empty($filters['hasLiveStudents'])) {
+            $query->whereHas('siswaRombels.siswa', function($q) {
+                $q->where('isActive', 1);
+            });
+        }
+        if (!empty($filters['hasNonAlumniStudents'])) {
+            $query->whereHas('siswaRombels.siswa', function($q) {
+                $q->where('isAlumni', 0);
+            });
+        }
 
-        $result = $query->orderBy('kode')->get()->toArray();
+        $rombel = $query->orderBy('kode')->get();
+
+        $result = $rombel->map(function($r) {
+            $kelasKode = $r->kelas->kode ?? '';
+            return [
+                'id' => $r->id,
+                'kode' => $r->kode,
+                'nama' => $r->nama,
+                'kelas' => $r->kelas ? ['id' => $r->kelas->id, 'kode' => $r->kelas->kode] : null,
+                'jurusan' => $r->jurusan ? ['id' => $r->jurusan->id, 'nama' => $r->jurusan->nama] : null,
+            ];
+        })->toArray();
 
         Cache::put($cacheKey, $result, 3600);
 

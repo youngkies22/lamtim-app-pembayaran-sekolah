@@ -2,47 +2,57 @@
   <Layout :active-menu="'Dashboard'">
     <div class="space-y-6">
       <!-- Modern Header with Gradient -->
-      <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 shadow-xl">
+      <div
+        class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-8 shadow-xl">
         <div class="absolute inset-0 bg-grid-pattern opacity-10"></div>
         <div class="relative">
           <h1 class="text-3xl font-bold text-white flex items-center gap-3">
             <div class="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
               <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                </path>
               </svg>
             </div>
             Dashboard
           </h1>
-          <p class="mt-2 text-blue-100">Selamat datang! Berikut ringkasan sistem SPP.</p>
+          <div class="mt-2 flex items-center justify-between">
+            <p class="text-blue-100">Selamat datang! Berikut ringkasan sistem SPP.</p>
+            <button @click="togglePrivacy"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm transition-colors backdrop-blur-sm"
+              :title="showValues ? 'Sembunyikan Nilai' : 'Tampilkan Nilai'">
+              <component :is="showValues ? EyeSlashIcon : EyeIcon" class="w-4 h-4" />
+              <span>{{ showValues ? 'Hide Values' : 'Show Values' }}</span>
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div
-          v-for="stat in stats"
-          :key="stat.name"
-          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all"
-        >
+        <div v-for="stat in stats" :key="stat.name"
+          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {{ stat.name }}
               </p>
               <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-                <span v-if="loadingStats" class="inline-block w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
-                <span v-else>{{ stat.value }}</span>
+                <span v-if="loadingStats"
+                  class="inline-block w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
+                <span v-else>{{ formatValue(stat.value, stat.isCurrency) }}</span>
               </p>
-              <p v-if="stat.subtitle" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {{ stat.subtitle }}
+              <p v-if="stat.subtitle || stat.isCurrencySubtitle" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <span v-if="stat.isCurrencySubtitle">
+                  {{ formatValue(stat.rawValue, true) }}
+                </span>
+                <span v-else>{{ stat.subtitle }}</span>
               </p>
             </div>
-            <div
-              :class="[
-                'p-3 rounded-lg',
-                stat.color
-              ]"
-            >
+            <div :class="[
+              'p-3 rounded-lg',
+              stat.color
+            ]">
               <component :is="stat.icon" class="w-6 h-6" />
             </div>
           </div>
@@ -52,23 +62,19 @@
 
 
       <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <div
-          v-for="action in quickActions"
-          :key="action.name"
+        <div v-for="action in quickActions" :key="action.name"
           class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all cursor-pointer transform hover:-translate-y-1 group"
-          @click="handleAction(action)"
-        >
+          @click="handleAction(action)">
           <div class="flex items-center gap-4">
-            <div
-              :class="[
-                'p-3 rounded-xl transition-all group-hover:scale-110',
-                action.color
-              ]"
-            >
+            <div :class="[
+              'p-3 rounded-xl transition-all group-hover:scale-110',
+              action.color
+            ]">
               <component :is="action.icon" class="w-6 h-6" />
             </div>
             <div>
-              <h4 class="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              <h4
+                class="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {{ action.name }}
               </h4>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -97,13 +103,31 @@ import {
   DocumentDuplicateIcon,
   ChartPieIcon,
   UserIcon,
-  ClipboardDocumentCheckIcon
+  ClipboardDocumentCheckIcon,
+  EyeIcon,
+  EyeSlashIcon
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 
 // Loading states
 const loadingStats = ref(true);
+const showValues = ref(localStorage.getItem('dashboard_show_values') === 'true'); // Default hidden (false) unless explicitly 'true'
+
+const togglePrivacy = () => {
+  showValues.value = !showValues.value;
+  localStorage.setItem('dashboard_show_values', showValues.value);
+};
+
+const formatValue = (value, isCurrency = false) => {
+  if (isCurrency) {
+    if (!showValues.value) {
+      return 'Rp *****';
+    }
+    return formatCurrency(value);
+  }
+  return value;
+};
 
 
 // Stats data
@@ -118,6 +142,7 @@ const stats = ref([
   {
     name: 'Total Pembayaran',
     value: '-',
+    isCurrency: true,
     subtitle: null,
     icon: CreditCardIcon,
     color: 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
@@ -132,6 +157,7 @@ const stats = ref([
   {
     name: 'Bulan Ini',
     value: '-',
+    isCurrency: true,
     subtitle: null,
     icon: ChartBarIcon,
     color: 'bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-300'
@@ -245,19 +271,20 @@ const loadStats = async () => {
     loadingStats.value = true;
     const response = await dashboardAPI.stats();
     const data = response.data.data || response.data;
-    
+
     // Update stats with real data
     if (data) {
       stats.value[0].value = (data.totalSiswa || 0).toLocaleString('id-ID');
       stats.value[0].subtitle = data.siswaAktif ? `${data.siswaAktif} aktif` : null;
-      
-      stats.value[1].value = formatCurrency(data.totalPembayaran || 0);
+
+      stats.value[1].value = data.totalPembayaran || 0;
       stats.value[1].subtitle = data.jumlahTransaksi ? `${data.jumlahTransaksi} transaksi` : null;
-      
+
       stats.value[2].value = (data.tagihanBelumLunas || 0).toLocaleString('id-ID');
-      stats.value[2].subtitle = data.nominalBelumLunas ? formatCurrency(data.nominalBelumLunas) : null;
-      
-      stats.value[3].value = formatCurrency(data.pembayaranBulanIni || 0);
+      stats.value[2].rawValue = data.nominalBelumLunas; // Store raw value
+      stats.value[2].isCurrencySubtitle = true; // Flag for template
+
+      stats.value[3].value = data.pembayaranBulanIni || 0;
       stats.value[3].subtitle = data.transaksibulanIni ? `${data.transaksibulanIni} transaksi` : null;
     }
   } catch (err) {

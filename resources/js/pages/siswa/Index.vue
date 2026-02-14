@@ -100,7 +100,8 @@
                   </th>
                   <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Nama
                   </th>
-                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">NISN
+                  <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">
+                    Username
                   </th>
                   <th class="px-4 py-2.5 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">JK
                   </th>
@@ -145,7 +146,7 @@
                     <div class="font-medium text-gray-900 dark:text-white">{{ student.nama }}</div>
                     <div class="text-xs text-gray-500 dark:text-gray-400">{{ student.nis || '-' }}</div>
                   </td>
-                  <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.nisn || '-' }}</td>
+                  <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.username || '-' }}</td>
                   <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.jsk_label }}</td>
                   <td class="px-4 py-2.5 text-gray-900 dark:text-gray-100">{{ student.rombel_info || '-' }}</td>
                   <td class="px-4 py-2.5" v-html="student.isActive_badge"></td>
@@ -224,7 +225,7 @@ const deletingItem = ref(null);
 
 // Use master data cache
 const { loadAll, getCached } = useMasterDataCache();
-const { canCreateData, canEditData, canDeleteData } = useRoleAccess();
+const { canCreateData, canEditData, canDeleteData, isAdminUser } = useRoleAccess();
 
 // Master data - get from cache immediately (synchronous)
 // This ensures filters are populated instantly if data is already cached
@@ -240,6 +241,7 @@ const filters = reactive({
   idJurusan: '',
   idRombel: '',
   isActive: null,
+  isAlumni: 0, // Default: hide alumni
 });
 
 const {
@@ -257,7 +259,7 @@ const {
   columns: [
     { data: 'id', name: 'id', searchable: false, orderable: false },
     { data: 'nama', name: 'nama', searchable: true, orderable: true },
-    { data: 'nisn', name: 'nisn', searchable: true, orderable: true },
+    { data: 'username', name: 'username', searchable: true, orderable: true },
     { data: 'jsk_label', name: 'jsk', searchable: false, orderable: true },
     { data: 'rombel_info', name: 'rombel_info', searchable: false, orderable: false },
     { data: 'isActive_badge', name: 'isActive', searchable: false, orderable: true },
@@ -281,12 +283,7 @@ const loadMasterData = async () => {
     rombelList.value = result.rombel;
     labelJurusan.value = result.labelJurusan;
 
-    console.log('Master data loaded (from cache or API):', {
-      kelas: kelasList.value.length,
-      jurusan: jurusanList.value.length,
-      rombel: rombelList.value.length,
-      labelJurusan: labelJurusan.value
-    });
+
   } catch (err) {
     console.error('Error loading master data:', err);
     // Keep existing cached data or empty arrays
@@ -305,6 +302,7 @@ const applyFilters = () => {
     idJurusan: filters.idJurusan || null,
     idRombel: filters.idRombel || null,
     isActive: filters.isActive,
+    isAlumni: 0, // Explicitly keep it 0 for main list
   });
   loadData();
 };

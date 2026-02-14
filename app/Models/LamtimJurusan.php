@@ -18,6 +18,7 @@ class LamtimJurusan extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'external_id',
         'idSekolah',
         'kode',
         'nama',

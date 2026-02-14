@@ -41,42 +41,69 @@ class SiswaController extends Controller
 
     /**
      * Get options for select dropdown (id, nis, nama, rombel)
+     * Supports filters: idSekolah, mode (aktif|alumni)
+     * - aktif (default): returns isActive=1 students
+     * - alumni: returns isActive=0 students who still have unpaid tagihan
      */
     public function select(Request $request)
     {
-        $filters = $request->only(['isActive']);
+        $filters = $request->only(['isActive', 'idSekolah', 'mode']);
         $cacheKey = 'siswa_select_' . md5(json_encode($filters));
 
         // Try to get from cache first
-        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $cached = Cache::get($cacheKey);
         if ($cached && !$request->has('_t')) {
             return ResponseHelper::success($cached);
         }
 
-        $query = LamtimSiswa::query()
-            ->select('lamtim_siswas.id', 'lamtim_siswas.nis', 'lamtim_siswas.nama')
-            ->with(['currentRombel:id,idSiswa,idRombel', 'currentRombel.rombel:id,nama']);
+        $mode = $filters['mode'] ?? 'aktif';
 
-        if (isset($filters['isActive'])) {
-            $query->where('lamtim_siswas.isActive', $filters['isActive']);
-        } else {
-            $query->where('lamtim_siswas.isActive', 1);
+        $query = LamtimSiswa::query()
+            ->select('lamtim_siswas.id', 'lamtim_siswas.nis', 'lamtim_siswas.nama', 'lamtim_siswas.nisn')
+            ->with(['currentRombel:id,idSiswa,idRombel', 'currentRombel.rombel:id,nama,idKelas,idSekolah', 'currentRombel.rombel.kelas:id,kode']);
+
+        // Filter by mode
+    if ($mode === 'alumni') {
+        // Alumni: graduated students (isAlumni=1) with unpaid tagihan
+        $query->where('lamtim_siswas.isAlumni', 1)
+            ->whereHas('tagihans', function ($q) {
+                $q->where('totalSisa', '>', 0);
+            });
+    } else {
+        // Default: active students (isActive=1 and NOT alumni)
+        $query->where('lamtim_siswas.isActive', 1)
+              ->where('lamtim_siswas.isAlumni', 0);
+    }
+
+        // Filter by sekolah (via rombel relationship)
+        if (!empty($filters['idSekolah'])) {
+            $query->whereHas('currentRombel.rombel', function ($q) use ($filters) {
+                $q->where('idSekolah', $filters['idSekolah']);
+            });
         }
 
         $siswa = $query->orderBy('lamtim_siswas.nis')->get();
 
         // Format response dengan rombel
         $formatted = $siswa->map(function($item) {
+            $rombelInfo = '-';
+            if ($item->currentRombel && $item->currentRombel->rombel) {
+                $rombel = $item->currentRombel->rombel;
+                $kelasKode = $rombel->kelas->kode ?? '';
+                $rombelInfo = trim(($kelasKode ? "$kelasKode " : "") . ($rombel->nama ?? ''));
+            }
+
             return [
                 'id' => $item->id,
                 'nis' => $item->nis,
+                'nisn' => $item->nisn,
                 'nama' => $item->nama,
-                'rombel' => $item->currentRombel?->rombel?->nama ?? '-',
+                'rombel' => $rombelInfo,
             ];
         })->toArray();
 
         // Cache for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $formatted, 300);
+       Cache::put($cacheKey, $formatted, 300);
 
         return ResponseHelper::success($formatted);
     }
@@ -97,11 +124,12 @@ class SiswaController extends Controller
 
         // Hanya select kolom yang diperlukan
         $query = LamtimSiswa::query()
-            ->select('lamtim_siswas.id', 'lamtim_siswas.nama', 'lamtim_siswas.nis', 'lamtim_siswas.nisn', 'lamtim_siswas.jsk', 'lamtim_siswas.isActive')
+            ->select('lamtim_siswas.id', 'lamtim_siswas.nama', 'lamtim_siswas.username', 'lamtim_siswas.nis', 'lamtim_siswas.nisn', 'lamtim_siswas.jsk', 'lamtim_siswas.isActive', 'lamtim_siswas.isAlumni', 'lamtim_siswas.tahunAngkatan')
             ->with([
                 'currentRombel:id,idSiswa,idRombel',
-                'currentRombel.rombel:id,kode,nama,idJurusan',
-                'currentRombel.rombel.jurusan:id,kode,nama'
+                'currentRombel.rombel:id,kode,nama,idJurusan,idKelas',
+                'currentRombel.rombel.jurusan:id,kode,nama',
+                'currentRombel.rombel.kelas:id,kode'
             ]);
 
 
@@ -119,6 +147,7 @@ class SiswaController extends Controller
             if (!empty($searchTerm)) {
                 $query->where(function($q) use ($searchTerm) {
                     $q->where('nama', 'like', "%{$searchTerm}%")
+                      ->orWhere('username', 'like', "%{$searchTerm}%")
                       ->orWhere('nis', 'like', "%{$searchTerm}%")
                       ->orWhere('nisn', 'like', "%{$searchTerm}%");
                 });
@@ -175,21 +204,37 @@ class SiswaController extends Controller
             }
         }
 
+        // Handle isAlumni filter
+        if ($request->has('isAlumni') && $request->input('isAlumni') !== null && $request->input('isAlumni') !== '') {
+            $query->where('isAlumni', $request->input('isAlumni'));
+        } else {
+            // Default: hide alumni in main list
+            $query->where('isAlumni', 0);
+        }
+
+        // Handle tahunAngkatan filter
+        if ($request->has('tahunAngkatan') && !empty($request->input('tahunAngkatan'))) {
+            $tahun = $request->input('tahunAngkatan');
+            $query->where('tahunAngkatan', 'like', "%{$tahun}%");
+        }
+
         $result = DataTables::of($query)
             ->addIndexColumn()
             ->addColumn('jsk_label', function($row) {
                 return $row->jsk == 1 ? 'Laki-laki' : 'Perempuan';
             })
-            ->addColumn('isActive_badge', function($row) {
-                return $row->isActive == 1
-                    ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">Aktif</span>'
-                    : ($row->isActive == 2
-                        ? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">Off</span>'
-                        : '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">Tidak Aktif</span>');
+            ->addColumn('isActive_badge', function ($row) {
+                if ($row->isAlumni) {
+                    $status = (int)$row->isActive === 1 ? 'AKTIF' : 'OFF';
+                    return \App\Helpers\FormatHelper::statusBadge($status, 'alumni');
+                }
+                return \App\Helpers\FormatHelper::statusBadge((int)$row->isActive, 'siswa');
             })
             ->addColumn('rombel_info', function($row) {
                 if ($row->currentRombel && $row->currentRombel->rombel) {
-                    return $row->currentRombel->rombel->nama ?? '-';
+                    $rombel = $row->currentRombel->rombel;
+                    $kelasKode = $rombel->kelas->kode ?? '';
+                    return trim(($kelasKode ? "$kelasKode " : "") . ($rombel->nama ?? ''));
                 }
                 return '-';
             })
@@ -214,15 +259,15 @@ class SiswaController extends Controller
             $data->data = array_map(function($item) {
                 $itemArray = is_object($item) ? json_decode(json_encode($item), true) : $item;
                 return array_intersect_key($itemArray, array_flip([
-                    'id', 'nama', 'nis', 'nisn', 'jsk_label',
-                    'isActive_badge', 'rombel_info', 'jurusan_info',
+                    'id', 'nama', 'username', 'nis', 'nisn', 'jsk_label',
+                    'isActive_badge', 'rombel_info', 'jurusan_info', 'tahunAngkatan', 'isAlumni',
                     'action', 'DT_RowIndex'
                 ]));
             }, $data->data);
         }
 
         // Cache the filtered result for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $data, 300);
+        Cache::put($cacheKey, $data, 300);
 
         return response()->json($data);
     }
@@ -364,6 +409,28 @@ class SiswaController extends Controller
             }
 
             return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Mark selected students as alumni (batch set isActive = 0)
+     */
+    public function markAsAlumni(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'siswa_ids' => 'required|array|min:1',
+                'siswa_ids.*' => 'required|uuid|exists:lamtim_siswas,id',
+            ]);
+
+            $result = $this->service->markAsAlumni($validated['siswa_ids']);
+
+            // Clear siswa select cache
+            Cache::forget('siswa_select_' . md5(json_encode([])));
+
+            return ResponseHelper::success($result, 'Siswa berhasil dijadikan alumni');
+        } catch (\Exception $e) {
+            return ResponseHelper::error('Gagal menjadikan alumni: ' . $e->getMessage(), 500);
         }
     }
 }

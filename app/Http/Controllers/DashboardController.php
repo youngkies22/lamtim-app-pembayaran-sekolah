@@ -25,9 +25,16 @@ class DashboardController extends Controller
             $totalPembayaran = LamtimPembayaran::where('status', 1)->sum('nominalBayar');
             $jumlahTransaksi = LamtimPembayaran::where('status', 1)->count();
 
-            // Tagihan belum lunas
-            $tagihanBelumLunas = LamtimTagihan::where('status', 0)->count();
-            $nominalBelumLunas = LamtimTagihan::where('status', 0)->sum('nominalTagihan');
+            // Tagihan belum lunas (Cached for 60 minutes)
+            $tagihanStats = \Illuminate\Support\Facades\Cache::remember('dashboard.tagihan_stats', 60 * 60, function () {
+                return [
+                    'count' => LamtimTagihan::where('status', 0)->count(),
+                    'nominal' => LamtimTagihan::where('status', 0)->sum('nominalTagihan'),
+                ];
+            });
+            
+            $tagihanBelumLunas = $tagihanStats['count'];
+            $nominalBelumLunas = $tagihanStats['nominal'];
 
             // Pembayaran bulan ini
             $startOfMonth = now()->startOfMonth();

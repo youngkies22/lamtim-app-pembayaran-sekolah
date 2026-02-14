@@ -18,53 +18,33 @@ class LamtimSiswaProfile extends Model
 
     protected $fillable = [
         'idSiswa',
-        'tpl',
-        'tgl',
-        'kk',
-        'nik',
-        'tinggiBadan',
-        'transport',
-        'hobi',
-        'jarak',
-        'rt',
-        'rw',
-        'desa',
-        'kecamatan',
-        'kabupaten',
+        'tempatLahir',
+        'tanggalLahir',
+        'alamat',
+        'kota',
         'provinsi',
-        'pkh',
-        'kip',
-        'asalSmp',
-        'npsnSmp',
-        'alamatSmp',
-        'ayah',
-        'ayahTpl',
-        'ayahTgl',
-        'ayahNik',
-        'ayahPendidikan',
-        'ayahAlamat',
-        'ibu',
-        'ibuTpl',
-        'ibuTgl',
-        'ibuNik',
-        'ibuPendidikan',
-        'ibuAlamat',
-        'wali',
-        'waliTpl',
-        'waliTgl',
-        'waliNik',
-        'waliPendidikan',
-        'waliAlamat',
+        'kodePos',
+        'telepon',
+        'email',
+        'namaAyah',
+        'pekerjaanAyah',
+        'teleponAyah',
+        'namaIbu',
+        'pekerjaanIbu',
+        'teleponIbu',
+        'namaWali',
+        'hubunganWali',
+        'pekerjaanWali',
+        'teleponWali',
+        'alamatWali',
+        'asalSekolah',
+        'alamatSekolahAsal',
+        'noIjazah',
+        'noSKHUN',
     ];
 
     protected $casts = [
-        'tgl' => 'date',
-        'ayahTgl' => 'date',
-        'ibuTgl' => 'date',
-        'waliTgl' => 'date',
-        'pkh' => 'boolean',
-        'kip' => 'boolean',
-        'tinggiBadan' => 'integer',
+        'tanggalLahir' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -83,11 +63,8 @@ class LamtimSiswaProfile extends Model
     public function getFullAddressAttribute()
     {
         $parts = array_filter([
-            $this->rt ? "RT {$this->rt}" : null,
-            $this->rw ? "RW {$this->rw}" : null,
-            $this->desa,
-            $this->kecamatan,
-            $this->kabupaten,
+            $this->alamat,
+            $this->kota,
             $this->provinsi,
         ]);
 
@@ -99,10 +76,10 @@ class LamtimSiswaProfile extends Model
      */
     public function getAgeAttribute()
     {
-        if (!$this->tgl) {
+        if (!$this->tanggalLahir) {
             return null;
         }
 
-        return $this->tgl->age;
+        return $this->tanggalLahir->age;
     }
 }

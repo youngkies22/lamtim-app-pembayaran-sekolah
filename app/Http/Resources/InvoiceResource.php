@@ -94,6 +94,8 @@ class InvoiceResource extends JsonResource
                     'id' => $this->siswa->id,
                     'nama' => $this->siswa->nama,
                     'nis' => $this->siswa->nis,
+                    'nisn' => $this->siswa->nisn,
+                    'username' => $this->siswa->username,
                     'kelas' => $rombelSiswa ? ($rombelSiswa->kelas->nama ?? '') . ' ' . ($rombelSiswa->nama ?? '') : '-',
                     'rombel' => $rombelSiswa ? [
                         'id' => $rombelSiswa->id,

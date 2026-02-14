@@ -19,6 +19,7 @@ class LamtimSiswa extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
+        'external_id',
         'idAgama',
         'username',
         'nama',
@@ -33,6 +34,7 @@ class LamtimSiswa extends Model
         'waOrtu',
         'waWali',
         'isActive',
+        'isAlumni',
         'tahunAngkatan',
         'createdBy',
         'updatedBy',
@@ -46,6 +48,7 @@ class LamtimSiswa extends Model
     protected $casts = [
         'jsk' => 'integer',
         'isActive' => 'integer',
+        'isAlumni' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -89,6 +92,15 @@ class LamtimSiswa extends Model
      */
     public function getStatusLabelAttribute()
     {
+        if ($this->isAlumni) {
+            $base = match($this->isActive) {
+                1 => '(Aktif)',
+                2 => '(Off)',
+                default => ''
+            };
+            return 'Alumni' . ($base ? " $base" : "");
+        }
+
         return match($this->isActive) {
             1 => 'Aktif',
             0 => 'Dihapus',
@@ -132,11 +144,19 @@ class LamtimSiswa extends Model
     }
 
     /**
+     * Relationship dengan tagihan (one-to-many)
+     */
+    public function tagihans(): HasMany
+    {
+        return $this->hasMany(LamtimTagihan::class, 'idSiswa', 'id');
+    }
+
+    /**
      * Scope untuk siswa aktif
      */
     public function scopeActive($query)
     {
-        return $query->where('isActive', 1);
+        return $query->where('isActive', 1)->where('isAlumni', 0);
     }
 
     /**
@@ -153,6 +173,11 @@ class LamtimSiswa extends Model
     public function scopeOff($query)
     {
         return $query->where('isActive', 2);
+    }
+
+    public function scopeNonAlumni($query)
+    {
+        return $query->where('isAlumni', 0);
     }
 
     /**
@@ -188,5 +213,20 @@ class LamtimSiswa extends Model
     public function setOff()
     {
         $this->update(['isActive' => 2]);
+    }
+
+    /**
+     * Get formatted current rombel name (with kelas kode)
+     */
+    public function getFormattedRombel(): ?string
+    {
+        $current = $this->currentRombel;
+        if (!$current || !$current->rombel) {
+            return null;
+        }
+
+        $rombel = $current->rombel;
+        $kelasKode = $rombel->kelas->kode ?? '';
+        return trim(($kelasKode ? "$kelasKode " : "") . ($rombel->nama ?? ''));
     }
 }

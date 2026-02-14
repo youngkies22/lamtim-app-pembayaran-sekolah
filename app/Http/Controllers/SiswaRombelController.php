@@ -236,4 +236,27 @@ class SiswaRombelController extends Controller
             return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Promote students to the next kelas level (Kenaikan Kelas)
+     */
+    public function promote(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'fromRombelId' => 'required|uuid|exists:lamtim_rombels,id',
+                'siswa_ids' => 'required|array|min:1',
+                'siswa_ids.*' => 'required|uuid|exists:lamtim_siswas,id',
+            ]);
+
+            $result = $this->service->promoteStudents(
+                $validated['fromRombelId'],
+                $validated['siswa_ids']
+            );
+
+            return ResponseHelper::success($result, 'Kenaikan kelas berhasil diproses');
+        } catch (\Exception $e) {
+            return ResponseHelper::error('Gagal memproses kenaikan kelas: ' . $e->getMessage(), 500);
+        }
+    }
 }

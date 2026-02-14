@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use App\Helpers\FormatHelper;
 class PembayaranResource extends JsonResource
 {
     public function toArray(Request $request): array
@@ -14,9 +14,9 @@ class PembayaranResource extends JsonResource
             'kodePembayaran' => $this->kodePembayaran,
             'noReferensi' => $this->noReferensi,
             'tanggalBayar' => $this->tanggalBayar?->format('Y-m-d'),
-            'tanggalBayarFormatted' => \App\Helpers\FormatHelper::date($this->tanggalBayar),
+            'tanggalBayarFormatted' => FormatHelper::date($this->tanggalBayar),
             'nominalBayar' => (float) $this->nominalBayar,
-            'nominalBayarFormatted' => \App\Helpers\FormatHelper::currency($this->nominalBayar),
+            'nominalBayarFormatted' => FormatHelper::currency($this->nominalBayar),
             'metodeBayar' => $this->metodeBayar,
             'channelBayar' => $this->channelBayar,
             'namaChannel' => $this->namaChannel,
@@ -25,9 +25,9 @@ class PembayaranResource extends JsonResource
             'keterangan' => $this->keterangan,
             'status' => $this->status,
             'statusLabel' => $this->status == 1 ? 'Valid' : ($this->status == 0 ? 'Batal' : 'Pending'),
-            'statusBadge' => \App\Helpers\FormatHelper::statusBadge($this->status, 'pembayaran'),
+            'statusBadge' => FormatHelper::statusBadge($this->status, 'pembayaran'),
             'isVerified' => (bool) $this->isVerified,
-            'verifiedBadge' => \App\Helpers\FormatHelper::statusBadge($this->isVerified ? 1 : 0, 'verifikasi'),
+            'verifiedBadge' => FormatHelper::statusBadge($this->isVerified ? 1 : 0, 'verifikasi'),
             'verifiedBy' => $this->verifiedBy,
             'verifiedAt' => $this->verifiedAt?->format('Y-m-d H:i:s'),
             'alasanBatal' => $this->alasanBatal,
@@ -37,6 +37,7 @@ class PembayaranResource extends JsonResource
                     'id' => $this->siswa->id,
                     'nama' => $this->siswa->nama,
                     'nis' => $this->siswa->nis,
+                    'rombel_nama' => $this->siswa->getFormattedRombel() ?? '-',
                 ];
             }),
             'invoice' => $this->whenLoaded('invoice', function() {

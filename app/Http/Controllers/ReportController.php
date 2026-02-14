@@ -120,4 +120,13 @@ class ReportController extends Controller
             $fileName
         );
     }
+
+    /**
+     * Get summary stats for analytics report.
+     */
+    public function analyticsStats(Request $request)
+    {
+        $filters = $request->only(['start_date', 'end_date', 'jenisPembayaran']);
+        return ResponseHelper::success($this->service->getAnalyticsStats($filters));
+    }
 }

@@ -106,4 +106,31 @@ class ReportService
             'logo' => $sekolah->logo ?? null,
         ];
     }
+
+    /**
+     * Get analytics stats for general report.
+     */
+    public function getAnalyticsStats(array $filters): array
+    {
+        $startDate = $filters['start_date'] ?? null;
+        $endDate = $filters['end_date'] ?? null;
+        $jenisPembayaran = $filters['jenisPembayaran'] ?? null;
+
+        // Total Pembayaran (Sukses)
+        $pembayaranQuery = \App\Models\LamtimPembayaran::where('status', 1)->where('isActive', 1);
+        if ($startDate) $pembayaranQuery->whereDate('tanggalBayar', '>=', $startDate);
+        if ($endDate) $pembayaranQuery->whereDate('tanggalBayar', '<=', $endDate);
+        if ($jenisPembayaran) {
+            $pembayaranQuery->whereHas('masterPembayaran', function($q) use ($jenisPembayaran) {
+                $q->where('kode', $jenisPembayaran);
+            });
+        }
+        $totalPembayaran = (float) $pembayaranQuery->sum('nominalBayar');
+        $jumlahTransaksi = $pembayaranQuery->count();
+
+        return [
+            'totalPembayaran' => $totalPembayaran,
+            'jumlahTransaksi' => $jumlahTransaksi,
+        ];
+    }
 }

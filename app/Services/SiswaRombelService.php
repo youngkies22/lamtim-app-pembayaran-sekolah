@@ -131,6 +131,7 @@ class SiswaRombelService
     {
         $query = LamtimSiswa::query()
             ->whereIn('isActive', [1, 2]) // Aktif atau Off (bukan yang dihapus)
+            ->where('isAlumni', 0)
             ->whereDoesntHave('rombels');
 
         if (isset($filters['search']) && !empty($filters['search'])) {
@@ -206,6 +207,136 @@ class SiswaRombelService
             Log::error('Error batch creating siswa rombel mapping', [
                 'error' => $e->getMessage(),
                 'data' => $data
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Universal kelas progression categories
+     */
+    private const KELAS_CATEGORIES = [
+        'SD' => ['1', '2', '3', '4', '5', '6'],
+        'SMP' => ['7', '8', '9'],
+        'SMA_ARABIC' => ['10', '11', '12'],
+        'SMA_ROMAN' => ['X', 'XI', 'XII'],
+    ];
+
+    /**
+     * Get the next kelas kode in the progression.
+     */
+    private function getNextKelasKode(string $currentKode): ?string
+    {
+        foreach (self::KELAS_CATEGORIES as $category => $order) {
+            $index = array_search($currentKode, $order);
+            if ($index !== false && $index < count($order) - 1) {
+                return $order[$index + 1];
+            }
+        }
+        return null; // Already at final kelas or unknown
+    }
+
+    /**
+     * Check if a kelas kode is the final level.
+     */
+    public function isFinalKelas(string $kelasKode): bool
+    {
+        foreach (self::KELAS_CATEGORIES as $category => $order) {
+            if ($kelasKode === end($order)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Promote students to the next kelas level.
+     * Finds destination rombel with same nama + sekolah + jurusan but next kelas.
+     * Updates existing LamtimSiswaRombel.idRombel.
+     */
+    public function promoteStudents(string $fromRombelId, array $siswaIds): array
+    {
+        try {
+            DB::beginTransaction();
+
+            // Load source rombel with kelas
+            $fromRombel = LamtimRombel::with('kelas')->find($fromRombelId);
+            if (!$fromRombel) {
+                throw new \Exception('Rombel asal tidak ditemukan');
+            }
+
+            $currentKelasKode = $fromRombel->kelas->kode ?? null;
+            if (!$currentKelasKode) {
+                throw new \Exception('Kelas pada rombel asal tidak valid');
+            }
+
+            // Determine next kelas
+            $nextKelasKode = $this->getNextKelasKode($currentKelasKode);
+            if (!$nextKelasKode) {
+                throw new \Exception("Kelas {$currentKelasKode} sudah merupakan kelas terakhir. Gunakan fitur Alumni.");
+            }
+
+            // Find next kelas record
+            $nextKelas = \App\Models\LamtimKelas::where('kode', $nextKelasKode)->first();
+            if (!$nextKelas) {
+                throw new \Exception("Kelas {$nextKelasKode} tidak ditemukan di database");
+            }
+
+            // Find destination rombel: same nama + sekolah + jurusan, next kelas
+            $toRombel = LamtimRombel::where('nama', $fromRombel->nama)
+                ->where('idSekolah', $fromRombel->idSekolah)
+                ->where('idJurusan', $fromRombel->idJurusan)
+                ->where('idKelas', $nextKelas->id)
+                ->first();
+
+            if (!$toRombel) {
+                throw new \Exception(
+                    "Rombel tujuan ({$fromRombel->nama} kelas {$nextKelasKode}) tidak ditemukan. " .
+                    "Pastikan rombel dengan nama, sekolah, dan jurusan yang sama sudah ada di kelas {$nextKelasKode}."
+                );
+            }
+
+            $promoted = 0;
+            $errors = [];
+
+            foreach ($siswaIds as $idSiswa) {
+                try {
+                    // Find existing mapping in source rombel
+                    $mapping = LamtimSiswaRombel::where('idSiswa', $idSiswa)
+                        ->where('idRombel', $fromRombelId)
+                        ->first();
+
+                    if (!$mapping) {
+                        $errors[] = "Siswa {$idSiswa} tidak terdaftar di rombel asal";
+                        continue;
+                    }
+
+                    // Update to destination rombel
+                    $mapping->update(['idRombel' => $toRombel->id]);
+                    $promoted++;
+                } catch (\Exception $e) {
+                    $errors[] = "Gagal memproses siswa {$idSiswa}: " . $e->getMessage();
+                }
+            }
+
+            if ($promoted === 0 && !empty($errors)) {
+                throw new \Exception(implode('; ', $errors));
+            }
+
+            DB::commit();
+
+            return [
+                'promoted_count' => $promoted,
+                'errors' => $errors,
+                'from_kelas' => $currentKelasKode,
+                'to_kelas' => $nextKelasKode,
+                'rombel_nama' => $fromRombel->nama,
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error promoting students', [
+                'error' => $e->getMessage(),
+                'from' => $fromRombelId,
             ]);
             throw $e;
         }

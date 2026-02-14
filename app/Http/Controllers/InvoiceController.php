@@ -55,6 +55,14 @@ class InvoiceController extends Controller
         return DataTables::of($query)
             ->addIndexColumn()
             ->addColumn('siswa_nama', fn($row) => $row->siswa->nama ?? '-')
+            ->addColumn('rombel_nama', function($row) {
+                if ($row->siswa && $row->siswa->currentRombel && $row->siswa->currentRombel->rombel) {
+                    $rombel = $row->siswa->currentRombel->rombel;
+                    $kelasKode = $rombel->kelas->kode ?? '';
+                    return trim(($kelasKode ? "$kelasKode " : "") . ($rombel->nama ?? ''));
+                }
+                return '-';
+            })
             ->addColumn('tanggal_formatted', fn($row) => FormatHelper::date($row->tanggalInvoice))
             ->addColumn('nominal_formatted', fn($row) => FormatHelper::currency($row->nominalInvoice))
             ->addColumn('status_badge', fn($row) => FormatHelper::statusBadge($row->status, 'tagihan'))

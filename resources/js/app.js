@@ -20,6 +20,9 @@ import SiswaCreate from './pages/siswa/Create.vue';
 import SiswaEdit from './pages/siswa/Edit.vue';
 import SiswaRombelMapping from './pages/siswa-rombel/Mapping.vue';
 import SiswaRombelIndex from './pages/siswa-rombel/Index.vue';
+import KenaikanKelas from './pages/siswa/KenaikanKelas.vue';
+import Alumni from './pages/siswa/Alumni.vue';
+import AlumniData from './pages/siswa/AlumniData.vue';
 import MasterPembayaranIndex from './pages/master-pembayaran/Index.vue';
 import TagihanIndex from './pages/tagihan/Index.vue';
 import InvoiceIndex from './pages/invoice/Index.vue';
@@ -46,6 +49,7 @@ import UsersIndex from './pages/users/Index.vue';
 import TrashIndex from './pages/trash/Index.vue';
 import ClosingIndex from './pages/Closing/Index.vue';
 import BackupIndex from './pages/Backups/Index.vue';
+import SyncIndex from './pages/Sync/Index.vue';
 
 // Import API service
 import { authAPI } from './services/api';
@@ -96,6 +100,24 @@ const routes = [
         path: '/siswa-rombel/mapping',
         name: 'siswa-rombel-mapping',
         component: SiswaRombelMapping,
+        meta: { requiresAuth: true, activeMenu: 'Students' }
+    },
+    {
+        path: '/siswa/kenaikan-kelas',
+        name: 'kenaikan-kelas',
+        component: KenaikanKelas,
+        meta: { requiresAuth: true, activeMenu: 'Students' }
+    },
+    {
+        path: '/siswa/alumni',
+        name: 'alumni',
+        component: Alumni,
+        meta: { requiresAuth: true, activeMenu: 'Students' }
+    },
+    {
+        path: '/siswa/data-alumni',
+        name: 'data-alumni',
+        component: AlumniData,
         meta: { requiresAuth: true, activeMenu: 'Students' }
     },
     {
@@ -253,6 +275,12 @@ const routes = [
         name: 'backups',
         component: BackupIndex,
         meta: { requiresAuth: true, activeMenu: 'Backups' }
+    },
+    {
+        path: '/sync',
+        name: 'sync',
+        component: SyncIndex,
+        meta: { requiresAuth: true, activeMenu: 'Sync' }
     },
     {
         path: '/auth/login',

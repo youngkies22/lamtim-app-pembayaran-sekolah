@@ -13,10 +13,14 @@ use Illuminate\Support\Facades\Hash;
 class SiswaService
 {
     protected $repository;
+    protected $rombelService;
 
-    public function __construct(SiswaRepositoryInterface $repository)
-    {
+    public function __construct(
+        SiswaRepositoryInterface $repository,
+        SiswaRombelService $rombelService
+    ) {
         $this->repository = $repository;
+        $this->rombelService = $rombelService;
     }
 
     public function getAll(array $filters = []): Collection
@@ -78,7 +82,7 @@ class SiswaService
             return $siswa;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error creating siswa', ['error' => $e->getMessage()]);
+            Log::error('Error creating student', ['error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -90,20 +94,20 @@ class SiswaService
 
             $siswa = $this->repository->find($id);
             if (!$siswa) {
-                throw new \Exception('Siswa tidak ditemukan');
+                throw new \Exception('Student not found');
             }
 
             // Validate username uniqueness if changed
             if (isset($data['username']) && $data['username'] !== $siswa->username) {
                 if ($this->repository->findByUsername($data['username'])) {
-                    throw new \Exception('Username sudah digunakan');
+                    throw new \Exception('Username already in use');
                 }
             }
 
             // Validate NIS uniqueness if changed
             if (isset($data['nis']) && $data['nis'] !== $siswa->nis) {
                 if ($this->repository->findByNis($data['nis'])) {
-                    throw new \Exception('NIS sudah digunakan');
+                    throw new \Exception('NIS already in use');
                 }
             }
 
@@ -126,7 +130,7 @@ class SiswaService
             return $this->repository->find($id);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error updating siswa', ['id' => $id, 'error' => $e->getMessage()]);
+            Log::error('Error updating student', ['id' => $id, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -138,7 +142,7 @@ class SiswaService
 
             $siswa = $this->repository->find($id);
             if (!$siswa) {
-                throw new \Exception('Siswa tidak ditemukan');
+                throw new \Exception('Student not found');
             }
 
             $this->repository->delete($id);
@@ -150,7 +154,7 @@ class SiswaService
             return true;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error deleting siswa', ['id' => $id, 'error' => $e->getMessage()]);
+            Log::error('Error deleting student', ['id' => $id, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -169,7 +173,7 @@ class SiswaService
             return $result;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error restoring siswa', ['id' => $id, 'error' => $e->getMessage()]);
+            Log::error('Error restoring student', ['id' => $id, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -197,5 +201,63 @@ class SiswaService
     public function getByTahunAngkatan(string $tahunAngkatan): Collection
     {
         return $this->repository->getByTahunAngkatan($tahunAngkatan);
+    }
+
+    /**
+     * Mark selected students as alumni (isActive = 0).
+     * Validates that each student is currently in a final-level kelas.
+     */
+    public function markAsAlumni(array $siswaIds): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $processed = 0;
+            $errors = [];
+
+            foreach ($siswaIds as $id) {
+                $siswa = LamtimSiswa::with(['currentRombel.rombel.kelas'])->find($id);
+
+                if (!$siswa) {
+                    $errors[] = "Siswa {$id} tidak ditemukan";
+                    continue;
+                }
+
+                if ($siswa->isAlumni) {
+                    $errors[] = "Siswa {$siswa->nama} sudah berstatus Alumni";
+                    continue;
+                }
+
+                // Check if current rombel is final kelas
+                $currentRombel = $siswa->currentRombel->rombel ?? null;
+                $kelasKode = $currentRombel->kelas->kode ?? null;
+
+                if (!$kelasKode || !$this->rombelService->isFinalKelas($kelasKode)) {
+                    $errors[] = "Siswa {$siswa->nama} berada di kelas {$kelasKode} (Bukan kelas terakhir). Hanya siswa kelas terakhir yang bisa dijadikan alumni.";
+                    continue;
+                }
+
+                $siswa->update([
+                    'isAlumni' => 1,
+                    'updatedBy' => auth()->id(),
+                ]);
+                $processed++;
+            }
+
+            if ($processed === 0 && !empty($errors)) {
+                throw new \Exception(implode('; ', $errors));
+            }
+
+            DB::commit();
+
+            return [
+                'processed_count' => $processed,
+                'errors' => $errors,
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error marking students as alumni', ['error' => $e->getMessage()]);
+            throw $e;
+        }
     }
 }

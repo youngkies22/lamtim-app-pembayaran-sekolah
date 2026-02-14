@@ -1,20 +1,14 @@
 <template>
-  <!-- Drawer toggle button (hidden, used programmatically) -->
-  <button ref="drawerToggleBtn" type="button" :data-drawer-target="drawerId" :data-drawer-toggle="drawerId"
-    :aria-controls="drawerId" class="hidden">
-    Toggle drawer
-  </button>
+  <!-- Backdrop (mobile only) -->
+  <div v-if="isOpen && !isLargeScreen" class="fixed inset-0 z-30 bg-gray-900/50" @click="closeSidebar"></div>
 
-  <!-- Drawer component -->
-  <div :id="drawerId" :class="[
+  <!-- Sidebar -->
+  <aside :class="[
     'fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-64',
-    'lg:translate-x-0',
-    '-translate-x-full'
-  ]" :tabindex="isLargeScreen ? undefined : -1" :aria-labelledby="drawerId + '-label'"
-    :data-drawer-backdrop="isLargeScreen ? undefined : 'true'" :aria-hidden="isLargeScreen ? undefined : undefined">
+    isLargeScreen || isOpen ? 'translate-x-0' : '-translate-x-full'
+  ]" role="navigation" aria-label="Main navigation">
     <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-5 flex items-center justify-between">
-      <h5 :id="drawerId + '-label'"
-        class="inline-flex items-center text-lg font-semibold text-gray-900 dark:text-white">
+      <h5 class="inline-flex items-center text-lg font-semibold text-gray-900 dark:text-white">
         <div v-if="appSettings.logo_aplikasi"
           class="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center mr-2 flex-shrink-0">
           <img :src="getLogoUrl(appSettings.logo_aplikasi)" :alt="appSettings.nama_aplikasi"
@@ -25,10 +19,10 @@
         </div>
         <span>{{ appSettings.nama_aplikasi || 'Menu' }}</span>
       </h5>
-      <button type="button" :data-drawer-hide="drawerId" :aria-controls="drawerId"
-        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute top-2.5 end-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white">
+      <button v-if="!isLargeScreen" type="button" @click="closeSidebar"
+        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+        aria-label="Close menu">
         <XMarkIcon class="w-5 h-5" />
-        <span class="sr-only">Close menu</span>
       </button>
     </div>
 
@@ -46,10 +40,10 @@
           </div>
         </div>
         <div v-else>
-          <!-- Dropdown for Master Data -->
+          <!-- Dropdown for grouped menus -->
           <button type="button" @click="toggleDropdown(item.name)" :class="[
             'flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors duration-200',
-            (item.name === 'Master Data' && isMasterDataActive) || (item.name === 'Payments' && isPaymentsActive) || (item.name === 'Reports' && isReportsActive)
+            (item.name === 'Master Data' && isMasterDataActive) || (item.name === 'Payments' && isPaymentsActive) || (item.name === 'Reports' && isReportsActive) || (item.name === 'Students' && isStudentsActive)
               ? 'bg-blue-600 text-white dark:bg-blue-700'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
           ]" :aria-expanded="isDropdownOpen(item.name)">
@@ -62,9 +56,7 @@
           <div v-show="isDropdownOpen(item.name)" class="ml-6 mt-1 space-y-1">
             <div v-for="child in item.children" :key="child.name" @click="selectMenu(child)" :class="[
               'flex items-center gap-3 px-4 py-2 rounded-lg cursor-pointer transition-colors duration-200',
-              activeMenu === child.name ||
-                (activeMenu === 'Master Data' && child.route === currentRoute) ||
-                (activeMenu === 'Payments' && child.route === currentRoute)
+              child.route === currentRoute
                 ? 'bg-blue-500 text-white dark:bg-blue-600'
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             ]">
@@ -80,12 +72,11 @@
         </div>
       </template>
     </nav>
-  </div>
+  </aside>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { initDrawers } from 'flowbite'
 import { useRouter, useRoute } from 'vue-router'
 import { useMasterDataCache } from '../../composables/useMasterDataCache'
 import { useAppSettings } from '../../composables/useAppSettings'
@@ -112,23 +103,28 @@ import {
   Squares2X2Icon,
   LockClosedIcon,
   CircleStackIcon,
+  ArrowPathIcon,
+  ArrowUpCircleIcon,
+  UserMinusIcon,
 } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
   activeMenu: {
     type: String,
     default: 'Dashboard'
+  },
+  isOpen: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['menu-selected'])
+const emit = defineEmits(['menu-selected', 'close'])
 
-const drawerId = 'drawer-navigation'
-const drawerToggleBtn = ref(null)
 const openDropdown = ref(null)
+const manualClosed = ref(new Set())
 const isLargeScreen = ref(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true)
 
-// Handle resize untuk mendeteksi perubahan ukuran layar
 const handleResize = () => {
   isLargeScreen.value = window.innerWidth >= 1024
 }
@@ -137,21 +133,18 @@ const { getCached, loadAll } = useMasterDataCache();
 const { appSettings, getLogoUrl } = useAppSettings();
 const { hasMenuAccess } = useRoleAccess();
 
-// Get cached config immediately (synchronous)
 const cached = getCached();
 const labelJurusan = ref(cached.labelJurusan || 'Jurusan');
 
 const router = useRouter()
 const route = useRoute()
 
-// Load config (will use cache if already loaded)
 const loadConfig = async () => {
   try {
     const result = await loadAll();
     labelJurusan.value = result.labelJurusan || 'Jurusan';
   } catch (err) {
     console.error('Error loading config:', err);
-    // Keep cached value or default
     if (!labelJurusan.value) {
       labelJurusan.value = 'Jurusan';
     }
@@ -177,7 +170,17 @@ const menuItems = computed(() => {
         { name: 'Tipe Pembayaran', icon: RectangleStackIcon, route: '/master-data/tipe-pembayaran' },
       ]
     },
-    { name: 'Students', icon: UserGroupIcon, route: '/siswa' },
+    {
+      name: 'Students',
+      icon: UserGroupIcon,
+      route: '/siswa',
+      children: [
+        { name: 'Daftar Siswa', icon: UserGroupIcon, route: '/siswa' },
+        { name: 'Kenaikan Kelas', icon: ArrowUpCircleIcon, route: '/siswa/kenaikan-kelas' },
+        { name: 'Jadikan Alumni', icon: UserMinusIcon, route: '/siswa/alumni' },
+        { name: 'Data Alumni', icon: AcademicCapIcon, route: '/siswa/data-alumni' },
+      ]
+    },
     {
       name: 'Payments',
       icon: CreditCardIcon,
@@ -203,15 +206,13 @@ const menuItems = computed(() => {
     { name: 'Closing', icon: LockClosedIcon, route: '/closing' },
     { name: 'Users', icon: UsersIcon, route: '/users' },
     { name: 'Backups', icon: CircleStackIcon, route: '/backups' },
+    { name: 'Sync', icon: ArrowPathIcon, route: '/sync' },
     { name: 'Trash', icon: TrashIcon, route: '/trash' }
   ];
 
-  // Filter menus based on role
   return allMenus.filter(menu => {
     if (menu.children) {
-      // Filter children menus
       menu.children = menu.children.filter(child => hasMenuAccess(menu.name));
-      // Show parent if it has accessible children
       return menu.children.length > 0;
     }
     return hasMenuAccess(menu.name);
@@ -238,11 +239,26 @@ const isReportsActive = computed(() => {
     route.path.startsWith('/reports')
 })
 
+const isStudentsActive = computed(() => {
+  return props.activeMenu === 'Students' ||
+    route.path.startsWith('/siswa')
+})
+
 const toggleDropdown = (menuName) => {
-  openDropdown.value = openDropdown.value === menuName ? null : menuName
+  if (openDropdown.value === menuName) {
+    openDropdown.value = null
+    manualClosed.value.add(menuName)
+  } else {
+    openDropdown.value = menuName
+    manualClosed.value.delete(menuName)
+  }
 }
 
 const isDropdownOpen = (menuName) => {
+  // If user manually closed it, respect that
+  if (manualClosed.value.has(menuName)) {
+    return openDropdown.value === menuName
+  }
   if (menuName === 'Master Data') {
     return openDropdown.value === menuName || isMasterDataActive.value
   }
@@ -252,12 +268,18 @@ const isDropdownOpen = (menuName) => {
   if (menuName === 'Reports') {
     return openDropdown.value === menuName || isReportsActive.value
   }
+  if (menuName === 'Students') {
+    return openDropdown.value === menuName || isStudentsActive.value
+  }
   return openDropdown.value === menuName
+}
+
+const closeSidebar = () => {
+  emit('close')
 }
 
 const selectMenu = (item) => {
   if (item.route) {
-    // Check if menu should open in new tab
     if (item.target === '_blank') {
       window.open(item.route, '_blank')
     } else {
@@ -265,29 +287,14 @@ const selectMenu = (item) => {
     }
   }
   emit('menu-selected', item)
-  // Close drawer on mobile after selection
-  if (window.innerWidth < 1024) {
-    const drawer = document.getElementById(drawerId)
-    if (drawer) {
-      const hideBtn = drawer.querySelector(`[data-drawer-hide="${drawerId}"]`)
-      if (hideBtn) {
-        hideBtn.click()
-      }
-    }
+  // Close sidebar on mobile after selection
+  if (!isLargeScreen.value) {
+    closeSidebar()
   }
 }
 
-// Expose method to toggle drawer
-const toggleDrawer = () => {
-  if (drawerToggleBtn.value) {
-    drawerToggleBtn.value.click()
-  }
-}
-
-// Initialize Flowbite drawers
 onMounted(async () => {
   await loadConfig()
-  initDrawers()
   // Auto expand dropdowns if on their routes
   if (isMasterDataActive.value) {
     openDropdown.value = 'Master Data'
@@ -298,16 +305,13 @@ onMounted(async () => {
   if (isReportsActive.value) {
     openDropdown.value = 'Reports'
   }
-  // Add resize listener
+  if (isStudentsActive.value) {
+    openDropdown.value = 'Students'
+  }
   window.addEventListener('resize', handleResize)
 })
 
-// Cleanup resize listener
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-})
-
-defineExpose({
-  toggleDrawer
 })
 </script>

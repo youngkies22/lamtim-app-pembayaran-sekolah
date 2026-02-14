@@ -24,6 +24,7 @@ use App\Http\Controllers\TipePembayaranController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\CacheManagerController;
 
 // Public Auth Routes
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
@@ -113,6 +114,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('siswa/{id}', [SiswaController::class, 'show'])->name('api.siswa.show');
     Route::post('siswa', [SiswaController::class, 'store'])->middleware('role:1,2')->name('api.siswa.store');
     Route::put('siswa/{id}', [SiswaController::class, 'update'])->middleware('role:1,2')->name('api.siswa.update');
+    Route::post('siswa/mark-alumni', [SiswaController::class, 'markAsAlumni'])->middleware('role:1,2')->name('api.siswa.mark-alumni');
     Route::delete('siswa/{id}', [SiswaController::class, 'destroy'])->middleware('role:1,2')->name('api.siswa.destroy');
 
     // Siswa Rombel Mapping Routes - Read for all, write only for admin and operator
@@ -120,6 +122,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('siswa-rombel/datatable', [SiswaRombelController::class, 'datatable'])->name('api.siswa-rombel.datatable');
     Route::get('siswa-rombel', [SiswaRombelController::class, 'index'])->name('api.siswa-rombel.index');
     Route::get('siswa-rombel/{id}', [SiswaRombelController::class, 'show'])->name('api.siswa-rombel.show');
+    Route::post('siswa-rombel/promote', [SiswaRombelController::class, 'promote'])->middleware('role:1,2')->name('api.siswa-rombel.promote');
     Route::post('siswa-rombel/batch', [SiswaRombelController::class, 'batchStore'])->middleware('role:1,2')->name('api.siswa-rombel.batch');
     Route::post('siswa-rombel', [SiswaRombelController::class, 'store'])->middleware('role:1,2')->name('api.siswa-rombel.store');
     Route::put('siswa-rombel/{id}', [SiswaRombelController::class, 'update'])->middleware('role:1,2')->name('api.siswa-rombel.update');
@@ -204,6 +207,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('rombel/stats', [ReportController::class, 'rombelReportStats'])->name('api.reports.rombel.stats');
           Route::get('rombel/export', [ReportController::class, 'exportRombelReport'])->name('api.reports.rombel.export');
           Route::get('siswa/export', [ReportController::class, 'exportSiswaReport'])->name('api.reports.siswa.export');
+          Route::get('analytics-stats', [ReportController::class, 'analyticsStats'])->name('api.reports.analytics-stats');
       });
 
       // Settings Routes - Admin Only
@@ -221,11 +225,31 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::post('trash/empty', [\App\Http\Controllers\TrashController::class, 'emptyTrash'])->name('api.trash.empty');
       });
 
+      // External Sync Routes - Admin Only
+      Route::prefix('sync')->middleware('role:1,2')->group(function () {
+          Route::post('/run', [\App\Http\Controllers\ExternalSyncController::class, 'run'])->name('api.sync.run');
+          Route::get('/status', [\App\Http\Controllers\ExternalSyncController::class, 'status'])->name('api.sync.status');
+          Route::get('/test-connection', [\App\Http\Controllers\ExternalSyncController::class, 'testConnection'])->name('api.sync.test-connection');
+          
+          // Siswa chunked sync
+          Route::post('/siswa/download', [\App\Http\Controllers\ExternalSyncController::class, 'downloadSiswa'])->name('api.sync.siswa.download');
+          Route::post('/siswa/process-chunk', [\App\Http\Controllers\ExternalSyncController::class, 'processSiswaChunk'])->name('api.sync.siswa.process-chunk');
+          Route::post('/siswa/cleanup', [\App\Http\Controllers\ExternalSyncController::class, 'cleanupSiswa'])->name('api.sync.siswa.cleanup');
+      });
+
       // Backup Routes - Admin & Operator
       Route::prefix('backups')->middleware('role:1,2')->group(function () {
           Route::get('/', [\App\Http\Controllers\BackupController::class, 'index'])->name('api.backups.index');
           Route::post('/', [\App\Http\Controllers\BackupController::class, 'store'])->name('api.backups.store');
           Route::get('/{filename}/download', [\App\Http\Controllers\BackupController::class, 'download'])->name('api.backups.download');
           Route::delete('/{filename}', [\App\Http\Controllers\BackupController::class, 'destroy'])->name('api.backups.destroy');
+      });
+
+      // Cache Management Routes - Admin Only
+      Route::prefix('cache-manager')->middleware('role:1')->group(function () {
+          Route::get('/status', [CacheManagerController::class, 'getStatus']);
+          Route::post('/clear-laravel', [CacheManagerController::class, 'clearLaravelCache']);
+          Route::post('/clear-redis', [CacheManagerController::class, 'clearRedisCache']);
+          Route::post('/optimize', [CacheManagerController::class, 'optimizeCache']);
       });
   });

@@ -48,7 +48,7 @@ class FormatHelper
     /**
      * Format status badge
      */
-    public static function statusBadge(int $status, string $type = 'tagihan'): string
+    public static function statusBadge(mixed $status, string $type = 'tagihan'): string
     {
         $badges = [
             'tagihan' => [
@@ -66,9 +66,34 @@ class FormatHelper
                 0 => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Belum Verifikasi</span>',
                 1 => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Terverifikasi</span>',
             ],
+            'siswa' => [
+                1 => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>',
+                2 => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Off</span>',
+                0 => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Tidak Aktif</span>',
+            ],
+            'alumni' => [
+                'AKTIF' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 uppercase">Alumni (Aktif)</span>',
+                'OFF' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 uppercase font-bold">Alumni (Off)</span>',
+            ],
         ];
 
-        return $badges[$type][$status] ?? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">-</span>';
+        return $badges[$type][$status] ?? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">' . $status . '</span>';
+    }
+
+    /**
+     * Format pembayaran status badge
+     */
+    public static function pembayaranStatusBadge(int $status): string
+    {
+        return self::statusBadge($status, 'pembayaran');
+    }
+
+    /**
+     * Format verifikasi status badge
+     */
+    public static function verifikasiStatusBadge(int $status): string
+    {
+        return self::statusBadge($status, 'verifikasi');
     }
 
     /**

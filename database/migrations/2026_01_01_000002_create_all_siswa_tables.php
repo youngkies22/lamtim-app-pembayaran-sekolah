@@ -5,8 +5,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * CONSOLIDATED MIGRATION: All Siswa Tables
- * Menggabungkan semua migration siswa menjadi satu file
+ * Consolidated Migration: All Siswa Tables.
+ *
+ * Tables created:
+ *  - lamtim_siswas
+ *  - lamtim_siswa_profiles
+ *  - lamtim_siswa_rombels
  */
 return new class extends Migration
 {
@@ -20,6 +24,7 @@ return new class extends Migration
         // ============================================
         Schema::create('lamtim_siswas', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('external_id', 100)->nullable();
             $table->uuid('idAgama')->nullable();
             $table->string('username', 100)->unique();
             $table->string('nama', 255);
@@ -40,7 +45,7 @@ return new class extends Migration
             $table->uuid('deletedBy')->nullable();
             $table->timestamps();
 
-            // Indexes
+            $table->index('external_id');
             $table->index('username');
             $table->index('nis');
             $table->index('nisn');
@@ -55,7 +60,7 @@ return new class extends Migration
         Schema::create('lamtim_siswa_profiles', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('idSiswa');
-            
+
             // Data Diri
             $table->string('tempatLahir', 100)->nullable();
             $table->date('tanggalLahir')->nullable();
@@ -65,7 +70,7 @@ return new class extends Migration
             $table->string('kodePos', 10)->nullable();
             $table->string('telepon', 20)->nullable();
             $table->string('email', 100)->nullable();
-            
+
             // Data Orang Tua
             $table->string('namaAyah', 255)->nullable();
             $table->string('pekerjaanAyah', 100)->nullable();
@@ -73,27 +78,27 @@ return new class extends Migration
             $table->string('namaIbu', 255)->nullable();
             $table->string('pekerjaanIbu', 100)->nullable();
             $table->string('teleponIbu', 20)->nullable();
-            
+
             // Data Wali
             $table->string('namaWali', 255)->nullable();
             $table->string('hubunganWali', 50)->nullable();
             $table->string('pekerjaanWali', 100)->nullable();
             $table->string('teleponWali', 20)->nullable();
             $table->text('alamatWali')->nullable();
-            
+
             // Pendidikan
             $table->string('asalSekolah', 255)->nullable();
             $table->string('alamatSekolahAsal', 255)->nullable();
             $table->string('noIjazah', 100)->nullable();
             $table->string('noSKHUN', 100)->nullable();
-            
+
             $table->timestamps();
-            
+
             $table->index('idSiswa');
         });
 
         // ============================================
-        // SISWA ROMBELS (Hybrid approach - tanpa idSekolah, idJurusan)
+        // SISWA ROMBELS
         // ============================================
         Schema::create('lamtim_siswa_rombels', function (Blueprint $table) {
             $table->uuid('id')->primary();
@@ -103,7 +108,7 @@ return new class extends Migration
             $table->uuid('idTahunAjaran')->nullable();
             $table->tinyInteger('isActive')->default(1)->comment('1=aktif, 0=hapus');
             $table->timestamps();
-            
+
             $table->index('idSiswa');
             $table->index('idRombel');
             $table->index('idKelas');

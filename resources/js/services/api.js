@@ -339,6 +339,7 @@ export const siswaAPI = {
     create: (data) => api.post('/siswa', data),
     update: (id, data) => api.put(`/siswa/${id}`, data),
     delete: (id) => api.delete(`/siswa/${id}`),
+    markAsAlumni: (data) => api.post('/siswa/mark-alumni', data),
 };
 
 // Siswa Rombel Mapping API
@@ -349,6 +350,7 @@ export const siswaRombelAPI = {
     getUnmapped: (params = {}) => api.get('/siswa-rombel/unmapped', { params }),
     create: (data) => api.post('/siswa-rombel', data),
     batchCreate: (data) => api.post('/siswa-rombel/batch', data),
+    promote: (data) => api.post('/siswa-rombel/promote', data),
     update: (id, data) => api.put(`/siswa-rombel/${id}`, data),
     delete: (id) => api.delete(`/siswa-rombel/${id}`),
 };
@@ -422,6 +424,24 @@ export const reportAPI = {
     rombelStats: (params = {}) => api.get('/reports/rombel/stats', { params }),
     exportRombel: (params = {}) => api.get('/reports/rombel/export', { params, responseType: 'blob' }),
     exportSiswa: (params = {}) => api.get('/reports/siswa/export', { params, responseType: 'blob' }),
+    analyticsStats: (params = {}) => api.get('/reports/analytics-stats', { params }),
+};
+
+// External Sync API (Admin only)
+export const syncAPI = {
+    run: (data = {}) => api.post('/sync/run', data),
+    status: () => api.get('/sync/status'),
+    testConnection: () => api.get('/sync/test-connection'),
+    siswaDownload: () => api.post('/sync/siswa/download'),
+    siswaProcessChunk: (data) => api.post('/sync/siswa/process-chunk', data),
+    siswaCleanup: () => api.post('/sync/siswa/cleanup'),
+};
+
+export const cacheAPI = {
+    getStatus: () => api.get('/cache-manager/status'),
+    clearLaravel: () => api.post('/cache-manager/clear-laravel'),
+    clearRedis: () => api.post('/cache-manager/clear-redis'),
+    optimize: () => api.post('/cache-manager/optimize'),
 };
 
 export default api;

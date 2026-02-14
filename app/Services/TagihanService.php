@@ -51,7 +51,7 @@ class TagihanService
     public function buildDatatableQuery(array $filters = [])
     {
         $query = LamtimTagihan::query()
-            ->with(['siswa', 'masterPembayaran', 'rombel'])
+            ->with(['siswa', 'masterPembayaran', 'rombel.kelas'])
             ->select('lamtim_tagihans.*')
             ->where('lamtim_tagihans.isActive', 1)
             ->orderBy('lamtim_tagihans.tanggalTagihan', 'desc');
