@@ -19,8 +19,8 @@ class ExternalApiClient
 
     public function __construct()
     {
-        $this->baseUrl = rtrim(config('external_api.base_url'), '/');
-        $this->secret = config('external_api.secret');
+        $this->baseUrl = rtrim(config('external_api.base_url', ''), '/');
+        $this->secret = config('external_api.secret', '') ?? '';
         $this->timeout = config('external_api.timeout', 30);
         $this->retryTimes = config('external_api.retry.times', 3);
         $this->retrySleep = config('external_api.retry.sleep', 1000);
