@@ -170,6 +170,24 @@ class ExternalSyncService
         }
     }
 
+    public function syncSiswaBackground(): array
+    {
+        $syncOrder = config('external_api.sync_order', []);
+        $siswaIndex = array_search('siswa', $syncOrder) !== false ? array_search('siswa', $syncOrder) + 1 : count($syncOrder);
+        $totalEntities = count($syncOrder);
+
+        // Preload ID maps for the job context
+        $this->preloadIdMaps();
+
+        $result = $this->syncEntity('siswa', $siswaIndex, $totalEntities);
+        
+        // Save results and clear real-time progress
+        $this->results['siswa'] = $result;
+        $this->saveLastSyncTime();
+        
+        return $result;
+    }
+
     // =========================================================================
     // CLI-compatible sync (used by artisan command)
     // =========================================================================
@@ -318,7 +336,11 @@ class ExternalSyncService
                             ]);
                         }
                         $processedCount++;
-                        $this->updateProgress($entity, $processedCount, $totalRecords, 'processing', $entityIndex, $totalEntities);
+                        $this->updateProgress($entity, $processedCount, $totalRecords, 'processing', $entityIndex, $totalEntities, [
+                            'inserted' => $stats['inserted'],
+                            'updated'  => $stats['updated'],
+                            'failed'   => $stats['failed'],
+                        ]);
                         if ($onProgress) {
                             $onProgress($entity, $processedCount, $totalRecords);
                         }
@@ -774,20 +796,20 @@ class ExternalSyncService
     /**
      * Update real-time sync progress in cache.
      */
-    public function updateProgress(string $entity, int $processed, int $total, string $stage = 'processing', int $entityIndex = 1, int $totalEntities = 1): void
+    public function updateProgress(string $entity, int $processed, int $total, string $stage = 'processing', int $entityIndex = 1, int $totalEntities = 1, array $extraStats = []): void
     {
         $percentage = $total > 0 ? round(($processed / $total) * 100, 2) : 0;
         
-        Cache::put('sync_progress', [
+        Cache::put('sync_progress', array_merge([
             'entity' => $entity,
-            'stage' => $stage, // 'downloading' or 'processing'
+            'stage' => $stage, // 'downloading', 'processing', 'completed', 'failed'
             'processed' => $processed,
             'total' => $total,
             'percentage' => $percentage,
             'entity_index' => $entityIndex,
             'total_entities' => $totalEntities,
             'timestamp' => now()->toIso8601String(),
-        ], now()->addMinutes(10));
+        ], $extraStats), now()->addMinutes(10));
     }
 
     /**

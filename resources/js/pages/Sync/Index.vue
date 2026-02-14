@@ -30,18 +30,7 @@
               <SignalIcon v-else class="w-4 h-4" />
               Tes Koneksi
             </button>
-            <button @click="runSyncAll" :disabled="isSyncing"
-              class="px-6 py-3 bg-white text-emerald-600 font-semibold rounded-xl shadow-lg hover:shadow-xl hover:bg-emerald-50 transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2">
-              <svg v-if="syncingEntity === 'all'" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg"
-                fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                </path>
-              </svg>
-              <ArrowPathIcon v-else class="w-5 h-5" />
-              {{ syncingEntity === 'all' ? 'Menyinkronkan...' : 'Sync Semua' }}
-            </button>
+
           </div>
         </div>
       </div>
@@ -365,93 +354,77 @@ const runSyncNonSiswa = async (entity) => {
 }
 
 /**
- * Sync SISWA via frontend-driven chunked processing.
+ * Sync SISWA via background Laravel Job + Polling.
  */
-const runSyncSiswa = async () => {
-  syncingEntity.value = 'siswa'
-  siswaProgress.value = { stage: 'downloading', processed: 0, total: 0, percentage: 0, inserted: 0, updated: 0, failed: 0 }
+const runSyncSiswa = () => {
+  return new Promise(async (resolve, reject) => {
+    if (isSyncing.value) return resolve()
 
-  const allErrors = []
-  let totalInserted = 0, totalUpdated = 0, totalFailed = 0
+    syncingEntity.value = 'siswa'
+    siswaProgress.value = { stage: 'downloading', processed: 0, total: 0, percentage: 0, inserted: 0, updated: 0, failed: 0 }
 
-  try {
-    // Stage 1: Download
-    const dlResponse = await syncAPI.siswaDownload()
-    if (!dlResponse.data.success) {
-      throw new Error(dlResponse.data.message || 'Gagal download')
-    }
-
-    const total = dlResponse.data.data.total
-    if (total === 0) {
-      siswaProgress.value = null
-      toastRef.value?.info('Tidak ada data siswa dari API')
-      syncingEntity.value = null
-      return
-    }
-
-    siswaProgress.value = { stage: 'processing', processed: 0, total, percentage: 0, inserted: 0, updated: 0, failed: 0 }
-
-    // Stage 2: Process in chunks
-    let offset = 0
-    while (offset < total) {
-      const chunkResponse = await syncAPI.siswaProcessChunk({ offset, limit: CHUNK_SIZE })
-
-      if (chunkResponse.data.success) {
-        const result = chunkResponse.data.data
-        totalInserted += result.inserted || 0
-        totalUpdated += result.updated || 0
-        totalFailed += result.failed || 0
-        if (result.errors?.length) allErrors.push(...result.errors)
-
-        const processed = Math.min(offset + CHUNK_SIZE, total)
-        const percentage = Math.round((processed / total) * 100)
-
-        siswaProgress.value = {
-          stage: 'processing',
-          processed,
-          total,
-          percentage,
-          inserted: totalInserted,
-          updated: totalUpdated,
-          failed: totalFailed,
-        }
-      } else {
-        totalFailed += CHUNK_SIZE
-        allErrors.push(chunkResponse.data.message || 'Chunk gagal')
+    try {
+      const response = await syncAPI.siswaBackground()
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Gagal memulai background job')
       }
 
-      offset += CHUNK_SIZE
+      toastRef.value?.info('Sinkronisasi siswa dimulai di latar belakang...')
+
+      // Start polling
+      const pollInterval = setInterval(async () => {
+        try {
+          const progRes = await syncAPI.getProgress()
+          if (progRes.data.success && progRes.data.data) {
+            const prog = progRes.data.data
+
+            if (prog.entity === 'siswa') {
+              siswaProgress.value = {
+                stage: prog.stage,
+                processed: prog.processed,
+                total: prog.total,
+                percentage: prog.percentage,
+                inserted: prog.inserted || 0,
+                updated: prog.updated || 0,
+                failed: prog.failed || 0
+              }
+
+              if (prog.stage === 'completed' || prog.stage === 'failed') {
+                clearInterval(pollInterval)
+                syncingEntity.value = null
+                siswaProgress.value = null
+                await fetchStatus()
+
+                if (prog.stage === 'completed') {
+                  toastRef.value?.success('Sinkronisasi siswa selesai!')
+                  resolve()
+                } else {
+                  toastRef.value?.error('Sinkronisasi siswa gagal.')
+                  reject(new Error('Sinkronisasi siswa gagal.'))
+                }
+              }
+            }
+          } else if (!progRes.data.data && syncingEntity.value === 'siswa') {
+            // Progress disappeared but we're still syncing? Check status
+            clearInterval(pollInterval)
+            syncingEntity.value = null
+            siswaProgress.value = null
+            await fetchStatus()
+            resolve()
+          }
+        } catch (pollErr) {
+          console.error('Polling error:', pollErr)
+        }
+      }, 2000)
+
+    } catch (error) {
+      const msg = error.response?.data?.message || error.message || 'Gagal sinkronisasi siswa'
+      toastRef.value?.error(msg)
+      syncingEntity.value = null
+      siswaProgress.value = null
+      reject(error)
     }
-
-    // Stage 3: Cleanup
-    await syncAPI.siswaCleanup()
-
-    // Save result
-    if (!syncResults.value) syncResults.value = {}
-    const status = totalFailed > 0 ? 'completed_with_errors' : 'completed'
-    syncResults.value['siswa'] = {
-      status,
-      message: `Sync selesai: ${totalInserted} tambah, ${totalUpdated} update, ${totalFailed} gagal`,
-      inserted: totalInserted,
-      updated: totalUpdated,
-      failed: totalFailed,
-      errors: allErrors,
-    }
-
-    toastRef.value?.success(`Siswa: Selesai — ${totalInserted} tambah, ${totalUpdated} update`)
-
-  } catch (error) {
-    const msg = error.response?.data?.message || error.message || 'Gagal sinkronisasi siswa'
-    toastRef.value?.error(msg)
-    if (!syncResults.value) syncResults.value = {}
-    syncResults.value['siswa'] = { status: 'failed', message: msg, inserted: totalInserted, updated: totalUpdated, failed: totalFailed + 1, errors: [...allErrors, msg] }
-    // Attempt cleanup on error
-    try { await syncAPI.siswaCleanup() } catch (_) { }
-  } finally {
-    siswaProgress.value = null
-    syncingEntity.value = null
-    await fetchStatus()
-  }
+  })
 }
 
 /**
@@ -466,36 +439,7 @@ const runSync = (entity) => {
   }
 }
 
-/**
- * Sync all entities sequentially.
- */
-const runSyncAll = async () => {
-  if (isSyncing.value) return
-  syncingEntity.value = 'all'
 
-  // Sync non-siswa first (sequentially)
-  const nonSiswa = entities.value.filter(e => e !== 'siswa')
-  for (const entity of nonSiswa) {
-    syncingEntity.value = entity
-    try {
-      const response = await syncAPI.run({ entity })
-      if (response.data.success) {
-        if (!syncResults.value) syncResults.value = {}
-        syncResults.value[entity] = response.data.data.result
-      }
-    } catch (error) {
-      if (!syncResults.value) syncResults.value = {}
-      syncResults.value[entity] = { status: 'failed', inserted: 0, updated: 0, failed: 1, errors: [error.message] }
-    }
-  }
-
-  // Then sync siswa (chunked)
-  await runSyncSiswa()
-
-  syncingEntity.value = null
-  toastRef.value?.success('Sinkronisasi semua entitas selesai!')
-  await fetchStatus()
-}
 
 const showErrors = (entityName, errors) => {
   errorModalTitle.value = entityLabel(entityName)

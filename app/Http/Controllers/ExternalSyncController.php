@@ -100,6 +100,34 @@ class ExternalSyncController extends Controller
     }
 
     /**
+     * Dispatch background sync for siswa.
+     */
+    public function dispatchSiswaSync(): JsonResponse
+    {
+        try {
+            \App\Jobs\SyncSiswaJob::dispatch();
+            
+            return ResponseHelper::success(null, 'Sinkronisasi siswa dimulai di latar belakang');
+        } catch (\Exception $e) {
+            Log::error("Failed to dispatch SyncSiswaJob", ['error' => $e->getMessage()]);
+            return ResponseHelper::error('Gagal memulai sinkronisasi: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Get real-time progress of current sync.
+     */
+    public function getSyncProgress(): JsonResponse
+    {
+        try {
+            $progress = $this->syncService->getProgress();
+            return ResponseHelper::success($progress);
+        } catch (\Exception $e) {
+            return ResponseHelper::error('Gagal mengambil progres: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Get last sync status and entity statistics.
      */
     public function status(): JsonResponse

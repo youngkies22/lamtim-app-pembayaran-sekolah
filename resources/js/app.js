@@ -2,6 +2,7 @@ import './bootstrap';
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { initFlowbite } from 'flowbite';
+import VueApexCharts from 'vue3-apexcharts';
 
 // Initialize dark mode as early as possible
 import { useDarkMode } from './composables/useDarkMode';
@@ -43,6 +44,9 @@ import ReportSiswa from './pages/reports/ReportSiswa.vue';
 import ReportRombel from './pages/reports/ReportRombel.vue';
 import PrintReportRombel from './pages/reports/PrintReportRombel.vue';
 import PrintSiswa from './pages/reports/PrintSiswa.vue';
+import AlumniAnalysis from './pages/reports/AlumniAnalysis.vue';
+import AlumniDiagram from './pages/reports/AlumniDiagram.vue';
+import ActiveStudentDiagram from './pages/reports/ActiveStudentDiagram.vue';
 import Settings from './pages/Settings.vue';
 import Profile from './pages/Profile.vue';
 import UsersIndex from './pages/users/Index.vue';
@@ -229,6 +233,24 @@ const routes = [
         meta: { requiresAuth: true, activeMenu: 'Reports' }
     },
     {
+        path: '/reports/alumni-analysis',
+        name: 'reports-alumni-analysis',
+        component: AlumniAnalysis,
+        meta: { requiresAuth: true, activeMenu: 'Reports' }
+    },
+    {
+        path: '/diagrams/alumni',
+        name: 'diagrams-alumni',
+        component: AlumniDiagram,
+        meta: { requiresAuth: true, activeMenu: 'Diagrams' }
+    },
+    {
+        path: '/diagrams/student',
+        name: 'diagrams-student',
+        component: ActiveStudentDiagram,
+        meta: { requiresAuth: true, activeMenu: 'Diagrams' }
+    },
+    {
         path: '/reports/rombel/print',
         name: 'reports-rombel-print',
         component: PrintReportRombel,
@@ -379,7 +401,12 @@ try {
     
     const app = createApp(App);
 
+    // Register global plugins
     app.use(router);
+
+    // Register ApexCharts globally
+    app.use(VueApexCharts);
+
     app.mount('#app');
     
     // Initialize Flowbite components after Vue app is mounted

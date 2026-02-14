@@ -37,7 +37,7 @@
               <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                 {{ stat.name }}
               </p>
-              <p class="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+              <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white truncate">
                 <span v-if="loadingStats"
                   class="inline-block w-20 h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></span>
                 <span v-else>{{ formatValue(stat.value, stat.isCurrency) }}</span>
@@ -105,7 +105,8 @@ import {
   UserIcon,
   ClipboardDocumentCheckIcon,
   EyeIcon,
-  EyeSlashIcon
+  EyeSlashIcon,
+  AcademicCapIcon
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
@@ -133,7 +134,7 @@ const formatValue = (value, isCurrency = false) => {
 // Stats data
 const stats = ref([
   {
-    name: 'Total Siswa',
+    name: 'Siswa Aktif',
     value: '-',
     subtitle: null,
     icon: UserGroupIcon,
@@ -215,6 +216,13 @@ const quickActions = ref([
     icon: ClipboardDocumentCheckIcon,
     color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400',
     route: '/reports/rombel'
+  },
+  {
+    name: 'Laporan Alumni',
+    description: 'Keuangan alumni',
+    icon: AcademicCapIcon,
+    color: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
+    route: '/reports/alumni-analysis'
   }
 ]);
 
@@ -275,7 +283,7 @@ const loadStats = async () => {
     // Update stats with real data
     if (data) {
       stats.value[0].value = (data.totalSiswa || 0).toLocaleString('id-ID');
-      stats.value[0].subtitle = data.siswaAktif ? `${data.siswaAktif} aktif` : null;
+      stats.value[0].subtitle = 'Semua aktif';
 
       stats.value[1].value = data.totalPembayaran || 0;
       stats.value[1].subtitle = data.jumlahTransaksi ? `${data.jumlahTransaksi} transaksi` : null;
@@ -285,7 +293,7 @@ const loadStats = async () => {
       stats.value[2].isCurrencySubtitle = true; // Flag for template
 
       stats.value[3].value = data.pembayaranBulanIni || 0;
-      stats.value[3].subtitle = data.transaksibulanIni ? `${data.transaksibulanIni} transaksi` : null;
+      stats.value[3].subtitle = data.transaksiBulanIni ? `${data.transaksiBulanIni} transaksi` : null;
     }
   } catch (err) {
     // Fallback to static data if API fails

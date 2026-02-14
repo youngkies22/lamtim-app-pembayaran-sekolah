@@ -23,6 +23,7 @@ const MENU_PERMISSIONS = {
   'Payments': [ROLES.ADMIN, ROLES.OPERATOR, ROLES.KEPSEK],
   'Jurnal': [ROLES.ADMIN, ROLES.OPERATOR],
   'Reports': [ROLES.ADMIN, ROLES.OPERATOR, ROLES.KEPSEK],
+  'Diagrams': [ROLES.ADMIN, ROLES.OPERATOR, ROLES.KEPSEK],
   'Users': [ROLES.ADMIN], // Only Admin can access Users menu
   'Backups': [ROLES.ADMIN, ROLES.OPERATOR], // Admin & Operator can access Backups
   'Trash': [ROLES.ADMIN], // Only Admin can access Trash (Updated)

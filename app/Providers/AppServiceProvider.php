@@ -41,9 +41,13 @@ use App\Repositories\Interfaces\ImportRepositoryInterface;
 use App\Repositories\Interfaces\JenisPembayaranRepositoryInterface;
 use App\Repositories\Interfaces\KategoriPembayaranRepositoryInterface;
 use App\Repositories\Interfaces\TipePembayaranRepositoryInterface;
+use App\Repositories\Interfaces\AlumniAnalysisRepositoryInterface;
+use App\Repositories\Interfaces\ActiveStudentAnalysisRepositoryInterface;
 use App\Repositories\JenisPembayaranRepository;
 use App\Repositories\KategoriPembayaranRepository;
 use App\Repositories\TipePembayaranRepository;
+use App\Repositories\AlumniAnalysisRepository;
+use App\Repositories\ActiveStudentAnalysisRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -126,6 +130,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             TipePembayaranRepositoryInterface::class,
             TipePembayaranRepository::class
+        );
+
+        $this->app->bind(
+            AlumniAnalysisRepositoryInterface::class,
+            AlumniAnalysisRepository::class
+        );
+
+        $this->app->bind(
+            ActiveStudentAnalysisRepositoryInterface::class,
+            ActiveStudentAnalysisRepository::class
         );
     }
 

@@ -42,13 +42,18 @@ class CacheManagerController extends Controller
     }
 
     /**
-     * Clear the standard Laravel application cache.
+     * Clear all Laravel caches (application, config, routes, views, events).
      */
     public function clearLaravelCache(): JsonResponse
     {
         try {
             Artisan::call('cache:clear');
-            return ResponseHelper::success(null, 'Laravel cache cleared successfully');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+            Artisan::call('event:clear');
+
+            return ResponseHelper::success(null, 'Semua cache Laravel berhasil dihapus');
         } catch (\Exception $e) {
             Log::error('CacheManager: Failed to clear Laravel cache', ['error' => $e->getMessage()]);
             return ResponseHelper::error('Failed to clear Laravel cache: ' . $e->getMessage());

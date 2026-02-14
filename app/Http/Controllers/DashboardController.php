@@ -17,9 +17,10 @@ class DashboardController extends Controller
     public function stats(Request $request)
     {
         try {
-            // Total siswa
-            $totalSiswa = LamtimSiswa::count();
-            $siswaAktif = LamtimSiswa::active()->count();
+            // Stats Siswa
+            $totalSiswa = LamtimSiswa::active()->count(); // Hanya yang AKTIF dan BUKAN ALUMNI
+            $totalAlumni = LamtimSiswa::where('isAlumni', 1)->count();
+            $siswaOff = LamtimSiswa::where('isActive', 2)->count();
 
             // Total pembayaran (all time)
             $totalPembayaran = LamtimPembayaran::where('status', 1)->sum('nominalBayar');
@@ -50,7 +51,8 @@ class DashboardController extends Controller
 
             return ResponseHelper::success([
                 'totalSiswa' => $totalSiswa,
-                'siswaAktif' => $siswaAktif,
+                'totalAlumni' => $totalAlumni,
+                'totalSiswaOff' => $siswaOff,
                 'totalPembayaran' => $totalPembayaran,
                 'jumlahTransaksi' => $jumlahTransaksi,
                 'tagihanBelumLunas' => $tagihanBelumLunas,

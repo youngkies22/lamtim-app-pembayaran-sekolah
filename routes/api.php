@@ -208,6 +208,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('rombel/export', [ReportController::class, 'exportRombelReport'])->name('api.reports.rombel.export');
           Route::get('siswa/export', [ReportController::class, 'exportSiswaReport'])->name('api.reports.siswa.export');
           Route::get('analytics-stats', [ReportController::class, 'analyticsStats'])->name('api.reports.analytics-stats');
+          Route::get('/alumni-analysis', [\App\Http\Controllers\AlumniAnalysisController::class, 'index'])->name('api.reports.alumni-analysis');
+          Route::get('/alumni-analysis/export', [\App\Http\Controllers\AlumniAnalysisController::class, 'export'])->name('api.reports.alumni-analysis.export');
+          Route::get('/active-student-analysis', [\App\Http\Controllers\ActiveStudentAnalysisController::class, 'index'])->name('api.reports.active-student-analysis');
       });
 
       // Settings Routes - Admin Only
@@ -231,7 +234,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('/status', [\App\Http\Controllers\ExternalSyncController::class, 'status'])->name('api.sync.status');
           Route::get('/test-connection', [\App\Http\Controllers\ExternalSyncController::class, 'testConnection'])->name('api.sync.test-connection');
           
-          // Siswa chunked sync
+          // Siswa background sync
+          Route::post('/siswa/background', [\App\Http\Controllers\ExternalSyncController::class, 'dispatchSiswaSync'])->name('api.sync.siswa.background');
+          Route::get('/progress', [\App\Http\Controllers\ExternalSyncController::class, 'getSyncProgress'])->name('api.sync.progress');
+          
+          // Siswa chunked sync (legacy/manual)
           Route::post('/siswa/download', [\App\Http\Controllers\ExternalSyncController::class, 'downloadSiswa'])->name('api.sync.siswa.download');
           Route::post('/siswa/process-chunk', [\App\Http\Controllers\ExternalSyncController::class, 'processSiswaChunk'])->name('api.sync.siswa.process-chunk');
           Route::post('/siswa/cleanup', [\App\Http\Controllers\ExternalSyncController::class, 'cleanupSiswa'])->name('api.sync.siswa.cleanup');

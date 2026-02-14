@@ -43,7 +43,7 @@
           <!-- Dropdown for grouped menus -->
           <button type="button" @click="toggleDropdown(item.name)" :class="[
             'flex items-center justify-between w-full px-4 py-3 rounded-lg transition-colors duration-200',
-            (item.name === 'Master Data' && isMasterDataActive) || (item.name === 'Payments' && isPaymentsActive) || (item.name === 'Reports' && isReportsActive) || (item.name === 'Students' && isStudentsActive)
+            (item.name === 'Master Data' && isMasterDataActive) || (item.name === 'Payments' && isPaymentsActive) || (item.name === 'Reports' && isReportsActive) || (item.name === 'Students' && isStudentsActive) || (item.name === 'Diagrams' && isDiagramsActive)
               ? 'bg-blue-600 text-white dark:bg-blue-700'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
           ]" :aria-expanded="isDropdownOpen(item.name)">
@@ -61,7 +61,7 @@
                 : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
             ]">
               <component :is="child.icon" class="w-4 h-4 flex-shrink-0" />
-              <span class="text-sm font-medium">{{ child.name }}</span>
+              <span class="text-sm font-medium truncate">{{ child.name }}</span>
               <svg v-if="child.target === '_blank'" class="w-3 h-3 ml-auto text-gray-400" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -106,6 +106,7 @@ import {
   ArrowPathIcon,
   ArrowUpCircleIcon,
   UserMinusIcon,
+  PresentationChartBarIcon,
 } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
@@ -201,6 +202,16 @@ const menuItems = computed(() => {
         { name: 'Laporan Harian', icon: ChartBarIcon, route: '/reports' },
         { name: 'Laporan per Siswa', icon: UserGroupIcon, route: '/reports/siswa' },
         { name: 'Laporan per Rombel', icon: Squares2X2Icon, route: '/reports/rombel' },
+        { name: 'Laporan Alumni', icon: AcademicCapIcon, route: '/reports/alumni-analysis' },
+      ]
+    },
+    {
+      name: 'Diagrams',
+      icon: PresentationChartBarIcon,
+      route: '/diagrams',
+      children: [
+        { name: 'Alumni', icon: ChartBarIcon, route: '/diagrams/alumni' },
+        { name: 'Siswa Aktif', icon: ChartBarIcon, route: '/diagrams/student' },
       ]
     },
     { name: 'Closing', icon: LockClosedIcon, route: '/closing' },
@@ -236,7 +247,12 @@ const isPaymentsActive = computed(() => {
 
 const isReportsActive = computed(() => {
   return props.activeMenu === 'Reports' ||
-    route.path.startsWith('/reports')
+    (route.path.startsWith('/reports') && !route.path.includes('diagram'))
+})
+
+const isDiagramsActive = computed(() => {
+  return props.activeMenu === 'Diagrams' ||
+    route.path.startsWith('/diagrams')
 })
 
 const isStudentsActive = computed(() => {
@@ -267,6 +283,9 @@ const isDropdownOpen = (menuName) => {
   }
   if (menuName === 'Reports') {
     return openDropdown.value === menuName || isReportsActive.value
+  }
+  if (menuName === 'Diagrams') {
+    return openDropdown.value === menuName || isDiagramsActive.value
   }
   if (menuName === 'Students') {
     return openDropdown.value === menuName || isStudentsActive.value
@@ -307,6 +326,9 @@ onMounted(async () => {
   }
   if (isStudentsActive.value) {
     openDropdown.value = 'Students'
+  }
+  if (isDiagramsActive.value) {
+    openDropdown.value = 'Diagrams'
   }
   window.addEventListener('resize', handleResize)
 })

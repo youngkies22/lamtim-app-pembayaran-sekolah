@@ -425,6 +425,10 @@ export const reportAPI = {
     exportRombel: (params = {}) => api.get('/reports/rombel/export', { params, responseType: 'blob' }),
     exportSiswa: (params = {}) => api.get('/reports/siswa/export', { params, responseType: 'blob' }),
     analyticsStats: (params = {}) => api.get('/reports/analytics-stats', { params }),
+    alumniAnalysis: (params = {}) => api.get('/reports/alumni-analysis', { params }),
+    exportAlumniAnalysis: (params = {}) => api.get('/reports/alumni-analysis/export', { params, responseType: 'blob' }),
+    activeStudentAnalysis: (params = {}) => api.get('/reports/active-student-analysis', { params }),
+    getSekolahSelect: (params = {}) => api.get('/master-data/sekolah/select', { params }),
 };
 
 // External Sync API (Admin only)
@@ -432,6 +436,8 @@ export const syncAPI = {
     run: (data = {}) => api.post('/sync/run', data),
     status: () => api.get('/sync/status'),
     testConnection: () => api.get('/sync/test-connection'),
+    siswaBackground: () => api.post('/sync/siswa/background'),
+    getProgress: () => api.get('/sync/progress'),
     siswaDownload: () => api.post('/sync/siswa/download'),
     siswaProcessChunk: (data) => api.post('/sync/siswa/process-chunk', data),
     siswaCleanup: () => api.post('/sync/siswa/cleanup'),
