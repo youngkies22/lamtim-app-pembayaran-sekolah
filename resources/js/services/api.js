@@ -376,6 +376,7 @@ export const tagihanAPI = {
     update: (id, data) => api.put(`/tagihan/${id}`, data),
     delete: (id) => api.delete(`/tagihan/${id}`),
     generateBatch: (data) => api.post('/tagihan/generate-batch', data),
+    retrySync: (id) => api.post(`/tagihan/${id}/retry-sync`),
 };
 
 // Invoice API
@@ -401,6 +402,7 @@ export const pembayaranAPI = {
     cancel: (id, alasan = null) => api.post(`/pembayaran/${id}/cancel`, { alasan }),
     delete: (id) => api.delete(`/pembayaran/${id}`),
     exportExcel: (params = {}) => api.get('/pembayaran/export', { params, responseType: 'blob' }),
+    retrySync: (id) => api.post(`/pembayaran/${id}/retry-sync`),
 };
 
 // Users API (Admin only)

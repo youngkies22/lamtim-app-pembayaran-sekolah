@@ -75,9 +75,22 @@ class FormatHelper
                 'AKTIF' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 uppercase">Alumni (Aktif)</span>',
                 'OFF' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 uppercase font-bold">Alumni (Off)</span>',
             ],
+            'sync' => [
+                'pending' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Sync Pending</span>',
+                'success' => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Synced</span>',
+                'failed'  => '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Sync Failed</span>',
+            ],
         ];
 
-        return $badges[$type][$status] ?? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">' . $status . '</span>';
+        return $badges[$type][$status] ?? '<span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">' . ($status ?: 'N/A') . '</span>';
+    }
+
+    /**
+     * Format sync status badge
+     */
+    public static function syncStatusBadge(?string $status): string
+    {
+        return self::statusBadge($status ?: 'pending', 'sync');
     }
 
     /**

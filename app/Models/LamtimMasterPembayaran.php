@@ -138,9 +138,13 @@ class LamtimMasterPembayaran extends Model
         $currentRombel = $rombel ?? $siswa->currentRombel()->with(['rombel.sekolah', 'rombel.jurusan', 'rombel.kelas'])->first();
         $rombelModel = $currentRombel?->rombel;
         
-        // Determine semester based on month (1-6 = Ganjil, 7-12 = Genap)
-        $currentMonth = $bulan ? (int)explode('-', $bulan)[1] : (int)now()->format('m');
-        $semesterModel = \App\Models\LamtimSemester::getByBulan($currentMonth);
+        // Determine semester based on month
+        if ($bulan) {
+            $month = (int)explode('-', $bulan)[1];
+            $semesterModel = \App\Models\LamtimSemester::getByBulan($month);
+        } else {
+            $semesterModel = \App\Models\LamtimSemester::getCurrent();
+        }
         $idSemester = $semesterModel?->id;
 
         // Get idTahunAjaran dengan fallback ke tahun ajaran aktif

@@ -44,6 +44,9 @@ class LamtimTagihan extends Model
         'createdBy',
         'updatedBy',
         'deletedBy',
+        'sync_status',
+        'sync_at',
+        'sync_error',
     ];
 
     protected $casts = [
@@ -55,6 +58,7 @@ class LamtimTagihan extends Model
         'totalSisa' => 'decimal:2',
         'status' => 'integer',
         'isActive' => 'boolean',
+        'sync_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

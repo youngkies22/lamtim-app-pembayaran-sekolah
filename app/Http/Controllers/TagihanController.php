@@ -58,8 +58,10 @@ class TagihanController extends Controller
             ->addColumn('terbayar_formatted', fn($row) => FormatHelper::currency($row->totalSudahBayar ?? 0))
             ->addColumn('sisa_formatted', fn($row) => FormatHelper::currency($row->totalSisa ?? 0))
             ->addColumn('status_badge', fn($row) => FormatHelper::statusBadge($row->status, 'tagihan'))
+            ->addColumn('sync_status_badge', fn($row) => FormatHelper::syncStatusBadge($row->sync_status))
             ->addColumn('action', function ($row) {
                 $buttons = '<li><button data-action="detail" data-id="' . $row->id . '" class="w-full text-left px-3 py-2 text-sm font-medium text-emerald-600 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-900/20 rounded-lg transition-all duration-200 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></div> Detail</button></li>';
+                $buttons .= '<li><button data-action="retry-sync" data-id="' . $row->id . '" class="w-full text-left px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></div> Retry Sync</button></li>';
 
                 if ($row->status === 0) {
                     $buttons .= '<li><button data-action="delete" data-id="' . $row->id . '" data-kode="' . htmlspecialchars($row->kodeTagihan) . '" class="w-full text-left px-3 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-900/20 rounded-lg transition-all duration-200 flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></div> Hapus</button></li>';
@@ -79,7 +81,7 @@ class TagihanController extends Controller
                     </div>
                 </div>';
             })
-            ->rawColumns(['status_badge', 'action'])
+            ->rawColumns(['status_badge', 'sync_status_badge', 'action'])
             ->make(true);
     }
 
@@ -156,6 +158,25 @@ class TagihanController extends Controller
             $this->service->delete($id);
 
             return ResponseHelper::success(null, 'Tagihan berhasil dihapus');
+        } catch (\Exception $e) {
+            return ResponseHelper::error($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Retry sync for a specific tagihan.
+     */
+    public function retrySync(string $id)
+    {
+        try {
+            $tagihan = $this->service->find($id);
+            if (!$tagihan) {
+                return ResponseHelper::notFound('Tagihan tidak ditemukan');
+            }
+
+            \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
+
+            return ResponseHelper::success(null, 'Sync job dispatched');
         } catch (\Exception $e) {
             return ResponseHelper::error($e->getMessage(), 500);
         }

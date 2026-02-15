@@ -116,6 +116,9 @@ class TagihanService
 
             DB::commit();
 
+            // Dispatch background sync for new tagihan
+            \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
+
             return $tagihan;
         } catch (\Exception $e) {
             DB::rollBack();
@@ -188,6 +191,14 @@ class TagihanService
 
             DB::commit();
 
+            // Dispatch background sync for all newly generated tagihans
+            foreach ($generated as $tagihanId) {
+                $tagihan = \App\Models\LamtimTagihan::find($tagihanId);
+                if ($tagihan) {
+                    \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
+                }
+            }
+
             return [
                 'generated' => $generated,
                 'skipped' => $skipped,
@@ -212,7 +223,14 @@ class TagihanService
 
             DB::commit();
 
-            return $this->repository->find($id);
+            $tagihan = $this->repository->find($id);
+
+            // Dispatch background sync for updated tagihan
+            if ($tagihan) {
+                \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
+            }
+
+            return $tagihan;
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error updating tagihan', ['id' => $id, 'error' => $e->getMessage()]);

@@ -32,16 +32,16 @@ class AcademicIntegrationService implements AcademicIntegrationServiceInterface
 
             $payload = [
                 'identity' => [
-                    'username' => $tagihan->siswa->username,
+                    'username' => $tagihan->siswa?->username ?? '-',
                     'uuid_spp' => $tagihan->id,
                 ],
                 'billing_detail' => [
                     'kode_tagihan' => $tagihan->kodeTagihan,
-                    'nama_pembayaran' => $tagihan->masterPembayaran->nama,
-                    'kategori' => $tagihan->masterPembayaran->kategori,
-                    'tipe' => $tagihan->masterPembayaran->jenisPembayaran,
-                    'tahun_ajaran' => $tagihan->tahunAjaran->tahun,
-                    'semester' => $tagihan->semester->nama,
+                    'nama_pembayaran' => $tagihan->masterPembayaran?->nama ?? '-',
+                    'kategori' => $tagihan->masterPembayaran?->kategori ?? '-',
+                    'tipe' => $tagihan->masterPembayaran?->jenisPembayaran ?? '-',
+                    'tahun_ajaran' => $tagihan->tahunAjaran?->tahun ?? '-',
+                    'semester' => $tagihan->semester?->nama ?? '-',
                     'nominal' => (float) $tagihan->nominalTagihan,
                     'terbayar' => (float) $tagihan->totalSudahBayar,
                     'sisa' => (float) $tagihan->totalSisa,
@@ -52,12 +52,24 @@ class AcademicIntegrationService implements AcademicIntegrationServiceInterface
 
             $this->apiClient->post('push_tagihan', $payload);
 
+            $tagihan->update([
+                'sync_status' => 'success',
+                'sync_at' => now(),
+                'sync_error' => null,
+            ]);
+
             return true;
         } catch (\Exception $e) {
             Log::error('Academic Integration: Failed to push tagihan', [
                 'tagihan_id' => $tagihan->id,
                 'error' => $e->getMessage(),
             ]);
+
+            $tagihan->update([
+                'sync_status' => 'failed',
+                'sync_error' => $e->getMessage(),
+            ]);
+
             return false;
         }
     }
@@ -78,13 +90,13 @@ class AcademicIntegrationService implements AcademicIntegrationServiceInterface
 
             $payload = [
                 'identity' => [
-                    'username' => $pembayaran->siswa->username,
-                    'uuid_spp' => $pembayaran->tagihan->id,
+                    'username' => $pembayaran->siswa?->username ?? '-',
+                    'uuid_spp' => $pembayaran->tagihan?->id,
                 ],
                 'payment_detail' => [
                     'uuid_tagihan_spp' => $pembayaran->idTagihan,
                     'uuid_pembayaran_spp' => $pembayaran->id,
-                    'username_siswa' => $pembayaran->siswa->username,
+                    'username_siswa' => $pembayaran->siswa?->username ?? '-',
                     'nomor_transaksi' => $pembayaran->kodePembayaran,
                     'nominal_bayar' => (float) $pembayaran->nominalBayar,
                     'metode_pembayaran' => $pembayaran->metodeBayar,
@@ -93,13 +105,19 @@ class AcademicIntegrationService implements AcademicIntegrationServiceInterface
                 ],
                 // Also send updated tagihan state
                 'billing_state' => [
-                    'total_terbayar' => (float) $pembayaran->tagihan->totalSudahBayar,
-                    'total_sisa' => (float) $pembayaran->tagihan->totalSisa,
-                    'status' => $pembayaran->tagihan->status_label,
+                    'total_terbayar' => (float) ($pembayaran->tagihan?->totalSudahBayar ?? 0),
+                    'total_sisa' => (float) ($pembayaran->tagihan?->totalSisa ?? 0),
+                    'status' => $pembayaran->tagihan?->status_label ?? 'Unknown',
                 ]
             ];
 
             $this->apiClient->post('push_pembayaran', $payload);
+
+            $pembayaran->update([
+                'sync_status' => 'success',
+                'sync_at' => now(),
+                'sync_error' => null,
+            ]);
 
             return true;
         } catch (\Exception $e) {
@@ -107,6 +125,12 @@ class AcademicIntegrationService implements AcademicIntegrationServiceInterface
                 'pembayaran_id' => $pembayaran->id,
                 'error' => $e->getMessage(),
             ]);
+
+            $pembayaran->update([
+                'sync_status' => 'failed',
+                'sync_error' => $e->getMessage(),
+            ]);
+
             return false;
         }
     }

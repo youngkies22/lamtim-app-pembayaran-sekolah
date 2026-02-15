@@ -71,12 +71,29 @@ class LamtimSemester extends Model
     }
 
     /**
-     * Get semester berdasarkan bulan (1-6 = Ganjil, 7-12 = Genap)
+     * Get semester berdasarkan bulan
+     * Jan-Jun (1-6) = Genap
+     * Jul-Dec (7-12) = Ganjil
      */
     public static function getByBulan(int $bulan): ?self
     {
-        $kode = ($bulan >= 1 && $bulan <= 6) ? 'Ganjil' : 'Genap';
-        return static::getByKode($kode);
+        $search = ($bulan >= 1 && $bulan <= 6) ? 'GENAP' : 'GANJIL';
+        
+        // Coba cari yang aktif dulu yang mengandung kata tersebut
+        $activeMatching = static::active()
+            ->where(function($q) use ($search) {
+                $q->where('kode', 'LIKE', "%{$search}%")
+                  ->orWhere('nama', 'LIKE', "%{$search}%");
+            })->first();
+
+        if ($activeMatching) {
+            return $activeMatching;
+        }
+
+        // Fallback: cari yang mana saja yang matching
+        return static::where('kode', 'LIKE', "%{$search}%")
+            ->orWhere('nama', 'LIKE', "%{$search}%")
+            ->first();
     }
 
     /**
@@ -84,6 +101,12 @@ class LamtimSemester extends Model
      */
     public static function getCurrent(): ?self
     {
+        // Prioritas: Ambil yang ditandai isActive = 1
+        $active = static::active()->first();
+        if ($active) {
+            return $active;
+        }
+
         $currentMonth = (int) now()->format('m');
         return static::getByBulan($currentMonth);
     }

@@ -91,8 +91,7 @@ class PembayaranService
         // Get semester dari tagihan atau current semester
         $idSemester = $tagihan->idSemester;
         if (!$idSemester) {
-            $currentMonth = (int)now()->format('m');
-            $semesterModel = \App\Models\LamtimSemester::getByBulan($currentMonth);
+            $semesterModel = \App\Models\LamtimSemester::getCurrent();
             $idSemester = $semesterModel?->id;
         }
 
@@ -148,9 +147,6 @@ class PembayaranService
 
             DB::commit();
 
-            // Trigger sync to academic system (budutwj) after commit
-            $this->academicService->pushPembayaran($pembayaran);
-
             return [
                 'invoice' => $invoice->fresh(['tagihan', 'siswa']),
                 'pembayaran' => $pembayaran->fresh(['invoice', 'tagihan', 'siswa']),
@@ -183,6 +179,9 @@ class PembayaranService
             $pembayaran->verify(auth()->id());
 
             DB::commit();
+
+            // Trigger sync to academic system (budutwj) after verification
+            \App\Jobs\PushAcademicDataJob::dispatch($pembayaran);
 
             return $pembayaran->fresh(['invoice', 'tagihan', 'siswa']);
         } catch (\Exception $e) {
@@ -306,6 +305,9 @@ class PembayaranService
             ->addColumn('verifikasi_badge', function ($row) {
                 return FormatHelper::verifikasiStatusBadge($row->isVerified);
             })
+            ->addColumn('sync_status_badge', function ($row) {
+                return FormatHelper::syncStatusBadge($row->sync_status);
+            })
             ->addColumn('siswa_nama', function ($row) {
                 return $row->siswa->nama ?? '-';
             })
@@ -321,7 +323,7 @@ class PembayaranService
                 // Check if the date of payment is already closed
                 return Closing::isDateClosed($row->tanggalBayar);
             })
-            ->rawColumns(['status_badge', 'verifikasi_badge'])
+            ->rawColumns(['status_badge', 'verifikasi_badge', 'sync_status_badge'])
             ->make(true);
     }
 

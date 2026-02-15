@@ -46,6 +46,9 @@ class LamtimPembayaran extends Model
         'createdBy',
         'updatedBy',
         'deletedBy',
+        'sync_status',
+        'sync_at',
+        'sync_error',
     ];
 
     protected $casts = [
@@ -55,6 +58,7 @@ class LamtimPembayaran extends Model
         'status' => 'integer',
         'isVerified' => 'boolean',
         'isActive' => 'boolean',
+        'sync_at' => 'datetime',
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

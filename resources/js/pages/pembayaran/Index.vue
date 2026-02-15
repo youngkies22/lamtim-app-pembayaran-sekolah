@@ -261,6 +261,9 @@
                                     Verifikasi</th>
                                 <th
                                     class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                                    Sync</th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                                     Aksi</th>
                             </tr>
                         </thead>
@@ -731,6 +734,7 @@ const initDataTable = () => {
             { data: 'tanggal_formatted', name: 'tanggalBayar' },
             { data: 'status_badge', name: 'status', orderable: false },
             { data: 'verifikasi_badge', name: 'isVerified', orderable: false },
+            { data: 'sync_status_badge', name: 'sync_status', orderable: false },
             {
                 data: null,
                 name: 'action',
@@ -742,6 +746,7 @@ const initDataTable = () => {
                     const isAdmin = userRole === ROLES.ADMIN;
 
                     let buttons = `<button data-action="detail" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer">Detail</button>`;
+                    buttons += `<button data-action="retry-sync" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-sky-600 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300 bg-sky-50 dark:bg-sky-900/20 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors cursor-pointer ml-1">Sync</button>`;
 
                     if (!data.isVerified && data.status === 1) {
                         buttons += `<button data-action="verify" data-id="${data.id}" class="px-3 py-1.5 text-xs font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors cursor-pointer ml-1">Verifikasi</button>`;
@@ -797,6 +802,8 @@ const initDataTable = () => {
                     handleCancel(id);
                 } else if (action === 'delete') {
                     handleDelete(id);
+                } else if (action === 'retry-sync') {
+                    handleRetrySync(id);
                 }
             });
         }
@@ -918,6 +925,19 @@ const confirmDelete = async () => {
         toastRef.value?.error(err.response?.data?.message || 'Gagal menghapus pembayaran');
     } finally {
         actionLoading.value = false;
+    }
+};
+
+const handleRetrySync = async (id) => {
+    try {
+        const response = await pembayaranAPI.retrySync(id);
+        if (response.data.success) {
+            toastRef.value?.success('Sync job telah dijadwalkan ulang');
+            loadData();
+        }
+    } catch (err) {
+        console.error('Error retrying sync:', err);
+        toastRef.value?.error(err.response?.data?.message || 'Gagal menjadwalkan ulang sync');
     }
 };
 

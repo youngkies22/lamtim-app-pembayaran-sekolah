@@ -185,6 +185,9 @@
                   Status</th>
                 <th
                   class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Sync Status</th>
+                <th
+                  class="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Angkatan</th>
               </tr>
             </thead>
@@ -566,6 +569,7 @@ const initDataTable = () => {
       { data: 'terbayar_formatted', name: 'totalSudahBayar', orderable: false },
       { data: 'sisa_formatted', name: 'totalSisa', orderable: false },
       { data: 'status_badge', name: 'status', orderable: false },
+      { data: 'sync_status_badge', name: 'sync_status', orderable: false },
       { data: 'siswa_angkatan', name: 'siswa.tahunAngkatan' },
     ],
     order: [[4, 'desc']],
@@ -601,6 +605,8 @@ const initDataTable = () => {
           handleDetail(id);
         } else if (action === 'delete') {
           handleDelete(id, this.dataset.kode);
+        } else if (action === 'retry-sync') {
+          handleRetrySync(id);
         }
       });
     }

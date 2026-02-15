@@ -144,6 +144,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('tagihan/{id}', [TagihanController::class, 'show'])->name('api.tagihan.show');
     Route::post('tagihan', [TagihanController::class, 'store'])->middleware('role:1,2')->name('api.tagihan.store');
     Route::post('tagihan/generate-batch', [TagihanController::class, 'generateBatch'])->middleware('role:1,2')->name('api.tagihan.generate-batch');
+    Route::post('tagihan/{id}/retry-sync', [TagihanController::class, 'retrySync'])->middleware('role:1,2')->name('api.tagihan.retry-sync');
     Route::put('tagihan/{id}', [TagihanController::class, 'update'])->middleware('role:1,2')->name('api.tagihan.update');
     Route::delete('tagihan/{id}', [TagihanController::class, 'destroy'])->middleware('role:1,2')->name('api.tagihan.destroy');
 
@@ -180,6 +181,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('pembayaran/proses', [PembayaranController::class, 'prosesPembayaran'])->middleware('role:1,2')->name('api.pembayaran.proses');
         Route::post('pembayaran/{id}/verify', [PembayaranController::class, 'verify'])->middleware('role:1,2')->name('api.pembayaran.verify');
         Route::post('pembayaran/{id}/cancel', [PembayaranController::class, 'cancel'])->middleware('role:1,2')->name('api.pembayaran.cancel');
+        Route::post('pembayaran/{id}/retry-sync', [PembayaranController::class, 'retrySync'])->middleware('role:1,2')->name('api.pembayaran.retry-sync');
         Route::post('pembayaran', [PembayaranController::class, 'store'])->middleware('role:1,2')->name('api.pembayaran.store');
         Route::put('pembayaran/{id}', [PembayaranController::class, 'update'])->middleware('role:1,2')->name('api.pembayaran.update');
         Route::delete('pembayaran/{id}', [PembayaranController::class, 'destroy'])->middleware('role:1,2')->name('api.pembayaran.destroy');

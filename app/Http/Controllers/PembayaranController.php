@@ -158,4 +158,23 @@ class PembayaranController extends Controller
             return ResponseHelper::error($e->getMessage(), 500);
         }
     }
+
+    /**
+     * Retry sync for a specific pembayaran.
+     */
+    public function retrySync(string $id)
+    {
+        try {
+            $pembayaran = $this->service->find($id);
+            if (!$pembayaran) {
+                return ResponseHelper::notFound('Pembayaran tidak ditemukan');
+            }
+
+            \App\Jobs\PushAcademicDataJob::dispatch($pembayaran);
+
+            return ResponseHelper::success(null, 'Sync job dispatched');
+        } catch (\Exception $e) {
+            return ResponseHelper::error($e->getMessage(), 500);
+        }
+    }
 }
