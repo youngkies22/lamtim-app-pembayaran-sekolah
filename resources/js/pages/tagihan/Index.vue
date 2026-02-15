@@ -672,6 +672,19 @@ const handleGenerate = async () => {
   }
 };
 
+const handleRetrySync = async (id) => {
+  try {
+    const response = await tagihanAPI.retrySync(id);
+    if (response.data.success) {
+      toastRef.value?.success('Sync job telah dijadwalkan ulang');
+      loadData();
+    }
+  } catch (err) {
+    console.error('Error retrying sync:', err);
+    toastRef.value?.error(err.response?.data?.message || 'Gagal menjadwalkan ulang sync');
+  }
+};
+
 const handleDetail = async (id) => {
   try {
     const response = await tagihanAPI.get(id);
