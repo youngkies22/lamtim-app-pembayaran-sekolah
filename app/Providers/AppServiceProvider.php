@@ -48,6 +48,8 @@ use App\Repositories\KategoriPembayaranRepository;
 use App\Repositories\TipePembayaranRepository;
 use App\Repositories\AlumniAnalysisRepository;
 use App\Repositories\ActiveStudentAnalysisRepository;
+use App\Services\Interfaces\AcademicIntegrationServiceInterface;
+use App\Services\AcademicIntegrationService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -140,6 +142,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             ActiveStudentAnalysisRepositoryInterface::class,
             ActiveStudentAnalysisRepository::class
+        );
+
+        $this->app->bind(
+            AcademicIntegrationServiceInterface::class,
+            AcademicIntegrationService::class
         );
     }
 

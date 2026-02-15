@@ -12,6 +12,7 @@ use App\Repositories\Interfaces\PembayaranRepositoryInterface;
 use App\Repositories\Interfaces\TagihanRepositoryInterface;
 use App\Models\LamtimPembayaran;
 use App\Models\LamtimTagihan;
+use App\Services\Interfaces\AcademicIntegrationServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -25,13 +26,16 @@ class PembayaranService
 {
     protected $pembayaranRepository;
     protected $tagihanRepository;
+    protected $academicService;
 
     public function __construct(
         PembayaranRepositoryInterface $pembayaranRepository,
-        TagihanRepositoryInterface $tagihanRepository
+        TagihanRepositoryInterface $tagihanRepository,
+        AcademicIntegrationServiceInterface $academicService
     ) {
         $this->pembayaranRepository = $pembayaranRepository;
         $this->tagihanRepository = $tagihanRepository;
+        $this->academicService = $academicService;
     }
 
     /**
@@ -143,6 +147,9 @@ class PembayaranService
             $invoice->updateStatus();
 
             DB::commit();
+
+            // Trigger sync to academic system (budutwj) after commit
+            $this->academicService->pushPembayaran($pembayaran);
 
             return [
                 'invoice' => $invoice->fresh(['tagihan', 'siswa']),

@@ -43,8 +43,6 @@ class ExternalApiClient
 
         $url = "{$this->baseUrl}/{$endpoint}/{$this->secret}";
 
-
-
         try {
             $response = Http::timeout($this->timeout)
                 ->retry($this->retryTimes, $this->retrySleep, function (\Exception $exception, $request) {
@@ -72,11 +70,53 @@ class ExternalApiClient
             // Handle various response formats
             $data = $this->extractData($body);
 
-
-
             return $data;
         } catch (\Exception $e) {
             Log::error("External API: Failed to fetch {$entity}", [
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Send data to an external API endpoint using POST.
+     *
+     * @param string $entity Entity key (e.g. 'push_tagihan')
+     * @param array $data Data to be sent
+     * @return array The decoded response
+     * @throws \Exception If the request fails
+     */
+    public function post(string $entity, array $data): array
+    {
+        $endpoint = config("external_api.endpoints.{$entity}");
+
+        if (!$endpoint) {
+            throw new \InvalidArgumentException("Endpoint tidak ditemukan untuk entity: {$entity}");
+        }
+
+        $url = "{$this->baseUrl}/{$endpoint}";
+
+        try {
+            $response = Http::timeout($this->timeout)
+                ->retry($this->retryTimes, $this->retrySleep)
+                ->acceptJson()
+                ->withHeaders([
+                    'X-API-KEY' => $this->secret,
+                ])
+                ->post($url, $data);
+
+            if (!$response->successful()) {
+                Log::error("External API POST: HTTP {$response->status()} for {$entity}", [
+                    'url' => $this->maskUrl($url),
+                    'body' => substr($response->body(), 0, 500),
+                ]);
+                throw new \Exception("External API error: HTTP {$response->status()} untuk endpoint {$entity}");
+            }
+
+            return $response->json();
+        } catch (\Exception $e) {
+            Log::error("External API POST: Failed for {$entity}", [
                 'error' => $e->getMessage(),
             ]);
             throw $e;

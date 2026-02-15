@@ -42,6 +42,10 @@ return [
         'siswa'        => 'apidataSiswa',
         'tahun_ajaran' => 'apidataTahunAjaran',
         'semester'     => 'apidataSemester',
+        
+        // Outbound/Push endpoints
+        'push_tagihan'    => 'billing/sync-tagihan',
+        'push_pembayaran' => 'billing/sync-pembayaran',
     ],
 
     /*
