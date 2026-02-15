@@ -54,6 +54,7 @@ import TrashIndex from './pages/trash/Index.vue';
 import ClosingIndex from './pages/Closing/Index.vue';
 import BackupIndex from './pages/Backups/Index.vue';
 import SyncIndex from './pages/Sync/Index.vue';
+import FailedJobs from './pages/System/FailedJobs.vue';
 
 // Import API service
 import { authAPI } from './services/api';
@@ -303,6 +304,12 @@ const routes = [
         name: 'sync',
         component: SyncIndex,
         meta: { requiresAuth: true, activeMenu: 'Sync' }
+    },
+    {
+        path: '/failed-jobs',
+        name: 'failed-jobs',
+        component: FailedJobs,
+        meta: { requiresAuth: true, activeMenu: 'Jobs' }
     },
     {
         path: '/auth/login',

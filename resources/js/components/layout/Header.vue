@@ -87,6 +87,11 @@
                   <Cog6ToothIcon class="w-4 h-4" />
                   Settings
                 </button>
+                <button v-if="isAdminUser" @click="handleFailedJobs"
+                  class="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-left">
+                  <ExclamationTriangleIcon class="w-4 h-4" />
+                  Failed Jobs
+                </button>
               </div>
 
               <hr class="my-1 border-gray-200 dark:border-gray-700" />
@@ -125,6 +130,7 @@ import {
   UserIcon,
   ChevronDownIcon,
   Cog6ToothIcon,
+  ExclamationTriangleIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/vue/24/outline'
 
@@ -174,6 +180,12 @@ const handleProfile = () => {
 const handleSettings = () => {
   closeDropdown()
   router.push('/settings')
+}
+
+// Handle failed jobs click
+const handleFailedJobs = () => {
+  closeDropdown()
+  router.push('/failed-jobs')
 }
 
 // Handle logout

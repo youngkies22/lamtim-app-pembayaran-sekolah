@@ -30,6 +30,7 @@ const MENU_PERMISSIONS = {
   'Settings': [ROLES.ADMIN], // Only Admin can access Settings (Updated)
   'Sync': [ROLES.ADMIN, ROLES.OPERATOR], // Admin & Operator can access Sync
   'Closing': [ROLES.ADMIN, ROLES.OPERATOR],
+  'Failed Jobs': [ROLES.ADMIN],
 };
 
 // Action permissions - define which roles can perform which actions

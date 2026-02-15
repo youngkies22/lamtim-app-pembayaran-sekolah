@@ -50,6 +50,8 @@ use App\Repositories\AlumniAnalysisRepository;
 use App\Repositories\ActiveStudentAnalysisRepository;
 use App\Services\Interfaces\AcademicIntegrationServiceInterface;
 use App\Services\AcademicIntegrationService;
+use App\Repositories\Interfaces\JobRepositoryInterface;
+use App\Repositories\JobRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -147,6 +149,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             AcademicIntegrationServiceInterface::class,
             AcademicIntegrationService::class
+        );
+
+        $this->app->bind(
+            JobRepositoryInterface::class,
+            JobRepository::class
         );
     }
 

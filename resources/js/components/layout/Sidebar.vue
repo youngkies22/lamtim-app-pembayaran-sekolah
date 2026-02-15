@@ -107,6 +107,7 @@ import {
   ArrowUpCircleIcon,
   UserMinusIcon,
   PresentationChartBarIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/vue/24/outline'
 
 const props = defineProps({
@@ -218,6 +219,7 @@ const menuItems = computed(() => {
     { name: 'Users', icon: UsersIcon, route: '/users' },
     { name: 'Backups', icon: CircleStackIcon, route: '/backups' },
     { name: 'Sync', icon: ArrowPathIcon, route: '/sync' },
+    { name: 'Failed Jobs', icon: ExclamationTriangleIcon, route: '/failed-jobs' },
     { name: 'Trash', icon: TrashIcon, route: '/trash' }
   ];
 

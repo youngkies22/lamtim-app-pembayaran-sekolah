@@ -25,6 +25,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\CacheManagerController;
+use App\Http\Controllers\JobController;
 
 // Public Auth Routes
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
@@ -260,5 +261,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::post('/clear-laravel', [CacheManagerController::class, 'clearLaravelCache']);
           Route::post('/clear-redis', [CacheManagerController::class, 'clearRedisCache']);
           Route::post('/optimize', [CacheManagerController::class, 'optimizeCache']);
+      });
+
+      // Failed Job routes - Admin Only
+      Route::prefix('jobs')->middleware('role:1')->group(function () {
+          Route::get('/failed', [JobController::class, 'failedJobs'])->name('api.jobs.failed');
+          Route::post('/failed/retry-all', [JobController::class, 'retryAll'])->name('api.jobs.retry-all');
+          Route::post('/failed/flush', [JobController::class, 'flush'])->name('api.jobs.flush');
+          Route::post('/failed/{id}/retry', [JobController::class, 'retry'])->name('api.jobs.retry');
+          Route::delete('/failed/{id}', [JobController::class, 'destroy'])->name('api.jobs.delete');
       });
   });

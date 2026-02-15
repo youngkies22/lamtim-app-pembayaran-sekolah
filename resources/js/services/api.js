@@ -452,4 +452,13 @@ export const cacheAPI = {
     optimize: () => api.post('/cache-manager/optimize'),
 };
 
+// Queue Jobs API (Admin only)
+export const jobsAPI = {
+    getFailed: () => api.get('/jobs/failed'),
+    retry: (id) => api.post(`/jobs/failed/${id}/retry`),
+    retryAll: () => api.post('/jobs/failed/retry-all'),
+    delete: (id) => api.delete(`/jobs/failed/${id}`),
+    flush: () => api.post('/jobs/failed/flush'),
+};
+
 export default api;
