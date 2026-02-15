@@ -155,7 +155,9 @@
                 </svg>
                 <div>
                   <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ item.kepala_sekolah }}</p>
-                  <p v-if="item.nip_kepsek" class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ appSettings.label_nip }}: {{ item.nip_kepsek }}</p>
+                  <p v-if="item.nip_kepsek"
+                    class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{
+                    appSettings.label_nip }}: {{ item.nip_kepsek }}</p>
                 </div>
               </div>
             </div>
@@ -248,13 +250,15 @@
 
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Kepala Sekolah</label>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nama Kepala
+                Sekolah</label>
               <input v-model="form.kepala_sekolah" type="text"
                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white"
                 placeholder="Nama kepala sekolah" />
             </div>
             <div>
-              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ appSettings.label_nip }} Kepala Sekolah</label>
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ appSettings.label_nip
+                }} Kepala Sekolah</label>
               <input v-model="form.nip_kepsek" type="text"
                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white"
                 :placeholder="`${appSettings.label_nip} kepala sekolah`" />
@@ -572,6 +576,7 @@ onMounted(() => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

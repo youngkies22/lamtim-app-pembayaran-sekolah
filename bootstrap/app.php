@@ -19,8 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // Enable Sanctum stateful authentication for SPA
-        // This will add session middleware to API routes for stateful authentication
         $middleware->statefulApi();
+
+        // Configure redirects
+        $middleware->redirectTo(
+            guests: '/login',
+            users: '/dashboard'
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

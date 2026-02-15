@@ -200,8 +200,8 @@ const menuItems = computed(() => {
       route: '/reports',
       children: [
         { name: 'Laporan Harian', icon: ChartBarIcon, route: '/reports' },
-        { name: 'Laporan per Siswa', icon: UserGroupIcon, route: '/reports/siswa' },
-        { name: 'Laporan per Rombel', icon: Squares2X2Icon, route: '/reports/rombel' },
+        { name: 'Laporan Siswa', icon: UserGroupIcon, route: '/reports/siswa' },
+        { name: 'Laporan Rombel', icon: Squares2X2Icon, route: '/reports/rombel' },
         { name: 'Laporan Alumni', icon: AcademicCapIcon, route: '/reports/alumni-analysis' },
       ]
     },

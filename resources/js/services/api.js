@@ -94,8 +94,8 @@ api.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-    login: async (email, password) => {
-        const response = await api.post('/login', { email, password });
+    login: async (email, password, remember = false) => {
+        const response = await api.post('/login', { email, password, remember });
         // Token sekarang di httpOnly cookie, tidak perlu disimpan di localStorage
         // Hanya simpan user data untuk keperluan frontend
         if (response.data && response.data.success && response.data.data && response.data.data.user) {
