@@ -8,12 +8,13 @@ class UpdateRombelRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+         return auth()->user()->isAdmin();
     }
 
     public function rules(): array
     {
-        $id = $this->route('rombel');
+        $rombel = $this->route('rombel');
+        $id = is_object($rombel) ? $rombel->id : $rombel;
 
         return [
             'idSekolah' => 'sometimes|uuid|exists:lamtim_sekolahs,id',
@@ -21,6 +22,7 @@ class UpdateRombelRequest extends FormRequest
             'idKelas' => 'nullable|uuid|exists:lamtim_kelas,id',
             'kode' => 'sometimes|string|unique:lamtim_rombels,kode,' . $id,
             'nama' => 'sometimes|string|max:255',
+            'isActive' => 'sometimes|boolean',
         ];
     }
 

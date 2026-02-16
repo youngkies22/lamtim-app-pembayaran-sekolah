@@ -36,9 +36,19 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
         $this->logo = $logo;
         
         // Group by slug (Requirement 4 & 9)
-        $this->masters = \App\Models\LamtimMasterPembayaran::where('isActive', 1)
-            ->whereNotNull('slug')
-            ->get()
+        // Filter by active tagihans in this rombel (User request: dynamic columns)
+        $idRombel = $filters['idRombel'] ?? null;
+        $masterQuery = \App\Models\LamtimMasterPembayaran::where('isActive', 1)
+            ->whereNotNull('slug');
+        
+        if ($idRombel) {
+            $masterQuery->whereHas('tagihans', function($q) use ($idRombel) {
+                $q->where('idRombel', $idRombel)
+                  ->where('isActive', 1);
+            });
+        }
+
+        $this->masters = $masterQuery->get()
             ->groupBy('slug')
             ->map(fn($group) => [
                 'slug' => $group->first()->slug,
@@ -64,6 +74,7 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
         $query = \App\Models\LamtimSiswa::query()
             ->join('lamtim_siswa_rombels', 'lamtim_siswas.id', '=', 'lamtim_siswa_rombels.idSiswa')
             ->leftJoin('lamtim_rombels', 'lamtim_siswa_rombels.idRombel', '=', 'lamtim_rombels.id')
+            ->leftJoin('lamtim_kelas', 'lamtim_rombels.idKelas', '=', 'lamtim_kelas.id')
             ->leftJoin('lamtim_tagihans', function($join) use ($idRombel) {
                 $join->on('lamtim_siswas.id', '=', 'lamtim_tagihans.idSiswa')
                      ->where('lamtim_tagihans.idRombel', '=', $idRombel)
@@ -72,13 +83,15 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
             ->select(
                 'lamtim_siswas.id', 
                 'lamtim_siswas.nama as siswa_nama', 
-                'lamtim_siswas.nis as siswa_nis', 
-                'lamtim_rombels.nama as rombel_nama'
+                'lamtim_siswas.nis as siswa_nis'
             )
+            ->selectRaw('TRIM(CONCAT(COALESCE(lamtim_kelas.kode, \'\'), \' \', COALESCE(lamtim_rombels.nama, \'\'))) as rombel_nama')
             ->selectRaw('COALESCE(SUM("lamtim_tagihans"."nominalTagihan"), 0) as total_nominal')
             ->selectRaw('COALESCE(SUM("lamtim_tagihans"."totalSudahBayar"), 0) as total_terbayar')
             ->selectRaw('COALESCE(SUM("lamtim_tagihans"."totalSisa"), 0) as total_sisa')
-            ->where('lamtim_siswa_rombels.idRombel', $idRombel);
+            ->where('lamtim_siswa_rombels.idRombel', $idRombel)
+            ->where('lamtim_siswas.isActive', 1)
+            ->where('lamtim_siswas.isAlumni', 0);
 
         foreach ($this->masters as $master) {
             $slug = $master['slug'];
@@ -86,7 +99,7 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
             $query->selectRaw("COALESCE(SUM(CASE WHEN \"lamtim_tagihans\".\"idMasterPembayaran\" IN ($ids) THEN \"lamtim_tagihans\".\"nominalTagihan\" ELSE 0 END), 0) as \"{$slug}\"");
         }
 
-        $query->groupBy('lamtim_siswas.id', 'lamtim_siswas.nama', 'lamtim_siswas.nis', 'lamtim_rombels.nama')
+        $query->groupBy('lamtim_siswas.id', 'lamtim_siswas.nama', 'lamtim_siswas.nis', 'lamtim_rombels.nama', 'lamtim_kelas.kode')
               ->orderBy('siswa_nama');
 
         return $query->get();

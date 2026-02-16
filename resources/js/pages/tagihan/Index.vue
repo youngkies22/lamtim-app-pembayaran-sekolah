@@ -49,7 +49,7 @@
       <!-- Filters Section -->
       <Transition name="slide-fade">
         <div v-show="showFilter"
-          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+          class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
           <div
             class="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between bg-gray-50/50 dark:bg-gray-800/50">
             <div class="flex items-center gap-3">
@@ -103,13 +103,8 @@
               <div>
                 <label
                   class="block text-xs font-bold text-gray-700 dark:text-emerald-400 uppercase tracking-wider mb-2">Rombel</label>
-                <select v-model="filters.idRombel" @change="loadData"
-                  class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-2 border-gray-100 dark:border-gray-600 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all text-sm font-bold appearance-none cursor-pointer">
-                  <option value="">Semua Rombel</option>
-                  <option v-for="r in rombelList" :key="r.id" :value="r.id">
-                    {{ r.kelas ? r.kelas.kode + ' ' : '' }}{{ r.nama }}
-                  </option>
-                </select>
+                <SearchableSelect v-model="filters.idRombel" :options="rombelList" label-key="label" value-key="id"
+                  placeholder="Semua Rombel" search-placeholder="Cari rombel..." @change="loadData" />
               </div>
 
               <!-- Status Filter -->
@@ -391,6 +386,7 @@ import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
 import Toast from '../../components/Toast.vue';
+import SearchableSelect from '../../components/SearchableSelect.vue';
 import { tagihanAPI, masterPembayaranAPI, masterDataAPI } from '../../services/api';
 
 // Refs
@@ -467,11 +463,14 @@ const loadMasterData = async () => {
     const [mpRes, kelasRes, rombelRes] = await Promise.all([
       masterPembayaranAPI.list({ isActive: 1 }),
       masterDataAPI.kelas.list(),
-      masterDataAPI.rombel.select(),
+      masterDataAPI.rombel.select({ isActive: 1 }),
     ]);
     masterPembayaranList.value = mpRes.data.data || [];
     kelasList.value = kelasRes.data.data || [];
-    rombelList.value = rombelRes.data.data || [];
+    rombelList.value = (rombelRes.data.data || rombelRes.data || []).map(r => ({
+      ...r,
+      label: r.displayLabel || r.label || `${r.kelas?.kode || ''} ${r.nama}`
+    }));
   } catch (err) {
     toastRef.value?.error('Gagal memuat data master');
   }

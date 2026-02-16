@@ -17,17 +17,14 @@
       </div>
 
       <!-- Filter Card -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 no-print">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 no-print">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pilih Rombel</label>
-            <SearchableSelect
-              v-model="filters.idRombel"
-              :options="rombelList"
-              placeholder="Cari dan pilih rombel..."
-              search-placeholder="Ketik nama atau kode rombel..."
-              @change="loadData"
-            />
+            <SearchableSelect v-model="filters.idRombel" :options="rombelList" label-key="displayLabel" value-key="id"
+              placeholder="Cari dan pilih rombel..." search-placeholder="Ketik nama atau kode rombel..."
+              @change="loadData" />
           </div>
           <div class="flex items-end gap-2 lg:col-span-3">
             <button @click="loadData"
@@ -62,8 +59,10 @@
       </div>
 
       <!-- Report Card -->
-      <div v-if="filters.idRombel" id="report-content" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div v-if="filters.idRombel" id="report-content"
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <div
+          class="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="flex items-center gap-2">
             <DocumentTextIcon class="w-6 h-6 text-emerald-600" />
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white">Detail Tagihan per Rombel</h3>
@@ -87,40 +86,56 @@
         </div>
 
         <div class="p-6">
-            <div class="overflow-x-auto">
-                <table id="rombel-report-table" ref="tableRef" class="w-full text-sm text-left text-gray-500 dark:text-gray-400 border-collapse">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                        <tr>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center w-12">No</th>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-left min-w-[200px]">Nama Siswa</th>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center">NIS</th>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center">Rombel</th>
-                            <!-- Dynamic Billing Category Columns -->
-                            <th v-for="header in dynamicHeaders" :key="header.slug" scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center min-w-[120px] bg-sky-50 dark:bg-sky-900/10">
-                                {{ header.slug }}
-                            </th>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-right font-bold bg-gray-100 dark:bg-gray-800">Total Tagihan</th>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-right font-bold bg-emerald-50 dark:bg-emerald-900/20">Terbayar</th>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-right font-bold bg-amber-50 dark:bg-amber-900/20">Sisa</th>
-                            <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
-                        <!-- DataTables will fill this -->
-                    </tbody>
-                </table>
-            </div>
+          <div class="overflow-x-auto">
+            <table id="rombel-report-table" ref="tableRef"
+              class="w-full text-sm text-left text-gray-500 dark:text-gray-400 border-collapse">
+              <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                  <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center w-12">No
+                  </th>
+                  <th scope="col"
+                    class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-left min-w-[200px]">Nama Siswa
+                  </th>
+                  <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center">NIS</th>
+                  <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center">Rombel
+                  </th>
+                  <!-- Dynamic Billing Category Columns -->
+                  <th v-for="header in dynamicHeaders" :key="header.slug" scope="col"
+                    class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center min-w-[120px] bg-sky-50 dark:bg-sky-900/10">
+                    {{ header.slug }}
+                  </th>
+                  <th scope="col"
+                    class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-right font-bold bg-gray-100 dark:bg-gray-800">
+                    Total Tagihan</th>
+                  <th scope="col"
+                    class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-right font-bold bg-emerald-50 dark:bg-emerald-900/20">
+                    Terbayar</th>
+                  <th scope="col"
+                    class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-right font-bold bg-amber-50 dark:bg-amber-900/20">
+                    Sisa</th>
+                  <th scope="col" class="px-6 py-4 border-b dark:border-gray-700 whitespace-nowrap text-center">Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                <!-- DataTables will fill this -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       <!-- Empty State -->
-      <div v-else class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
+      <div v-else
+        class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-12 text-center">
         <div class="max-w-md mx-auto">
-          <div class="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div
+            class="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
             <Squares2X2Icon class="w-10 h-10 text-emerald-600" />
           </div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Pilih Rombel Terlebih Dahulu</h3>
-          <p class="text-gray-600 dark:text-gray-400">Silakan pilih rombel dari menu filter di atas untuk menampilkan laporan tagihan siswa.</p>
+          <p class="text-gray-600 dark:text-gray-400">Silakan pilih rombel dari menu filter di atas untuk menampilkan
+            laporan tagihan siswa.</p>
         </div>
       </div>
     </div>
@@ -185,10 +200,10 @@ const formatCurrency = (amount) => {
 };
 
 const resetFilters = () => {
-    Object.assign(filters, {
-        idRombel: '',
-    });
-    // No need to reload, the UI will switch to empty state
+  Object.assign(filters, {
+    idRombel: '',
+  });
+  // No need to reload, the UI will switch to empty state
 };
 
 const initDataTable = () => {
@@ -226,17 +241,17 @@ const initDataTable = () => {
     { data: 'nominal_formatted', name: 'total_nominal', className: 'px-6 py-4 text-right font-bold text-gray-900 dark:text-white align-middle whitespace-nowrap bg-gray-50 dark:bg-gray-800' },
     { data: 'terbayar_formatted', name: 'total_terbayar', className: 'px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-400 align-middle whitespace-nowrap bg-emerald-50/50 dark:bg-emerald-900/10' },
     { data: 'sisa_formatted', name: 'total_sisa', className: 'px-6 py-4 text-right font-bold text-amber-600 dark:text-amber-400 align-middle whitespace-nowrap bg-amber-50/50 dark:bg-amber-900/10' },
-    { 
-      data: 'status_label', 
-      name: 'status_label', 
+    {
+      data: 'status_label',
+      name: 'status_label',
       className: 'px-6 py-4 text-center align-middle whitespace-nowrap',
-      render: function(data) {
-          let bgColor = 'bg-gray-100 text-gray-800 border border-gray-200';
-          if (data === 'Lunas') bgColor = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
-          else if (data === 'Sebagian') bgColor = 'bg-amber-100 text-amber-800 border border-amber-200';
-          else if (data === 'Belum Bayar') bgColor = 'bg-rose-100 text-rose-800 border border-rose-200';
-          
-          return `<span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ${bgColor} min-w-[80px]">${data}</span>`;
+      render: function (data) {
+        let bgColor = 'bg-gray-100 text-gray-800 border border-gray-200';
+        if (data === 'Lunas') bgColor = 'bg-emerald-100 text-emerald-800 border border-emerald-200';
+        else if (data === 'Sebagian') bgColor = 'bg-amber-100 text-amber-800 border border-amber-200';
+        else if (data === 'Belum Bayar') bgColor = 'bg-rose-100 text-rose-800 border border-rose-200';
+
+        return `<span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold ${bgColor} min-w-[80px]">${data}</span>`;
       }
     }
   );
@@ -280,82 +295,97 @@ const formatCurrencyNoSymbol = (amount) => {
 };
 
 const loadData = async () => {
-    if (!filters.idRombel) return;
+  if (!filters.idRombel) return;
+
+  try {
+    // Reload headers for this rombel
+    const headerRes = await reportAPI.rombelHeaders({ idRombel: filters.idRombel });
+    dynamicHeaders.value = headerRes.data.data || [];
 
     // Wait for DOM to update (v-if shows the table)
     await nextTick();
 
     if (!dataTable.value) {
-        initDataTable();
+      initDataTable();
     } else {
-        dataTable.value.ajax.reload();
+      // Re-initialize to update columns
+      initDataTable();
     }
     loadSummary();
+  } catch (err) {
+    console.error('Error loading data:', err);
+  }
 };
 
 const loadSummary = async () => {
-    try {
-        const response = await reportAPI.rombelStats(filters);
-        const stats = response.data.data || {};
-        
-        summaryStats.value[0].value = formatCurrency(stats.totalTagihan || 0);
-        summaryStats.value[1].value = formatCurrency(stats.totalDibayar || 0);
-        summaryStats.value[2].value = formatCurrency(stats.totalSisa || 0);
-    } catch (err) {
-        console.error('Error loading summary:', err);
-    }
+  try {
+    const response = await reportAPI.rombelStats(filters);
+    const stats = response.data.data || {};
+
+    summaryStats.value[0].value = formatCurrency(stats.totalTagihan || 0);
+    summaryStats.value[1].value = formatCurrency(stats.totalDibayar || 0);
+    summaryStats.value[2].value = formatCurrency(stats.totalSisa || 0);
+  } catch (err) {
+    console.error('Error loading summary:', err);
+  }
 };
 
 const loadFilters = async () => {
-    try {
-        const [rombelRes, headerRes] = await Promise.all([
-            masterDataAPI.rombel.select(),
-            reportAPI.rombelHeaders()
-        ]);
-        rombelList.value = rombelRes.data.data || [];
-        dynamicHeaders.value = headerRes.data.data || [];
-        
-        // Init table after headers are loaded
-        nextTick(() => {
-            initDataTable();
-        });
-    } catch (err) {
-        console.error('Error loading filter options:', err);
-    }
+  try {
+    const rombelRes = await masterDataAPI.rombel.select({
+      isActive: 1,
+      hasNonAlumniStudents: 1
+    });
+    const rawRombels = rombelRes.data.data || rombelRes.data || [];
+    rombelList.value = rawRombels.map(r => ({
+      ...r,
+      displayLabel: r.displayLabel || r.label || trimRombelLabel(r)
+    }));
+  } catch (err) {
+    console.error('Error loading filter options:', err);
+  }
 };
 
+const trimRombelLabel = (r) => {
+  const kelas = r.kelas?.kode || '';
+  const nama = r.nama || '';
+  return trim(`${kelas} ${nama}`) || 'Unnamed Rombel';
+};
+
+const trim = (str) => str.replace(/^\s+|\s+$/g, '');
+
 const exportExcel = async () => {
-    try {
-        isExporting.value = true;
-        const response = await reportAPI.exportRombel(filters);
-        
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `Laporan_Tagihan_Rombel_${new Date().getTime()}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    } catch (err) {
-        console.error('Export failed:', err);
-        alert('Gagal mendownload excel');
-    } finally {
-        isExporting.value = false;
-    }
+  try {
+    isExporting.value = true;
+    const response = await reportAPI.exportRombel(filters);
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Laporan_Tagihan_Rombel_${new Date().getTime()}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (err) {
+    console.error('Export failed:', err);
+    alert('Gagal mendownload excel');
+  } finally {
+    isExporting.value = false;
+  }
 };
 
 const handlePrint = () => {
-    if (!filters.idRombel) return;
-    const url = router.resolve({ 
-        name: 'reports-rombel-print', 
-        query: { idRombel: filters.idRombel } 
-    }).href;
-    window.open(url, '_blank');
+  if (!filters.idRombel) return;
+  const url = router.resolve({
+    name: 'reports-rombel-print',
+    query: { idRombel: filters.idRombel }
+  }).href;
+  window.open(url, '_blank');
 };
 
 onMounted(() => {
-    loadFilters();
-    loadSummary();
+  loadFilters();
+  loadSummary();
 });
 </script>
 
@@ -376,9 +406,9 @@ onMounted(() => {
     print-color-adjust: exact !important;
   }
 
-  .no-print, 
-  nav, 
-  header, 
+  .no-print,
+  nav,
+  header,
   aside,
   button,
   .bg-gradient-to-r,
@@ -387,51 +417,67 @@ onMounted(() => {
   }
 
   main {
-      padding: 0 !important;
-      margin: 0 !important;
-      width: 100% !important;
-      max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
   }
 
   #report-content {
-      box-shadow: none !important;
-      border: none !important;
-      border-radius: 0 !important;
-      width: 100% !important;
-      margin: 0 !important;
-      padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   #rombel-report-table {
-      width: 100% !important;
-      border-collapse: collapse !important;
-      font-size: 10px !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 10px !important;
   }
 
-  #rombel-report-table th, 
+  #rombel-report-table th,
   #rombel-report-table td {
-      border: 1px solid #e5e7eb !important;
-      padding: 4px 6px !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 4px 6px !important;
   }
 
   #rombel-report-table th {
-      background-color: #f3f4f6 !important;
-      color: #111827 !important;
+    background-color: #f3f4f6 !important;
+    color: #111827 !important;
   }
 
   /* Force background colors for summary columns */
-  .bg-gray-100 { background-color: #f3f4f6 !important; }
-  .bg-emerald-50 { background-color: #ecfdf5 !important; }
-  .bg-amber-50 { background-color: #fffbeb !important; }
-  
+  .bg-gray-100 {
+    background-color: #f3f4f6 !important;
+  }
+
+  .bg-emerald-50 {
+    background-color: #ecfdf5 !important;
+  }
+
+  .bg-amber-50 {
+    background-color: #fffbeb !important;
+  }
+
   /* Ensure text colors print correctly */
-  .text-emerald-600 { color: #059669 !important; }
-  .text-amber-600 { color: #d97706 !important; }
-  .text-rose-600 { color: #e11d48 !important; }
+  .text-emerald-600 {
+    color: #059669 !important;
+  }
+
+  .text-amber-600 {
+    color: #d97706 !important;
+  }
+
+  .text-rose-600 {
+    color: #e11d48 !important;
+  }
 
   /* Hide scrollbars */
   .overflow-x-auto {
-      overflow: visible !important;
+    overflow: visible !important;
   }
 }
 </style>

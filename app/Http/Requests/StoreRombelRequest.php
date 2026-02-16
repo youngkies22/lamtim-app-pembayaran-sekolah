@@ -8,7 +8,7 @@ class StoreRombelRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->isAdmin();
     }
 
     public function rules(): array
@@ -19,6 +19,7 @@ class StoreRombelRequest extends FormRequest
             'idKelas' => 'nullable|uuid|exists:lamtim_kelas,id',
             'kode' => 'required|string|unique:lamtim_rombels,kode',
             'nama' => 'required|string|max:255',
+            'isActive' => 'sometimes|boolean',
         ];
     }
 

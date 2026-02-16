@@ -214,6 +214,7 @@ class SiswaService
 
             $processed = 0;
             $errors = [];
+            $rombelIdsToDeactivate = [];
 
             foreach ($siswaIds as $id) {
                 $siswa = LamtimSiswa::with(['currentRombel.rombel.kelas'])->find($id);
@@ -241,7 +242,19 @@ class SiswaService
                     'isAlumni' => 1,
                     'updatedBy' => auth()->id(),
                 ]);
+
+                // Collect rombel ID to deactivate later
+                if ($currentRombel) {
+                    $rombelIdsToDeactivate[] = $currentRombel->id;
+                }
+
                 $processed++;
+            }
+
+            // Deactivate processed rombels
+            if (!empty($rombelIdsToDeactivate)) {
+                $uniqueRombelIds = array_unique($rombelIdsToDeactivate);
+                \App\Models\LamtimRombel::whereIn('id', $uniqueRombelIds)->update(['isActive' => 0]);
             }
 
             if ($processed === 0 && !empty($errors)) {

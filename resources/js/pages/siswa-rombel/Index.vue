@@ -20,25 +20,15 @@
           <!-- Filter Siswa -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Siswa</label>
-            <select v-model="filters.idSiswa" @change="applyFilters"
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
-              <option value="">Semua Siswa</option>
-              <option v-for="siswa in siswaList" :key="siswa.id" :value="siswa.id">
-                {{ siswa.nis || '-' }} - {{ siswa.nama || '-' }} - {{ siswa.rombel || '-' }}
-              </option>
-            </select>
+            <SearchableSelect v-model="filters.idSiswa" :options="siswaSearchList" label-key="label" value-key="id"
+              placeholder="Semua Siswa" search-placeholder="Cari siswa..." @change="applyFilters" />
           </div>
 
           <!-- Filter Rombel -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rombel</label>
-            <select v-model="filters.idRombel" @change="applyFilters"
-              class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
-              <option value="">Semua Rombel</option>
-              <option v-for="rombel in rombelList" :key="rombel.id" :value="rombel.id">
-                {{ rombel.kelas ? rombel.kelas.kode + ' ' : '' }}{{ rombel.nama }}
-              </option>
-            </select>
+            <SearchableSelect v-model="filters.idRombel" :options="rombelSearchList" label-key="label" value-key="id"
+              placeholder="Semua Rombel" search-placeholder="Cari rombel..." @change="applyFilters" />
           </div>
         </div>
       </div>
@@ -165,13 +155,8 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Siswa <span class="text-red-500">*</span>
             </label>
-            <select v-model="form.idSiswa" :disabled="editingId" required
-              class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white disabled:opacity-50">
-              <option value="">Pilih Siswa</option>
-              <option v-for="siswa in siswaList" :key="siswa.id" :value="siswa.id">
-                {{ siswa.nis || '-' }} - {{ siswa.nama || '-' }} - {{ siswa.rombel || '-' }}
-              </option>
-            </select>
+            <SearchableSelect v-model="form.idSiswa" :options="siswaSearchList" label-key="label" value-key="id"
+              placeholder="Pilih Siswa" search-placeholder="Cari siswa..." :disabled="editingId" required />
           </div>
 
           <!-- Rombel -->
@@ -179,13 +164,8 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Rombel <span class="text-red-500">*</span>
             </label>
-            <select v-model="form.idRombel" @change="onRombelChange" required
-              class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
-              <option value="">Pilih Rombel</option>
-              <option v-for="rombel in rombelList" :key="rombel.id" :value="rombel.id">
-                {{ rombel.kelas ? rombel.kelas.kode + ' ' : '' }}{{ rombel.nama }}
-              </option>
-            </select>
+            <SearchableSelect v-model="form.idRombel" :options="rombelSearchList" label-key="label" value-key="id"
+              placeholder="Pilih Rombel" search-placeholder="Cari rombel..." @change="onRombelChange" required />
             <p v-if="selectedRombel" class="mt-2 text-xs text-gray-500 dark:text-gray-400">
               Sekolah: {{ selectedRombel.sekolah?.nama || '-' }} | Jurusan: {{ selectedRombel.jurusan?.nama || '-' }}
             </p>
@@ -241,6 +221,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
 import Toast from '../../components/Toast.vue';
+import SearchableSelect from '../../components/SearchableSelect.vue';
 import { siswaRombelAPI, siswaAPI, masterDataAPI } from '../../services/api';
 import { useDataTable } from '../../composables/useDataTable';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
@@ -277,6 +258,20 @@ const form = reactive({
 });
 
 const selectedRombel = ref(null);
+
+const siswaSearchList = computed(() => {
+  return siswaList.value.map(s => ({
+    id: s.id,
+    label: `${s.nis || ''} - ${s.nama || ''} [${s.rombel || 'No Rombel'}]`
+  }));
+});
+
+const rombelSearchList = computed(() => {
+  return rombelList.value.map(r => ({
+    id: r.id,
+    label: r.label || r.displayLabel || `${r.kelas?.kode || ''} ${r.nama || ''}`.trim()
+  }));
+});
 
 // DataTable
 const {

@@ -108,7 +108,7 @@ export function useMasterDataCache() {
 
     try {
       cache.rombel.loading = true;
-      const response = await masterDataAPI.rombel.select();
+      const response = await masterDataAPI.rombel.select({ isActive: 1 });
       cache.rombel.data = response.data?.data || response.data || [];
       cache.rombel.loaded = true;
       return cache.rombel.data;

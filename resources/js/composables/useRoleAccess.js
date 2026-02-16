@@ -35,9 +35,9 @@ const MENU_PERMISSIONS = {
 
 // Action permissions - define which roles can perform which actions
 const ACTION_PERMISSIONS = {
-  create: [ROLES.ADMIN, ROLES.OPERATOR], // Kepsek tidak bisa create
-  update: [ROLES.ADMIN, ROLES.OPERATOR], // Kepsek tidak bisa update
-  delete: [ROLES.ADMIN, ROLES.OPERATOR], // Kepsek tidak bisa delete
+  create: [ROLES.ADMIN], // Hanya Admin
+  update: [ROLES.ADMIN], // Hanya Admin
+  delete: [ROLES.ADMIN], // Hanya Admin
   view: [ROLES.ADMIN, ROLES.OPERATOR, ROLES.KEPSEK], // Semua bisa view
 };
 
@@ -96,24 +96,21 @@ const isKepsek = () => {
  * Check if user can edit (admin or operator)
  */
 const canEdit = () => {
-  const role = getCurrentRole();
-  return role === ROLES.ADMIN || role === ROLES.OPERATOR;
+  return getCurrentRole() === ROLES.ADMIN;
 };
 
 /**
  * Check if user can delete (only admin or operator)
  */
 const canDelete = () => {
-  const role = getCurrentRole();
-  return role === ROLES.ADMIN || role === ROLES.OPERATOR;
+  return getCurrentRole() === ROLES.ADMIN;
 };
 
 /**
  * Check if user can create (only admin or operator)
  */
 const canCreate = () => {
-  const role = getCurrentRole();
-  return role === ROLES.ADMIN || role === ROLES.OPERATOR;
+  return getCurrentRole() === ROLES.ADMIN;
 };
 
 export function useRoleAccess() {

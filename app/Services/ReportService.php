@@ -14,11 +14,19 @@ class ReportService
     /**
      * Get rombel report headers (master pembayaran grouped by slug).
      */
-    public function getRombelReportHeaders()
+    public function getRombelReportHeaders(?string $idRombel = null)
     {
-        $masters = LamtimMasterPembayaran::where('isActive', 1)
-            ->whereNotNull('slug')
-            ->select('id', 'nama', 'slug')
+        $query = LamtimMasterPembayaran::where('isActive', 1)
+            ->whereNotNull('slug');
+
+        if ($idRombel) {
+            $query->whereHas('tagihans', function ($q) use ($idRombel) {
+                $q->where('idRombel', $idRombel)
+                    ->where('isActive', 1);
+            });
+        }
+
+        $masters = $query->select('id', 'nama', 'slug')
             ->orderBy('nama')
             ->get();
 
@@ -45,6 +53,7 @@ class ReportService
         $query = LamtimSiswa::query()
             ->join('lamtim_siswa_rombels', 'lamtim_siswas.id', '=', 'lamtim_siswa_rombels.idSiswa')
             ->leftJoin('lamtim_rombels', 'lamtim_siswa_rombels.idRombel', '=', 'lamtim_rombels.id')
+            ->leftJoin('lamtim_kelas', 'lamtim_rombels.idKelas', '=', 'lamtim_kelas.id')
             ->leftJoin('lamtim_tagihans', function ($join) use ($idRombel) {
                 $join->on('lamtim_siswas.id', '=', 'lamtim_tagihans.idSiswa')
                     ->where('lamtim_tagihans.idRombel', '=', $idRombel)
@@ -53,13 +62,15 @@ class ReportService
             ->select(
                 'lamtim_siswas.id',
                 'lamtim_siswas.nama as siswa_nama',
-                'lamtim_siswas.nis as siswa_nis',
-                'lamtim_rombels.nama as rombel_nama'
+                'lamtim_siswas.nis as siswa_nis'
             )
+            ->selectRaw('TRIM(CONCAT(COALESCE(lamtim_kelas.kode, \'\'), \' \', COALESCE(lamtim_rombels.nama, \'\'))) as rombel_nama')
             ->selectRaw('COALESCE(SUM("lamtim_tagihans"."nominalTagihan"), 0) as total_nominal')
             ->selectRaw('COALESCE(SUM("lamtim_tagihans"."totalSudahBayar"), 0) as total_terbayar')
             ->selectRaw('COALESCE(SUM("lamtim_tagihans"."totalSisa"), 0) as total_sisa')
-            ->where('lamtim_siswa_rombels.idRombel', $idRombel);
+            ->where('lamtim_siswa_rombels.idRombel', $idRombel)
+            ->where('lamtim_siswas.isActive', 1)
+            ->where('lamtim_siswas.isAlumni', 0);
 
         foreach ($uniqueSlugs as $slug) {
             $masterIds = $masters->where('slug', $slug)->pluck('id')->toArray();
@@ -71,7 +82,7 @@ class ReportService
             $query->selectRaw("COALESCE(SUM(CASE WHEN \"lamtim_tagihans\".\"idMasterPembayaran\" IN ($idsString) THEN \"lamtim_tagihans\".\"nominalTagihan\" ELSE 0 END), 0) as \"{$slug}\"");
         }
 
-        $query->groupBy('lamtim_siswas.id', 'lamtim_siswas.nama', 'lamtim_siswas.nis', 'lamtim_rombels.nama');
+        $query->groupBy('lamtim_siswas.id', 'lamtim_siswas.nama', 'lamtim_siswas.nis', 'lamtim_rombels.nama', 'lamtim_kelas.kode');
 
         return $query;
     }

@@ -188,7 +188,7 @@ class SiswaController extends Controller
             }
             if (!empty($idRombel)) {
                 $query->whereHas('currentRombel', function($q) use ($idRombel) {
-                    $q->where('id', $idRombel);
+                    $q->where('idRombel', $idRombel);
                 });
             }
         }

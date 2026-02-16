@@ -211,6 +211,12 @@
                             </select>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rombel</label>
+                            <SearchableSelect v-model="filters.idRombel" :options="rombelSearchList" label-key="label"
+                                value-key="id" placeholder="Semua Rombel" search-placeholder="Cari rombel..."
+                                @change="loadData" />
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Periode
                                 Awal</label>
                             <input v-model="filters.startDate" type="date"
@@ -560,7 +566,8 @@ import { ref, reactive, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
 import Toast from '../../components/Toast.vue';
-import { pembayaranAPI, siswaAPI, masterPembayaranAPI } from '../../services/api';
+import SearchableSelect from '../../components/SearchableSelect.vue';
+import { pembayaranAPI, siswaAPI, masterPembayaranAPI, masterDataAPI } from '../../services/api';
 import { useRoleAccess } from '../../composables/useRoleAccess';
 import { useAppSettings } from '../../composables/useAppSettings';
 import { useClosingCheck } from '../../composables/useClosingCheck';
@@ -589,6 +596,14 @@ const showFilter = ref(false);
 // Master data
 const siswaList = ref([]);
 const masterPembayaranList = ref([]);
+const rombelList = ref([]);
+
+const rombelSearchList = computed(() => {
+    return rombelList.value.map(r => ({
+        id: r.id,
+        label: r.label || r.displayLabel || `${r.kelas?.kode || ''} ${r.nama || ''}`.trim()
+    }));
+});
 
 // Stats
 const stats = reactive({
@@ -602,6 +617,7 @@ const stats = reactive({
 const filters = reactive({
     status: '',
     isVerified: '',
+    idRombel: '',
     startDate: new Date().toISOString().split('T')[0], // Hari ini
     endDate: new Date().toISOString().split('T')[0],   // Hari ini
 });
@@ -609,6 +625,7 @@ const filters = reactive({
 const resetFilters = () => {
     filters.status = '';
     filters.isVerified = '';
+    filters.idRombel = '';
     filters.startDate = new Date().toISOString().split('T')[0];
     filters.endDate = new Date().toISOString().split('T')[0];
     loadData();
@@ -663,14 +680,16 @@ const formatDateTime = (date) => {
 // Load master data
 const loadMasterData = async () => {
     try {
-        const [siswaRes, mpRes] = await Promise.all([
+        const [siswaRes, mpRes, rombelRes] = await Promise.all([
             siswaAPI.list({ isActive: 1 }),
             masterPembayaranAPI.list({ isActive: 1 }),
+            masterDataAPI.rombel.select({ isActive: 1 }),
         ]);
 
         // Handle response structure - could be data.data or data.items or just data
         const siswaData = siswaRes.data?.data || siswaRes.data?.items || siswaRes.data || [];
         const mpData = mpRes.data?.data || mpRes.data?.items || mpRes.data || [];
+        const rombelData = rombelRes.data?.data || rombelRes.data || [];
 
         // Filter out null/undefined items and ensure they have id
         siswaList.value = Array.isArray(siswaData)
@@ -678,6 +697,9 @@ const loadMasterData = async () => {
             : [];
         masterPembayaranList.value = Array.isArray(mpData)
             ? mpData.filter(mp => mp && mp.id)
+            : [];
+        rombelList.value = Array.isArray(rombelData)
+            ? rombelData.filter(r => r && r.id)
             : [];
     } catch (err) {
         console.error('Error loading master data:', err);
@@ -716,6 +738,7 @@ const initDataTable = () => {
             data: function (d) {
                 d.status = filters.status;
                 d.isVerified = filters.isVerified;
+                d.idRombel = filters.idRombel;
                 d.startDate = filters.startDate;
                 d.endDate = filters.endDate;
             },

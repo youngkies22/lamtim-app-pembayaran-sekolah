@@ -277,6 +277,9 @@ class PembayaranService
         if (!empty($filters['endDate'])) {
             $query->whereDate('tanggalBayar', '<=', $filters['endDate']);
         }
+        if (!empty($filters['idRombel'])) {
+            $query->where('idRombel', $filters['idRombel']);
+        }
 
         return $query;
     }

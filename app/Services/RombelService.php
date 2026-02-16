@@ -201,6 +201,9 @@ class RombelService
                 'id' => $r->id,
                 'kode' => $r->kode,
                 'nama' => $r->nama,
+                'displayLabel' => trim(($r->kelas->kode ?? '') . ' ' . $r->nama),
+                'label' => trim(($r->kelas->kode ?? '') . ' ' . $r->nama),
+                'value' => $r->id,
                 'kelas' => $r->kelas ? ['id' => $r->kelas->id, 'kode' => $r->kelas->kode] : null,
                 'jurusan' => $r->jurusan ? ['id' => $r->jurusan->id, 'nama' => $r->jurusan->nama] : null,
             ];
@@ -248,6 +251,6 @@ class RombelService
      */
     public function getCacheVersion(): int
     {
-        return (int) Cache::get('rombel_cache_version', 1);
+        return (int) Cache::get('rombel_cache_version', 2);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LamtimRombel;
 use App\Services\RombelService;
 use App\Http\Requests\StoreRombelRequest;
 use App\Http\Requests\UpdateRombelRequest;
@@ -66,22 +67,20 @@ class RombelController extends Controller
         return view('rombel.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreRombelRequest $request)
     {
-        $this->authorize('create', LamtimRombel::class);
-
         try {
-            $validated = $request->validate([
-                'idSekolah' => 'required|uuid|exists:lamtim_sekolahs,id',
-                'idJurusan' => 'required|uuid|exists:lamtim_jurusans,id',
-                'idKelas' => 'required|uuid|exists:lamtim_kelas,id',
-                'nama' => 'required|string|max:255',
-            ]);
+            $validated = $request->validated();
+            
+            // Add default isActive if not present
+            if (!isset($validated['isActive'])) {
+                $validated['isActive'] = 1;
+            }
 
             $rombel = $this->service->create($validated);
             
             // Clear all rombel cache patterns
-            $this->clearRombelCache();
+            $this->service->invalidateCache();
             
             if ($request->expectsJson()) {
                 return ResponseHelper::success($rombel, 'Rombel berhasil dibuat');
@@ -121,7 +120,7 @@ class RombelController extends Controller
         return view('rombel.edit', compact('rombel'));
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateRombelRequest $request, string $id)
     {
         $rombel = $this->service->find($id);
         if (!$rombel) {
@@ -129,20 +128,13 @@ class RombelController extends Controller
             return abort(404);
         }
 
-        $this->authorize('update', $rombel);
-
         try {
-            $validated = $request->validate([
-                'idSekolah' => 'sometimes|uuid|exists:lamtim_sekolahs,id',
-                'idJurusan' => 'sometimes|uuid|exists:lamtim_jurusans,id',
-                'idKelas' => 'sometimes|uuid|exists:lamtim_kelas,id',
-                'nama' => 'sometimes|string|max:255',
-            ]);
+            $validated = $request->validated();
 
             $rombel = $this->service->update($id, $validated);
             
             // Clear all rombel cache patterns
-            $this->clearRombelCache();
+            $this->service->invalidateCache();
             
             if ($request->expectsJson()) {
                 return ResponseHelper::success($rombel, 'Rombel berhasil diupdate');
@@ -188,7 +180,7 @@ class RombelController extends Controller
      */
     public function select(Request $request)
     {
-        $filters = $request->only(['idSekolah', 'idJurusan', 'idKelas']);
+        $filters = $request->only(['idSekolah', 'idJurusan', 'idKelas', 'isActive', 'hasLiveStudents', 'hasNonAlumniStudents']);
         $bustCache = $request->has('_t');
         $rombel = $this->service->getSelectOptions($filters, $bustCache);
 

@@ -20,9 +20,9 @@ class ReportController extends Controller
     /**
      * Get rombel report headers (dynamic columns).
      */
-    public function rombelReportHeaders()
+    public function rombelReportHeaders(Request $request)
     {
-        return ResponseHelper::success($this->service->getRombelReportHeaders());
+        return ResponseHelper::success($this->service->getRombelReportHeaders($request->idRombel));
     }
 
     /**

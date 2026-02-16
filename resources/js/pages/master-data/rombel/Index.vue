@@ -20,7 +20,7 @@
             <p class="mt-2 text-purple-100">Kelola data rombongan belajar dengan mudah dan efisien</p>
           </div>
           <div class="flex items-center gap-3">
-            <button v-if="isAdminUser" @click="openImportModal"
+            <button v-if="canCreateData" @click="openImportModal"
               class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl shadow-lg hover:bg-white/30 transform hover:-translate-y-0.5 transition-all duration-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -28,7 +28,7 @@
               </svg>
               Import
             </button>
-            <button v-if="isAdminUser" @click="openCreateModal"
+            <button v-if="canCreateData" @click="openCreateModal"
               class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-rose-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
               <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24">
@@ -117,8 +117,8 @@
                 <td class="px-4 py-2.5">
                   <div class="flex items-center gap-3">
                     <div
-                      class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold text-sm">
-                      {{ getInitials(item.nama) }}
+                      class="px-2 py-1 text-xs font-bold rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 text-white min-w-[3rem] text-center shadow-sm">
+                      {{ item.kelas_kode || '??' }}
                     </div>
                     <div>
                       <p class="text-sm font-semibold text-gray-900 dark:text-white">{{ item.nama }}</p>
@@ -136,7 +136,7 @@
                 </td>
                 <td class="px-4 py-2.5" v-html="item.isActive_badge"></td>
                 <td class="px-4 py-2.5">
-                  <div class="flex items-center gap-2" v-if="isAdminUser">
+                  <div class="flex items-center gap-2" v-if="canEditData">
                     <button @click="handleEdit(item.id)"
                       class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                       title="Edit">
@@ -146,7 +146,7 @@
                         </path>
                       </svg>
                     </button>
-                    <button @click="handleDelete(item.id, item.nama)"
+                    <button v-if="canDeleteData" @click="handleDelete(item.id, item.nama)"
                       class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       title="Hapus">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,11 +270,17 @@ import { useMasterDataCache } from '../../../composables/useMasterDataCache';
 import { useRoleAccess } from '../../../composables/useRoleAccess';
 import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
 
+const { canEditData, canDeleteData, canCreateData } = useRoleAccess();
+
 const editingId = ref(null);
 const deletingItem = ref(null);
+const showModal = ref(false);
+const showDeleteModal = ref(false);
+const showImportModal = ref(false);
 const submitLoading = ref(false);
 const deleteLoading = ref(false);
 const formError = ref('');
+const toastRef = ref(null);
 
 const { getCached, loadAll, clearCache } = useMasterDataCache();
 
@@ -297,11 +303,6 @@ const initialForm = {
 
 const form = reactive({ ...initialForm });
 
-
-const getInitials = (name) => {
-  if (!name) return '?';
-  return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
-};
 
 // DataTable
 const {

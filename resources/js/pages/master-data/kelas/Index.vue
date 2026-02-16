@@ -20,7 +20,7 @@
             <p class="mt-2 text-green-100">Kelola data kelas dengan mudah dan efisien</p>
           </div>
           <div class="flex items-center gap-3">
-            <button v-if="isAdminUser" @click="openImportModal"
+            <button v-if="canCreateData" @click="openImportModal"
               class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white/20 backdrop-blur-sm text-white font-semibold rounded-xl shadow-lg hover:bg-white/30 transform hover:-translate-y-0.5 transition-all duration-200">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -28,7 +28,7 @@
               </svg>
               Import
             </button>
-            <button v-if="isAdminUser" @click="openCreateModal"
+            <button v-if="canCreateData" @click="openCreateModal"
               class="group relative inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
               <svg class="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" fill="none"
                 stroke="currentColor" viewBox="0 0 24 24">
@@ -136,8 +136,8 @@
                   </div>
                 </td>
                 <td class="px-4 py-2.5">
-                  <div class="flex items-center gap-2" v-if="isAdminUser">
-                    <button @click="handleEdit(item.id)"
+                  <div class="flex items-center gap-2" v-if="canEditData">
+                    <button @click="handleEdit(item)"
                       class="p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                       title="Edit">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +146,7 @@
                         </path>
                       </svg>
                     </button>
-                    <button @click="handleDelete(item.id, item.nama)"
+                    <button v-if="canDeleteData" @click="handleDelete(item)"
                       class="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       title="Hapus">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,7 +210,7 @@ import { masterDataAPI } from '../../../services/api';
 import { useMasterDataCache } from '../../../composables/useMasterDataCache';
 import { useRoleAccess } from '../../../composables/useRoleAccess';
 
-const { isAdminUser } = useRoleAccess();
+const { canEditData, canDeleteData, canCreateData } = useRoleAccess();
 
 const { clearCache } = useMasterDataCache();
 

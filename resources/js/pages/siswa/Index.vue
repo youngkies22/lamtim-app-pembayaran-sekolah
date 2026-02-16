@@ -37,7 +37,7 @@
 
         <!-- Filter Section -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             <!-- Search -->
             <div class="relative">
               <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -68,6 +68,10 @@
               <option :value="0">Tidak Aktif</option>
               <option :value="2">Off</option>
             </select>
+
+            <!-- Filter Rombel -->
+            <SearchableSelect v-model="filters.idRombel" :options="rombelSearchList" label-key="label" value-key="id"
+              placeholder="Semua Rombel" search-placeholder="Cari rombel..." @change="applyFilters" />
           </div>
         </div>
 
@@ -214,6 +218,7 @@ import { siswaAPI } from '../../services/api';
 import { useDataTable } from '../../composables/useDataTable';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
 import { useRoleAccess } from '../../composables/useRoleAccess';
+import SearchableSelect from '../../components/SearchableSelect.vue';
 import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, UserGroupIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
@@ -234,6 +239,13 @@ const kelasList = ref(Array.isArray(cached.kelas) ? [...cached.kelas] : []);
 const jurusanList = ref(Array.isArray(cached.jurusan) ? [...cached.jurusan] : []);
 const rombelList = ref(Array.isArray(cached.rombel) ? [...cached.rombel] : []);
 const labelJurusan = ref(cached.labelJurusan || 'Group');
+
+const rombelSearchList = computed(() => {
+  return rombelList.value.map(r => ({
+    id: r.id,
+    label: r.label || r.displayLabel || `${r.kelas?.kode || ''} ${r.nama || ''}`.trim()
+  }));
+});
 
 // Filters
 const filters = reactive({

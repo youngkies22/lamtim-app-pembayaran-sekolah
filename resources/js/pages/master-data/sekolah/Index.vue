@@ -16,7 +16,7 @@
           </h1>
           <p class="mt-1.5 text-sm text-gray-600 dark:text-gray-400">Kelola informasi sekolah</p>
         </div>
-        <button v-if="isAdminUser" @click="openCreateModal"
+        <button v-if="canCreateData" @click="openCreateModal"
           class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -93,7 +93,7 @@
               <!-- Dropdown Menu -->
               <div v-if="activeMenuId === item.id" v-click-outside="() => activeMenuId = null"
                 class="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10">
-                <button @click="handleEdit(item); activeMenuId = null"
+                <button v-if="canEditData" @click="handleEdit(item); activeMenuId = null"
                   class="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -102,7 +102,7 @@
                   </svg>
                   Edit
                 </button>
-                <button @click="handleDelete(item); activeMenuId = null"
+                <button v-if="canDeleteData" @click="handleDelete(item); activeMenuId = null"
                   class="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -157,14 +157,15 @@
                   <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ item.kepala_sekolah }}</p>
                   <p v-if="item.nip_kepsek"
                     class="text-[10px] text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{
-                    appSettings.label_nip }}: {{ item.nip_kepsek }}</p>
+                      appSettings.label_nip }}: {{ item.nip_kepsek }}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Card Footer -->
-          <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+          <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between"
+            v-if="canEditData">
             <span class="text-xs text-gray-500 dark:text-gray-400">
               {{ formatDate(item.created_at) }}
             </span>
@@ -178,7 +179,7 @@
                   </path>
                 </svg>
               </button>
-              <button @click="handleDelete(item)"
+              <button v-if="canDeleteData" @click="handleDelete(item)"
                 class="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                 title="Hapus">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -188,6 +189,11 @@
                 </svg>
               </button>
             </div>
+          </div>
+          <div v-else class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <span class="text-xs text-gray-500 dark:text-gray-400">
+              {{ formatDate(item.created_at) }}
+            </span>
           </div>
         </div>
       </div>
@@ -258,7 +264,7 @@
             </div>
             <div>
               <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ appSettings.label_nip
-                }} Kepala Sekolah</label>
+              }} Kepala Sekolah</label>
               <input v-model="form.nip_kepsek" type="text"
                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white"
                 :placeholder="`${appSettings.label_nip} kepala sekolah`" />

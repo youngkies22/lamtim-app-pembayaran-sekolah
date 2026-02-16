@@ -56,7 +56,7 @@ class PembayaranController extends Controller
      */
     public function datatable(Request $request)
     {
-        $filters = $request->only(['status', 'isVerified', 'startDate', 'endDate']);
+        $filters = $request->only(['status', 'isVerified', 'startDate', 'endDate', 'idRombel']);
         return $this->service->getDatatable($filters);
     }
 
