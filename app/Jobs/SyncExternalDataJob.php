@@ -34,8 +34,6 @@ class SyncExternalDataJob implements ShouldQueue
      */
     public function handle(ExternalSyncService $syncService): void
     {
-
-
         try {
             // Set execution time to unlimited for background job
             set_time_limit(0);

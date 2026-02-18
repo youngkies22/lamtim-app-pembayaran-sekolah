@@ -50,6 +50,9 @@ class ImportService
             ]);
 
             // Dispatch job
+            if (!SettingService::isJobEnabled('job_process_import_enabled')) {
+                throw new \Exception('Import Job tidak aktif. Aktifkan di Pengaturan.');
+            }
             ProcessImportJob::dispatch($importLog);
 
             DB::commit();

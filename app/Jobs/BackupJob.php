@@ -37,53 +37,37 @@ class BackupJob implements ShouldQueue
     public function handle(): void
     {
         $appName = config('backup.backup.name');
-        
-        Log::info("BackupJob: Initializing backup process for {$appName}...");
-        Log::info("BackupJob: Original DB Connection: " . config('database.default'));
+        $dbConnection = config('database.default');
 
-        // 1. FORCE CONFIGURATION OVERRIDES
-        // ==============================================================================
-        
-        // Force Database Connection to MySQL
-        config(['database.default' => 'mysql']);
-        
-        // Force Backup Source to ONLY use 'mysql' connection
-        config(['backup.backup.source.databases' => ['mysql']]);
-        
-        // Force Storage Configuration
-        // Ensure 'backups' disk exists and points to storage/app/private/backups
+        Log::info("BackupJob: Initializing backup process for {$appName}...");
+        Log::info("BackupJob: DB Connection: {$dbConnection}");
+
+        // Ensure backup source uses the current DB connection
+        config(['backup.backup.source.databases' => [$dbConnection]]);
+
+        // Ensure 'backups' disk is configured
         config(['filesystems.disks.backups' => [
             'driver' => 'local',
-            'root' => storage_path('app/private/backups'), // Laravel 11/12 standard
+            'root' => storage_path('app/private/backups'),
             'throw' => false,
         ]]);
-        
+
         config(['backup.backup.destination.disks' => ['backups']]);
-        
-        // Verify Config
-        Log::info("BackupJob: Forced DB Connection: " . config('database.default'));
+
         Log::info("BackupJob: Target Databases: " . implode(', ', config('backup.backup.source.databases')));
         Log::info("BackupJob: Backup Root Path: " . config('filesystems.disks.backups.root'));
 
         try {
-            // 2. RUN BACKUP
-            // ==============================================================================
-            
-            // We disable signals to prevent interruption issues in some environments
             $exitCode = Artisan::call('backup:run', [
                 '--only-db' => true,
                 '--disable-notifications' => true,
             ]);
 
             $output = Artisan::output();
-            
+
             Log::info("BackupJob: Artisan Output: " . $output);
 
             if ($exitCode !== 0) {
-                // Check if it's the specific pg_dump error and provide a helpful hint
-                if (str_contains($output, 'pg_dump') || str_contains($output, 'PostgreSql')) {
-                    throw new Exception("Backup failed. It seems the system is still trying to use PostgreSQL. Please check your .env file and ensure DB_CONNECTION=mysql. \nFull Output: {$output}");
-                }
                 throw new Exception("Backup command failed with exit code {$exitCode}. Output: {$output}");
             }
 

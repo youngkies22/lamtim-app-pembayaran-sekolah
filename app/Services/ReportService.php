@@ -12,28 +12,49 @@ use Illuminate\Support\Facades\Log;
 class ReportService
 {
     /**
-     * Get rombel report headers (master pembayaran grouped by slug).
+     * Get relevant master pembayarans for a specific rombel.
+     * Only returns masters that have active tagihans in the given rombel,
+     * AND where the master's class level matches the rombel (or is global).
      */
-    public function getRombelReportHeaders(?string $idRombel = null)
+    private function getRelevantMasters(?string $idRombel)
     {
         $query = LamtimMasterPembayaran::where('isActive', 1)
             ->whereNotNull('slug');
 
         if ($idRombel) {
-            $query->whereHas('tagihans', function ($q) use ($idRombel) {
-                $q->where('idRombel', $idRombel)
+            $rombel = LamtimRombel::find($idRombel);
+
+            // Get all students currently in this rombel
+            $studentIds = \App\Models\LamtimSiswaRombel::where('idRombel', $idRombel)
+                ->pluck('idSiswa')
+                ->toArray();
+
+            // 1. Ensure masters exist in tagihans for THESE students
+            // 2. Only show tagihans that match this rombel's class level
+            $idKelas = $rombel?->idKelas;
+            $query->whereHas('tagihans', function ($q) use ($studentIds, $idKelas) {
+                $q->whereIn('idSiswa', $studentIds)
                     ->where('isActive', 1);
+                if ($idKelas) {
+                    $q->where('idKelas', $idKelas);
+                }
             });
         }
 
-        $masters = $query->select('id', 'nama', 'slug')
-            ->orderBy('nama')
-            ->get();
+        return $query->orderBy('nama')->get();
+    }
+
+    /**
+     * Get rombel report headers (master pembayaran grouped by slug).
+     */
+    public function getRombelReportHeaders(?string $idRombel = null)
+    {
+        $masters = $this->getRelevantMasters($idRombel);
 
         return $masters->groupBy('slug')->map(function ($group) {
             return [
                 'slug' => $group->first()->slug,
-                'nama' => $group->first()->slug,
+                'nama' => $group->first()->nama,
                 'original_names' => $group->pluck('nama')->toArray(),
             ];
         })->values();
@@ -44,20 +65,25 @@ class ReportService
      */
     public function buildRombelReportQuery(string $idRombel)
     {
-        $masters = LamtimMasterPembayaran::where('isActive', 1)
-            ->whereNotNull('slug')
-            ->get();
-
+        // Only get masters that are relevant to this Rombel
+        $masters = $this->getRelevantMasters($idRombel);
         $uniqueSlugs = $masters->pluck('slug')->unique();
+
+        // Get the class level of this rombel to filter tagihans
+        $rombel = LamtimRombel::find($idRombel);
+        $idKelas = $rombel?->idKelas;
 
         $query = LamtimSiswa::query()
             ->join('lamtim_siswa_rombels', 'lamtim_siswas.id', '=', 'lamtim_siswa_rombels.idSiswa')
             ->leftJoin('lamtim_rombels', 'lamtim_siswa_rombels.idRombel', '=', 'lamtim_rombels.id')
             ->leftJoin('lamtim_kelas', 'lamtim_rombels.idKelas', '=', 'lamtim_kelas.id')
-            ->leftJoin('lamtim_tagihans', function ($join) use ($idRombel) {
+            ->leftJoin('lamtim_tagihans', function ($join) use ($idKelas) {
                 $join->on('lamtim_siswas.id', '=', 'lamtim_tagihans.idSiswa')
-                    ->where('lamtim_tagihans.idRombel', '=', $idRombel)
                     ->where('lamtim_tagihans.isActive', '=', 1);
+                // Filter tagihans by class level so only tagihans matching this rombel's kelas are shown
+                if ($idKelas) {
+                    $join->where('lamtim_tagihans.idKelas', '=', $idKelas);
+                }
             })
             ->select(
                 'lamtim_siswas.id',
@@ -72,12 +98,15 @@ class ReportService
             ->where('lamtim_siswas.isActive', 1)
             ->where('lamtim_siswas.isAlumni', 0);
 
+        // Add dynamic columns only for the relevant masters
         foreach ($uniqueSlugs as $slug) {
             $masterIds = $masters->where('slug', $slug)->pluck('id')->toArray();
-            if (empty($masterIds)) {
-                $query->selectRaw("0 as \"{$slug}\"");
-                continue;
+            
+            // This shouldn't happen given getRelevantMasters logic, but safe to keep
+            if (empty($masterIds)) { 
+                continue; 
             }
+
             $idsString = "'" . implode("','", $masterIds) . "'";
             $query->selectRaw("COALESCE(SUM(CASE WHEN \"lamtim_tagihans\".\"idMasterPembayaran\" IN ($idsString) THEN \"lamtim_tagihans\".\"nominalTagihan\" ELSE 0 END), 0) as \"{$slug}\"");
         }
@@ -92,9 +121,21 @@ class ReportService
      */
     public function getRombelReportStats(string $idRombel): array
     {
+        $rombel = LamtimRombel::find($idRombel);
+        $idKelas = $rombel?->idKelas;
+
+        // Get students in this rombel
+        $studentIds = \App\Models\LamtimSiswaRombel::where('idRombel', $idRombel)
+            ->pluck('idSiswa');
+
         $query = LamtimTagihan::query()
             ->where('isActive', 1)
-            ->where('idRombel', $idRombel);
+            ->whereIn('idSiswa', $studentIds);
+
+        // Filter by class level to avoid showing tagihans from other kelas
+        if ($idKelas) {
+            $query->where('idKelas', $idKelas);
+        }
 
         return [
             'totalTagihan' => (float) $query->sum('nominalTagihan'),
@@ -109,11 +150,17 @@ class ReportService
     public function getRombelExportContext(?string $idRombel): array
     {
         $sekolah = LamtimSekolah::first();
-        $rombel = $idRombel ? LamtimRombel::find($idRombel) : null;
+        $rombel = $idRombel ? LamtimRombel::with('kelas')->find($idRombel) : null;
+
+        $rombelNama = 'Semua Rombel';
+        if ($rombel) {
+            $kelasKode = $rombel->kelas->kode ?? '';
+            $rombelNama = trim($kelasKode . ' ' . $rombel->nama);
+        }
 
         return [
             'sekolahNama' => $sekolah->nama ?? 'Sekolah',
-            'rombelNama' => $rombel->nama ?? 'Semua Rombel',
+            'rombelNama' => $rombelNama,
             'logo' => $sekolah->logo ?? null,
         ];
     }

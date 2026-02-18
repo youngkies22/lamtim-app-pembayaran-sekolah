@@ -181,6 +181,9 @@ class PembayaranService
             DB::commit();
 
             // Trigger sync to academic system (budutwj) after verification
+            if (!SettingService::isJobEnabled('job_push_academic_enabled')) {
+                throw new \Exception('Push Academic Data Job tidak aktif. Aktifkan di Pengaturan.');
+            }
             \App\Jobs\PushAcademicDataJob::dispatch($pembayaran);
 
             return $pembayaran->fresh(['invoice', 'tagihan', 'siswa']);

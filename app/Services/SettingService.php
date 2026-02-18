@@ -139,6 +139,44 @@ class SettingService
     }
 
     /**
+     * Save job toggle settings.
+     */
+    public function saveJobSettings(array $data): array
+    {
+        $settings = LamtimSetting::first();
+        if (!$settings) {
+            $settings = LamtimSetting::create($data);
+        } else {
+            $settings->update($data);
+        }
+
+        $this->clearCache();
+
+        return [
+            'job_sync_external_enabled' => (bool) $settings->job_sync_external_enabled,
+            'job_sync_siswa_enabled' => (bool) $settings->job_sync_siswa_enabled,
+            'job_push_academic_enabled' => (bool) $settings->job_push_academic_enabled,
+            'job_process_import_enabled' => (bool) $settings->job_process_import_enabled,
+        ];
+    }
+
+    /**
+     * Check if a specific job is enabled.
+     */
+    public static function isJobEnabled(string $jobKey): bool
+    {
+        $settings = Cache::rememberForever('app_settings', function () {
+            return LamtimSetting::first();
+        });
+
+        if (!$settings) {
+            return false;
+        }
+
+        return (bool) ($settings->{$jobKey} ?? false);
+    }
+
+    /**
      * Clear all setting-related caches.
      */
     protected function clearCache(): void

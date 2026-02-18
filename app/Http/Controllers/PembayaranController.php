@@ -170,6 +170,10 @@ class PembayaranController extends Controller
                 return ResponseHelper::notFound('Pembayaran tidak ditemukan');
             }
 
+            if (!\App\Services\SettingService::isJobEnabled('job_push_academic_enabled')) {
+                return ResponseHelper::error('Push Academic Job tidak aktif. Aktifkan di Pengaturan.', 400);
+            }
+
             \App\Jobs\PushAcademicDataJob::dispatch($pembayaran);
 
             return ResponseHelper::success(null, 'Sync job dispatched');

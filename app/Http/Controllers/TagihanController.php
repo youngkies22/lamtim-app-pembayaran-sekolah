@@ -174,6 +174,10 @@ class TagihanController extends Controller
                 return ResponseHelper::notFound('Tagihan tidak ditemukan');
             }
 
+            if (!\App\Services\SettingService::isJobEnabled('job_push_academic_enabled')) {
+                return ResponseHelper::error('Push Academic Job tidak aktif. Aktifkan di Pengaturan.', 400);
+            }
+
             \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
 
             return ResponseHelper::success(null, 'Sync job dispatched');

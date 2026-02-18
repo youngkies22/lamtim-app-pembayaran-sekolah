@@ -105,8 +105,19 @@ class ExternalSyncController extends Controller
     public function dispatchSiswaSync(): JsonResponse
     {
         try {
-            \App\Jobs\SyncSiswaJob::dispatch();
+            // This now delegates the check to the service if called from service, 
+            // but here we can keep the controller check for faster response or move it to service.
+            // Let's call the service method that will eventually handle the job dispatch if we want it there.
+            // Actually, currently syncSiswaBackground IS the method that dispatches the job in some implementations, 
+            // but in this version SyncSiswaJob calls syncSiswaBackground.
             
+            // If the controller dispatches directly:
+            if (!\App\Services\SettingService::isJobEnabled('job_sync_siswa_enabled')) {
+                return ResponseHelper::error('Sync Siswa Job tidak aktif. Aktifkan di Pengaturan.', 400);
+            }
+
+            \App\Jobs\SyncSiswaJob::dispatch();
+
             return ResponseHelper::success(null, 'Sinkronisasi siswa dimulai di latar belakang');
         } catch (\Exception $e) {
             Log::error("Failed to dispatch SyncSiswaJob", ['error' => $e->getMessage()]);

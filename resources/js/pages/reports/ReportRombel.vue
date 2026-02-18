@@ -87,7 +87,7 @@
 
         <div class="p-6">
           <div class="overflow-x-auto">
-            <table id="rombel-report-table" ref="tableRef"
+            <table id="rombel-report-table" ref="tableRef" :key="tableKey"
               class="w-full text-sm text-left text-gray-500 dark:text-gray-400 border-collapse">
               <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
@@ -164,6 +164,7 @@ const tableRef = ref(null);
 const dataTable = ref(null);
 const rombelList = ref([]);
 const dynamicHeaders = ref([]);
+const tableKey = ref(0);
 const isExporting = ref(false);
 
 const filters = reactive({
@@ -215,6 +216,12 @@ const initDataTable = () => {
   // Destroy existing if any
   if (dataTable.value) {
     dataTable.value.destroy();
+    dataTable.value = null;
+    // Clear leftover tbody rows to avoid stale DOM
+    if (tableRef.value) {
+      const tbody = tableRef.value.querySelector('tbody');
+      if (tbody) tbody.innerHTML = '';
+    }
   }
 
   const columns = [
@@ -298,19 +305,23 @@ const loadData = async () => {
   if (!filters.idRombel) return;
 
   try {
+    // Destroy existing DataTable BEFORE changing headers to avoid DOM conflicts
+    if (dataTable.value) {
+      dataTable.value.destroy();
+      dataTable.value = null;
+    }
+
     // Reload headers for this rombel
     const headerRes = await reportAPI.rombelHeaders({ idRombel: filters.idRombel });
     dynamicHeaders.value = headerRes.data.data || [];
 
-    // Wait for DOM to update (v-if shows the table)
+    // Force Vue to recreate the entire table element by changing the key
+    tableKey.value++;
+
+    // Wait for Vue to fully recreate the table DOM
     await nextTick();
 
-    if (!dataTable.value) {
-      initDataTable();
-    } else {
-      // Re-initialize to update columns
-      initDataTable();
-    }
+    initDataTable();
     loadSummary();
   } catch (err) {
     console.error('Error loading data:', err);
@@ -359,10 +370,18 @@ const exportExcel = async () => {
     isExporting.value = true;
     const response = await reportAPI.exportRombel(filters);
 
+    // Extract filename from backend Content-Disposition header, fallback to generated name
+    const disposition = response.headers['content-disposition'];
+    let fileName = `Laporan_Tagihan_Rombel_${new Date().getTime()}.xlsx`;
+    if (disposition) {
+      const match = disposition.match(/filename[^;=\n]*=(['"]?)(.+?)\1(;|$)/);
+      if (match && match[2]) fileName = decodeURIComponent(match[2]);
+    }
+
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `Laporan_Tagihan_Rombel_${new Date().getTime()}.xlsx`);
+    link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

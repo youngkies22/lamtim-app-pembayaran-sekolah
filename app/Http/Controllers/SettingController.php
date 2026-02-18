@@ -105,6 +105,41 @@ class SettingController extends Controller
     }
 
     /**
+     * Get job toggle settings.
+     */
+    public function jobSettings()
+    {
+        $settings = $this->service->getSettings();
+        return ResponseHelper::success([
+            'job_sync_external_enabled' => (bool) $settings->job_sync_external_enabled,
+            'job_sync_siswa_enabled' => (bool) $settings->job_sync_siswa_enabled,
+            'job_push_academic_enabled' => (bool) $settings->job_push_academic_enabled,
+            'job_process_import_enabled' => (bool) $settings->job_process_import_enabled,
+        ]);
+    }
+
+    /**
+     * Update job toggle settings.
+     */
+    public function updateJobSettings(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'job_sync_external_enabled' => 'sometimes|boolean',
+                'job_sync_siswa_enabled' => 'sometimes|boolean',
+                'job_push_academic_enabled' => 'sometimes|boolean',
+                'job_process_import_enabled' => 'sometimes|boolean',
+            ]);
+
+            $settings = $this->service->saveJobSettings($validated);
+
+            return ResponseHelper::success($settings, 'Job settings berhasil diperbarui');
+        } catch (\Exception $e) {
+            return ResponseHelper::error($e->getMessage(), 500);
+        }
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)

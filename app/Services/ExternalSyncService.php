@@ -49,6 +49,10 @@ class ExternalSyncService
      */
     public function syncSingleEntity(string $entity): array
     {
+        if (!SettingService::isJobEnabled('job_sync_external_enabled')) {
+            throw new \Exception('Sync External Data Job tidak aktif. Aktifkan di Pengaturan.');
+        }
+
         $this->preloadIdMaps();
 
         $data = $this->apiClient->fetch($entity);
@@ -172,6 +176,10 @@ class ExternalSyncService
 
     public function syncSiswaBackground(): array
     {
+        if (!SettingService::isJobEnabled('job_sync_siswa_enabled')) {
+            throw new \Exception('Sync Siswa Job tidak aktif. Aktifkan di Pengaturan.');
+        }
+
         $syncOrder = config('external_api.sync_order', []);
         $siswaIndex = array_search('siswa', $syncOrder) !== false ? array_search('siswa', $syncOrder) + 1 : count($syncOrder);
         $totalEntities = count($syncOrder);
@@ -197,6 +205,10 @@ class ExternalSyncService
      */
     public function sync(?string $entity = null, ?callable $onProgress = null): array
     {
+        if (!SettingService::isJobEnabled('job_sync_external_enabled')) {
+            throw new \Exception('Sync External Data Job tidak aktif. Aktifkan di Pengaturan.');
+        }
+
         $this->results = [];
         $syncOrder = config('external_api.sync_order', []);
         $entities = $entity ? [$entity] : $syncOrder;

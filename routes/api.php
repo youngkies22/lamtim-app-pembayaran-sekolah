@@ -220,10 +220,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
       Route::middleware('role:1')->group(function () {
           Route::get('settings', [SettingController::class, 'index'])->name('api.settings.index');
           Route::post('settings', [SettingController::class, 'store'])->name('api.settings.store');
+
+          // Job Settings Routes (must be before {id} routes)
+          Route::get('settings/jobs/config', [SettingController::class, 'jobSettings'])->name('api.settings.jobs');
+          Route::put('settings/jobs/config', [SettingController::class, 'updateJobSettings'])->name('api.settings.jobs.update');
+
           Route::get('settings/{id}', [SettingController::class, 'show'])->name('api.settings.show');
           Route::put('settings/{id}', [SettingController::class, 'update'])->name('api.settings.update');
           Route::delete('settings/{id}', [SettingController::class, 'destroy'])->name('api.settings.destroy');
-      
+
           // Trash Routes - Admin Only
           Route::get('trash', [\App\Http\Controllers\TrashController::class, 'index'])->name('api.trash.index');
           Route::post('trash/{id}/restore', [\App\Http\Controllers\TrashController::class, 'restore'])->name('api.trash.restore');
@@ -253,6 +258,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::post('/', [\App\Http\Controllers\BackupController::class, 'store'])->name('api.backups.store');
           Route::get('/{filename}/download', [\App\Http\Controllers\BackupController::class, 'download'])->name('api.backups.download');
           Route::delete('/{filename}', [\App\Http\Controllers\BackupController::class, 'destroy'])->name('api.backups.destroy');
+
+          // Laravel native backup routes
+          Route::get('/laravel/list', [\App\Http\Controllers\BackupController::class, 'indexLaravel'])->name('api.backups.laravel.index');
+          Route::post('/laravel', [\App\Http\Controllers\BackupController::class, 'storeLaravel'])->name('api.backups.laravel.store');
+          Route::get('/laravel/{filename}/download', [\App\Http\Controllers\BackupController::class, 'downloadLaravel'])->name('api.backups.laravel.download');
+          Route::delete('/laravel/{filename}', [\App\Http\Controllers\BackupController::class, 'destroyLaravel'])->name('api.backups.laravel.destroy');
       });
 
       // Cache Management Routes - Admin Only

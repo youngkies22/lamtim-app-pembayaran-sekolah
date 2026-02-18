@@ -42,12 +42,6 @@
         <div class="flex-1 text-center" :class="{ 'pr-20': sekolahLogo }">
           <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">{{ sekolahNama }}</h1>
           <h2 class="text-xl font-bold text-emerald-700 mt-2 uppercase">LAPORAN BIAYA PENDIDIKAN PER ROMBEL</h2>
-          
-          <div class="mt-4">
-              <span class="text-2xl font-bold text-gray-900 uppercase">
-                  {{ rombelInfo?.kelas?.kode ? rombelInfo.kelas.kode + ' - ' : '' }}{{ rombelNama }}
-              </span>
-          </div>
         </div>
       </div>
 
@@ -58,14 +52,15 @@
             <th class="border border-gray-300 px-3 py-2 text-center w-10">No</th>
             <th class="border border-gray-300 px-3 py-2">Nama Siswa</th>
             <th class="border border-gray-300 px-3 py-2 text-center">NIS</th>
-            
-            <th v-for="header in dynamicHeaders" :key="header.slug" class="border border-gray-300 px-3 py-2 text-center bg-sky-50">
-              {{ header.slug }}
+            <th class="border border-gray-300 px-3 py-2 text-center">Rombel</th>
+
+            <th v-for="header in dynamicHeaders" :key="header.slug" class="border border-gray-300 px-2 py-2 text-center bg-sky-50 text-[10px]" style="max-width: 90px; word-wrap: break-word;">
+              {{ header.nama }}
             </th>
             
-            <th class="border border-gray-300 px-3 py-2 text-right">Biaya</th>
+            <th class="border border-gray-300 px-3 py-2 text-right">Total Biaya</th>
             <th class="border border-gray-300 px-3 py-2 text-right">Terbayar</th>
-            <th class="border border-gray-300 px-3 py-2 text-right">Tunggakan</th>
+            <th class="border border-gray-300 px-3 py-2 text-right">Sisa</th>
             <th class="border border-gray-300 px-3 py-2 text-center">Ket</th>
           </tr>
         </thead>
@@ -74,8 +69,9 @@
             <td class="border border-gray-300 px-3 py-2 text-center">{{ index + 1 }}</td>
             <td class="border border-gray-300 px-3 py-2 font-medium">{{ row.siswa_nama }}</td>
             <td class="border border-gray-300 px-3 py-2 text-center">{{ row.siswa_nis }}</td>
-            
-            <td v-for="header in dynamicHeaders" :key="header.slug" class="border border-gray-300 px-3 py-2 text-right font-mono text-gray-600 bg-sky-50/30">
+            <td class="border border-gray-300 px-3 py-2 text-center text-xs">{{ row.rombel_nama }}</td>
+
+            <td v-for="header in dynamicHeaders" :key="header.slug" class="border border-gray-300 px-2 py-2 text-right font-mono text-gray-600 bg-sky-50/30 text-xs">
               {{ formatCurrency(row[header.slug]) }}
             </td>
             
@@ -93,7 +89,7 @@
           <!-- Summary Row -->
           <!-- Summary Row (Conditional) -->
           <tr v-if="showTotals" class="bg-gray-50 font-bold border-t-2 border-gray-400">
-              <td :colspan="3" class="border border-gray-300 px-3 py-2 text-center uppercase">Total Keseluruhan</td>
+              <td :colspan="4" class="border border-gray-300 px-3 py-2 text-center uppercase">Total Keseluruhan</td>
               
               <td v-for="header in dynamicHeaders" :key="header.slug" class="border border-gray-300 px-3 py-2 text-right text-gray-600">
                   {{ formatCurrency(computedTotals.dynamic[header.slug]) }}
@@ -181,7 +177,7 @@ const fetchData = async () => {
         // Parallel requests
         const [reportRes, headerRes, rombelRes, userRes] = await Promise.all([
             reportAPI.rombel({ idRombel, length: 1000 }), // Fetch ALL data for print
-            reportAPI.rombelHeaders(),
+            reportAPI.rombelHeaders({ idRombel }),
             masterDataAPI.rombel.get(idRombel),
             authAPI.me(),
         ]);

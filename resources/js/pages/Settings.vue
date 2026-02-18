@@ -12,7 +12,7 @@
               </div>
               Pengaturan Aplikasi
             </h1>
-            <p class="mt-2 text-indigo-100 text-sm md:text-base">Kelola logo dan nama aplikasi</p>
+            <p class="mt-2 text-indigo-100 text-sm md:text-base">Kelola logo, nama aplikasi, dan konfigurasi job</p>
           </div>
         </div>
       </div>
@@ -120,6 +120,115 @@
           </div>
         </form>
       </div>
+
+      <!-- Job Settings Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 md:p-8">
+        <div class="mb-6">
+          <h2 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <BoltIcon class="w-5 h-5 text-amber-500" />
+            Konfigurasi Job
+          </h2>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Aktifkan atau nonaktifkan job yang berjalan di sistem</p>
+        </div>
+
+        <div v-if="jobLoading" class="flex justify-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        </div>
+
+        <div v-else class="space-y-4">
+          <!-- Sync External Data -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Sync External Data</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Sinkronisasi data dari sumber eksternal</p>
+            </div>
+            <button
+              @click="toggleJob('job_sync_external_enabled')"
+              :disabled="jobSaving"
+              :class="[
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+                jobSettings.job_sync_external_enabled ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
+              ]"
+            >
+              <span
+                :class="[
+                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow-sm',
+                  jobSettings.job_sync_external_enabled ? 'translate-x-6' : 'translate-x-1'
+                ]"
+              />
+            </button>
+          </div>
+
+          <!-- Sync Siswa -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Sync Siswa</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Sinkronisasi data siswa di latar belakang</p>
+            </div>
+            <button
+              @click="toggleJob('job_sync_siswa_enabled')"
+              :disabled="jobSaving"
+              :class="[
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+                jobSettings.job_sync_siswa_enabled ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
+              ]"
+            >
+              <span
+                :class="[
+                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow-sm',
+                  jobSettings.job_sync_siswa_enabled ? 'translate-x-6' : 'translate-x-1'
+                ]"
+              />
+            </button>
+          </div>
+
+          <!-- Push Academic Data -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Push Academic Data</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Kirim data tagihan dan pembayaran ke sistem akademik</p>
+            </div>
+            <button
+              @click="toggleJob('job_push_academic_enabled')"
+              :disabled="jobSaving"
+              :class="[
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+                jobSettings.job_push_academic_enabled ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
+              ]"
+            >
+              <span
+                :class="[
+                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow-sm',
+                  jobSettings.job_push_academic_enabled ? 'translate-x-6' : 'translate-x-1'
+                ]"
+              />
+            </button>
+          </div>
+
+          <!-- Process Import -->
+          <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+            <div class="flex-1">
+              <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-200">Process Import</h3>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Proses import data Excel di latar belakang</p>
+            </div>
+            <button
+              @click="toggleJob('job_process_import_enabled')"
+              :disabled="jobSaving"
+              :class="[
+                'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2',
+                jobSettings.job_process_import_enabled ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'
+              ]"
+            >
+              <span
+                :class="[
+                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow-sm',
+                  jobSettings.job_process_import_enabled ? 'translate-x-6' : 'translate-x-1'
+                ]"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Toast -->
@@ -133,7 +242,7 @@ import Layout from '../components/layout/Layout.vue';
 import Toast from '../components/Toast.vue';
 import { settingsAPI } from '../services/api';
 import { useAppSettings } from '../composables/useAppSettings';
-import { Cog6ToothIcon } from '@heroicons/vue/24/outline';
+import { Cog6ToothIcon, BoltIcon } from '@heroicons/vue/24/outline';
 
 const { refreshAppSettings } = useAppSettings();
 
@@ -149,31 +258,36 @@ const form = reactive({
   logo_aplikasi: null,
 });
 
+// Job Settings
+const jobLoading = ref(true);
+const jobSaving = ref(false);
+const jobSettings = reactive({
+  job_sync_external_enabled: false,
+  job_sync_siswa_enabled: false,
+  job_push_academic_enabled: false,
+  job_process_import_enabled: true,
+});
+
 const getLogoUrl = (logoPath) => {
   if (!logoPath) return null;
-  // If it's already a full URL, return as is
   if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
     return logoPath;
   }
-  // Otherwise, construct the storage URL
   return `/storage/${logoPath}`;
 };
 
 const handleLogoChange = (event) => {
   const file = event.target.files[0];
   if (file) {
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toastRef.value?.error('File harus berupa gambar');
       return;
     }
-    // Validate file size (2MB)
     if (file.size > 2 * 1024 * 1024) {
       toastRef.value?.error('Ukuran file maksimal 2MB');
       return;
     }
     logoFile.value = file;
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       logoPreview.value = e.target.result;
@@ -186,7 +300,6 @@ const removeLogo = () => {
   logoFile.value = null;
   logoPreview.value = null;
   form.logo_aplikasi = null;
-  // Reset file input
   const fileInput = document.getElementById('logo-input');
   if (fileInput) {
     fileInput.value = '';
@@ -201,8 +314,7 @@ const loadSettings = async () => {
       settingsId.value = settings.id;
       form.nama_aplikasi = settings.nama_aplikasi || '';
       form.logo_aplikasi = settings.logo_aplikasi || null;
-      
-      // Set logo preview if exists
+
       if (settings.logo_aplikasi) {
         logoPreview.value = getLogoUrl(settings.logo_aplikasi);
       } else {
@@ -212,7 +324,42 @@ const loadSettings = async () => {
     }
   } catch (err) {
     console.error('Error loading settings:', err);
-    // If no settings found, that's okay - user can create new one
+  }
+};
+
+const loadJobSettings = async () => {
+  try {
+    jobLoading.value = true;
+    const response = await settingsAPI.getJobSettings();
+    if (response.data?.success && response.data.data) {
+      const data = response.data.data;
+      jobSettings.job_sync_external_enabled = data.job_sync_external_enabled ?? false;
+      jobSettings.job_sync_siswa_enabled = data.job_sync_siswa_enabled ?? false;
+      jobSettings.job_push_academic_enabled = data.job_push_academic_enabled ?? false;
+      jobSettings.job_process_import_enabled = data.job_process_import_enabled ?? true;
+    }
+  } catch (err) {
+    console.error('Error loading job settings:', err);
+  } finally {
+    jobLoading.value = false;
+  }
+};
+
+const toggleJob = async (key) => {
+  try {
+    jobSaving.value = true;
+    const newValue = !jobSettings[key];
+
+    const response = await settingsAPI.updateJobSettings({ [key]: newValue });
+    if (response.data?.success) {
+      jobSettings[key] = newValue;
+      toastRef.value?.success(`Job ${newValue ? 'diaktifkan' : 'dinonaktifkan'}`);
+    }
+  } catch (err) {
+    console.error('Error toggling job:', err);
+    toastRef.value?.error('Gagal mengubah status job');
+  } finally {
+    jobSaving.value = false;
   }
 };
 
@@ -220,30 +367,23 @@ const handleSubmit = async () => {
   try {
     submitLoading.value = true;
     formError.value = '';
-    
-    // Create FormData for file upload
+
     const formData = new FormData();
     formData.append('nama_aplikasi', form.nama_aplikasi);
-    
-    // Append logo file if selected
+
     if (logoFile.value) {
       formData.append('logo_aplikasi', logoFile.value);
     }
-    
+
     if (settingsId.value) {
-      // Update existing settings
       await settingsAPI.update(settingsId.value, formData);
       toastRef.value?.success('Pengaturan berhasil diperbarui');
     } else {
-      // Create new settings
       await settingsAPI.create(formData);
       toastRef.value?.success('Pengaturan berhasil disimpan');
     }
-    
-    // Reload settings to get updated data
+
     await loadSettings();
-    
-    // Refresh app settings (title and favicon)
     await refreshAppSettings();
   } catch (err) {
     formError.value = err.response?.data?.message || 'Terjadi kesalahan';
@@ -255,6 +395,7 @@ const handleSubmit = async () => {
 
 onMounted(() => {
   loadSettings();
+  loadJobSettings();
 });
 </script>
 

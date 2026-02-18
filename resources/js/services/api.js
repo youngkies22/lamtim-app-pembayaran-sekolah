@@ -203,6 +203,10 @@ export const settingsAPI = {
         return api.put(`/settings/${id}`, data);
     },
     delete: (id) => api.delete(`/settings/${id}`),
+
+    // Job Settings
+    getJobSettings: () => api.get('/settings/jobs/config'),
+    updateJobSettings: (data) => api.put('/settings/jobs/config', data),
 };
 
 // Dashboard API
@@ -422,7 +426,7 @@ export const usersAPI = {
 // Reports API
 export const reportAPI = {
     rombel: (params = {}) => api.get('/reports/rombel', { params }),
-    rombelHeaders: () => api.get('/reports/rombel/headers'),
+    rombelHeaders: (params = {}) => api.get('/reports/rombel/headers', { params }),
     rombelStats: (params = {}) => api.get('/reports/rombel/stats', { params }),
     exportRombel: (params = {}) => api.get('/reports/rombel/export', { params, responseType: 'blob' }),
     exportSiswa: (params = {}) => api.get('/reports/siswa/export', { params, responseType: 'blob' }),

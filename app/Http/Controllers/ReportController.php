@@ -91,7 +91,8 @@ class ReportController extends Controller
     {
         $filters = $request->only(['idRombel', 'idMasterPembayaran', 'search']);
         $context = $this->service->getRombelExportContext($filters['idRombel'] ?? null);
-        $fileName = 'Laporan_Tagihan_Rombel_' . date('Ymd_His') . '.xlsx';
+        $cleanRombel = preg_replace('/[^a-zA-Z0-9\-]/', '_', $context['rombelNama']);
+        $fileName = 'Laporan_Tagihan_Rombel_' . $cleanRombel . '_' . date('Ymd_His') . '.xlsx';
 
         return Excel::download(
             new RombelReportExport($filters, $context['sekolahNama'], $context['rombelNama'], $context['logo'] ?? null),

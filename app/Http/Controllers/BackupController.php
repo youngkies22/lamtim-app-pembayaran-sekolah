@@ -76,6 +76,83 @@ class BackupController extends Controller
     }
 
     /**
+     * Create a Laravel native backup (pg_dump/mysqldump)
+     */
+    public function storeLaravel()
+    {
+        set_time_limit(300);
+
+        $result = $this->backupService->createLaravelBackup();
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'data' => $result
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $result['message']
+        ], 500);
+    }
+
+    /**
+     * List Laravel native backups
+     */
+    public function indexLaravel()
+    {
+        try {
+            $backups = $this->backupService->listLaravelBackups();
+            return response()->json([
+                'success' => true,
+                'data' => $backups
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to list Laravel backups: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download a Laravel backup file
+     */
+    public function downloadLaravel($filename)
+    {
+        $path = $this->backupService->getLaravelBackupPath($filename);
+
+        if ($path) {
+            return response()->download($path);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Backup file not found'
+        ], 404);
+    }
+
+    /**
+     * Delete a Laravel backup file
+     */
+    public function destroyLaravel($filename)
+    {
+        if ($this->backupService->deleteLaravelBackup($filename)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup deleted successfully'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to delete backup or file not found'
+        ], 500);
+    }
+
+    /**
      * Delete a backup file
      */
     public function destroy($filename)

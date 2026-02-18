@@ -117,6 +117,9 @@ class TagihanService
             DB::commit();
 
             // Dispatch background sync for new tagihan
+            if (!SettingService::isJobEnabled('job_push_academic_enabled')) {
+                throw new \Exception('Push Academic Data Job tidak aktif. Aktifkan di Pengaturan untuk sinkronisasi otomatis.');
+            }
             \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
 
             return $tagihan;
@@ -192,6 +195,10 @@ class TagihanService
             DB::commit();
 
             // Dispatch background sync for all newly generated tagihans
+            if (!SettingService::isJobEnabled('job_push_academic_enabled')) {
+                throw new \Exception('Push Academic Data Job tidak aktif. Aktifkan di Pengaturan.');
+            }
+
             foreach ($generated as $tagihanId) {
                 $tagihan = \App\Models\LamtimTagihan::find($tagihanId);
                 if ($tagihan) {
@@ -227,6 +234,9 @@ class TagihanService
 
             // Dispatch background sync for updated tagihan
             if ($tagihan) {
+                if (!SettingService::isJobEnabled('job_push_academic_enabled')) {
+                    throw new \Exception('Push Academic Data Job tidak aktif. Aktifkan di Pengaturan.');
+                }
                 \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
             }
 

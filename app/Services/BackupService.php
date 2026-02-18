@@ -61,19 +61,35 @@ class BackupService
     public function createBackup()
     {
         try {
-            // Dispatch the job to run in background
-            BackupJob::dispatch();
-            
+            // Run backup synchronously so user gets immediate feedback
+            BackupJob::dispatchSync();
+
+            // Find the latest backup file to return its name
+            $appName = config('backup.backup.name');
+            $files = Storage::disk($this->disk)->allFiles($appName);
+            $latestFile = null;
+            $latestTime = 0;
+
+            foreach ($files as $file) {
+                if (pathinfo($file, PATHINFO_EXTENSION) === 'zip') {
+                    $time = Storage::disk($this->disk)->lastModified($file);
+                    if ($time > $latestTime) {
+                        $latestTime = $time;
+                        $latestFile = basename($file);
+                    }
+                }
+            }
+
             return [
                 'success' => true,
-                'message' => 'Backup process started in background. It may take a few minutes.',
-                'filename' => 'processing...'
+                'message' => 'Backup berhasil dibuat.',
+                'filename' => $latestFile ?? 'backup.zip'
             ];
         } catch (Exception $e) {
-            Log::error('Backup dispatch failed: ' . $e->getMessage());
+            Log::error('Backup failed: ' . $e->getMessage());
             return [
                 'success' => false,
-                'message' => 'Failed to start backup: ' . $e->getMessage()
+                'message' => 'Gagal membuat backup: ' . $e->getMessage()
             ];
         }
     }
@@ -84,7 +100,7 @@ class BackupService
      */
     public function runBackup()
     {
-        BackupJob::dispatch();
+        BackupJob::dispatchSync();
     }
 
     /**
@@ -115,6 +131,157 @@ class BackupService
             return Storage::disk($this->disk)->path($path);
         }
         return null;
+    }
+
+    /**
+     * Create a backup using pure Laravel (pg_dump / mysqldump).
+     */
+    public function createLaravelBackup()
+    {
+        try {
+            $connection = config('database.default');
+            $dbConfig = config("database.connections.{$connection}");
+            $dbName = $dbConfig['database'];
+            $timestamp = date('Y-m-d-H-i-s');
+            $filename = "laravel-backup-{$dbName}-{$timestamp}.sql";
+
+            // Ensure backup directory exists
+            $backupDir = storage_path('app/private/backups/laravel');
+            if (!is_dir($backupDir)) {
+                mkdir($backupDir, 0755, true);
+            }
+
+            $filePath = $backupDir . '/' . $filename;
+
+            if ($connection === 'pgsql') {
+                $host = $dbConfig['host'] ?? '127.0.0.1';
+                $port = $dbConfig['port'] ?? '5432';
+                $username = $dbConfig['username'] ?? 'postgres';
+                $password = $dbConfig['password'] ?? '';
+
+                // Set PGPASSWORD environment variable for pg_dump
+                putenv("PGPASSWORD={$password}");
+
+                $command = sprintf(
+                    'pg_dump -h %s -p %s -U %s -F p -b -v -f %s %s 2>&1',
+                    escapeshellarg($host),
+                    escapeshellarg($port),
+                    escapeshellarg($username),
+                    escapeshellarg($filePath),
+                    escapeshellarg($dbName)
+                );
+            } elseif ($connection === 'mysql') {
+                $host = $dbConfig['host'] ?? '127.0.0.1';
+                $port = $dbConfig['port'] ?? '3306';
+                $username = $dbConfig['username'] ?? 'root';
+                $password = $dbConfig['password'] ?? '';
+
+                $command = sprintf(
+                    'mysqldump -h %s -P %s -u %s %s %s > %s 2>&1',
+                    escapeshellarg($host),
+                    escapeshellarg($port),
+                    escapeshellarg($username),
+                    $password ? '-p' . escapeshellarg($password) : '',
+                    escapeshellarg($dbName),
+                    escapeshellarg($filePath)
+                );
+            } else {
+                throw new Exception("Unsupported database connection: {$connection}");
+            }
+
+            Log::info("LaravelBackup: Running command for {$connection}...");
+
+            exec($command, $output, $exitCode);
+
+            // Clear password from environment
+            if ($connection === 'pgsql') {
+                putenv("PGPASSWORD");
+            }
+
+            if ($exitCode !== 0) {
+                $outputStr = implode("\n", $output);
+                Log::error("LaravelBackup: Command failed. Exit code: {$exitCode}. Output: {$outputStr}");
+                // Clean up failed file
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+                throw new Exception("Database dump failed (exit code {$exitCode}): {$outputStr}");
+            }
+
+            // Verify file exists and has content
+            if (!file_exists($filePath) || filesize($filePath) < 100) {
+                if (file_exists($filePath)) unlink($filePath);
+                throw new Exception("Backup file is empty or was not created.");
+            }
+
+            $size = $this->formatSize(filesize($filePath));
+            Log::info("LaravelBackup: Success! File: {$filename} ({$size})");
+
+            return [
+                'success' => true,
+                'message' => "Backup Laravel berhasil dibuat ({$size}).",
+                'filename' => $filename,
+            ];
+        } catch (Exception $e) {
+            Log::error('LaravelBackup failed: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Gagal membuat backup Laravel: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Get list of Laravel native backups.
+     */
+    public function listLaravelBackups()
+    {
+        $backupDir = storage_path('app/private/backups/laravel');
+
+        if (!is_dir($backupDir)) {
+            mkdir($backupDir, 0755, true);
+            return [];
+        }
+
+        $files = glob($backupDir . '/*.sql');
+        $backups = [];
+
+        foreach ($files as $file) {
+            $backups[] = [
+                'filename' => basename($file),
+                'path' => $file,
+                'size' => $this->formatSize(filesize($file)),
+                'created_at' => Carbon::createFromTimestamp(filemtime($file))->format('Y-m-d H:i:s'),
+                'timestamp' => filemtime($file),
+                'type' => 'laravel',
+            ];
+        }
+
+        usort($backups, fn($a, $b) => $b['timestamp'] - $a['timestamp']);
+
+        return $backups;
+    }
+
+    /**
+     * Get Laravel backup file path for download.
+     */
+    public function getLaravelBackupPath($filename)
+    {
+        $path = storage_path('app/private/backups/laravel/' . basename($filename));
+        return file_exists($path) ? $path : null;
+    }
+
+    /**
+     * Delete a Laravel backup file.
+     */
+    public function deleteLaravelBackup($filename)
+    {
+        $path = storage_path('app/private/backups/laravel/' . basename($filename));
+        if (file_exists($path)) {
+            unlink($path);
+            return true;
+        }
+        return false;
     }
 
     /**

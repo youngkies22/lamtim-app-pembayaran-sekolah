@@ -35,16 +35,24 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
         $this->rombelNama = $rombelNama;
         $this->logo = $logo;
         
-        // Group by slug (Requirement 4 & 9)
-        // Filter by active tagihans in this rombel (User request: dynamic columns)
+        // Get relevant masters using the same logic as ReportService
         $idRombel = $filters['idRombel'] ?? null;
         $masterQuery = \App\Models\LamtimMasterPembayaran::where('isActive', 1)
             ->whereNotNull('slug');
-        
+
         if ($idRombel) {
-            $masterQuery->whereHas('tagihans', function($q) use ($idRombel) {
-                $q->where('idRombel', $idRombel)
+            $rombel = \App\Models\LamtimRombel::find($idRombel);
+            $idKelas = $rombel?->idKelas;
+
+            $studentIds = \App\Models\LamtimSiswaRombel::where('idRombel', $idRombel)
+                ->pluck('idSiswa')->toArray();
+
+            $masterQuery->whereHas('tagihans', function($q) use ($studentIds, $idKelas) {
+                $q->whereIn('idSiswa', $studentIds)
                   ->where('isActive', 1);
+                if ($idKelas) {
+                    $q->where('idKelas', $idKelas);
+                }
             });
         }
 
@@ -52,6 +60,7 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
             ->groupBy('slug')
             ->map(fn($group) => [
                 'slug' => $group->first()->slug,
+                'nama' => $group->first()->nama,
                 'ids' => $group->pluck('id')->toArray()
             ])->values();
     }
@@ -70,15 +79,20 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
             return collect([]);
         }
 
-        // Sync query with ReportController (LamtimSiswaRombel as base)
+        // Sync query with ReportService (filter by idKelas instead of idRombel on tagihans)
+        $rombel = \App\Models\LamtimRombel::find($idRombel);
+        $idKelas = $rombel?->idKelas;
+
         $query = \App\Models\LamtimSiswa::query()
             ->join('lamtim_siswa_rombels', 'lamtim_siswas.id', '=', 'lamtim_siswa_rombels.idSiswa')
             ->leftJoin('lamtim_rombels', 'lamtim_siswa_rombels.idRombel', '=', 'lamtim_rombels.id')
             ->leftJoin('lamtim_kelas', 'lamtim_rombels.idKelas', '=', 'lamtim_kelas.id')
-            ->leftJoin('lamtim_tagihans', function($join) use ($idRombel) {
+            ->leftJoin('lamtim_tagihans', function($join) use ($idKelas) {
                 $join->on('lamtim_siswas.id', '=', 'lamtim_tagihans.idSiswa')
-                     ->where('lamtim_tagihans.idRombel', '=', $idRombel)
                      ->where('lamtim_tagihans.isActive', '=', 1);
+                if ($idKelas) {
+                    $join->where('lamtim_tagihans.idKelas', '=', $idKelas);
+                }
             })
             ->select(
                 'lamtim_siswas.id', 
@@ -115,10 +129,10 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
         ];
 
         foreach ($this->masters as $master) {
-            $headings[] = strtoupper($master['slug']); // Use slug as heading (Requirement 9)
+            $headings[] = strtoupper($master['nama']);
         }
 
-        $headings[] = 'Total Tagihan';
+        $headings[] = 'Total Biaya';
         $headings[] = 'Terbayar';
         $headings[] = 'Sisa';
         $headings[] = 'Status';
@@ -205,20 +219,11 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
                 ]);
                 $sheet->getRowDimension(2)->setRowHeight(22);
 
-                // Row 3: Rombel Name (Replaces Tahun Ajaran)
-                $sheet->mergeCells("A3:{$lastCol}3");
-                $sheet->setCellValue('A3', strtoupper($rombelNama));
-                $sheet->getStyle('A3')->applyFromArray([
-                    'font' => ['size' => 11, 'bold' => true, 'color' => ['rgb' => '4B5563']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-                ]);
+                // Row 3: Empty
+                $sheet->getRowDimension(3)->setRowHeight(6);
 
-                // Row 4: Empty (Removed Info)
-                // $sheet->mergeCells("A4:{$lastCol}4");
-                $sheet->getStyle('A4')->applyFromArray([
-                    'font' => ['size' => 9, 'color' => ['rgb' => '9CA3AF']],
-                    'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
-                ]);
+                // Row 4: Empty
+                $sheet->getRowDimension(4)->setRowHeight(6);
 
                 // Row 5: Divider line
                 $sheet->mergeCells("A5:{$lastCol}5");
@@ -231,6 +236,27 @@ class RombelReportExport implements FromCollection, WithHeadings, WithMapping, W
 
                 // Row 6: Empty spacer
                 $sheet->getRowDimension(6)->setRowHeight(6);
+
+                // Style dynamic header columns (E to E+mastersCount-1) with wrap text and smaller font
+                if ($mastersCount > 0) {
+                    $firstDynCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(5); // Column E
+                    $lastDynCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(4 + $mastersCount);
+                    $sheet->getStyle("{$firstDynCol}7:{$lastDynCol}7")->applyFromArray([
+                        'font' => ['size' => 8, 'bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                        'alignment' => [
+                            'wrapText' => true,
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+                    // Set fixed width for dynamic columns
+                    for ($col = 5; $col <= 4 + $mastersCount; $col++) {
+                        $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+                        $sheet->getColumnDimension($colLetter)->setAutoSize(false);
+                        $sheet->getColumnDimension($colLetter)->setWidth(15);
+                    }
+                    $sheet->getRowDimension(7)->setRowHeight(35);
+                }
 
                 // Style data rows
                 $lastRow = $sheet->getHighestRow();
