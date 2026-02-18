@@ -1,5 +1,6 @@
 <template>
     <Layout :active-menu="'Payments'">
+        <!-- FIXED STRING -->
         <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <!-- Header -->
@@ -249,12 +250,9 @@
                                         <select v-model="form.metodeBayar" required
                                             class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all">
                                             <option value="">Pilih Metode</option>
-                                            <option value="Tunai">Tunai</option>
-                                            <option value="Transfer">Transfer Bank</option>
-                                            <option value="QRIS">QRIS</option>
-                                            <option value="Debit">Debit</option>
-                                            <option value="Kredit">Kredit</option>
-                                            <option value="LAINNYA">Lainnya</option>
+                                            <option v-for="tp in tipePembayaranList" :key="tp.id" :value="tp.nama">
+                                                {{ tp.nama }}
+                                            </option>
                                         </select>
                                     </div>
                                 </div>
@@ -442,12 +440,13 @@ const selectedSekolah = ref('');
 const billingMode = ref('aktif');
 
 const { appSettings } = useAppSettings();
-const { loadSiswa, loadMasterPembayaran, loadKategoriPembayaran, getCached, getKategoriNama } = usePaymentCache();
+const { loadSiswa, loadMasterPembayaran, loadKategoriPembayaran, loadTipePembayaran, getCached, getKategoriNama } = usePaymentCache();
 const { isClosed, message: closingMessage, checkDateStatus } = useClosingCheck();
 
 // Get cached data immediately (synchronous)
 const cached = getCached();
 const siswaList = ref(Array.isArray(cached.siswa) ? [...cached.siswa] : []);
+const tipePembayaranList = ref(Array.isArray(cached.tipePembayaran) ? [...cached.tipePembayaran] : []);
 const tagihanList = ref([]);
 
 // Form
@@ -552,12 +551,14 @@ const buildSiswaFilters = () => {
 // Load data with cache
 const loadData = async () => {
     try {
-        const [siswaResult] = await Promise.all([
+        const [siswaResult, , , tipeResult] = await Promise.all([
             loadSiswa(buildSiswaFilters(), true),
             loadMasterPembayaran(),
             loadKategoriPembayaran(),
+            loadTipePembayaran(),
         ]);
         siswaList.value = siswaResult || [];
+        tipePembayaranList.value = tipeResult || [];
     } catch (err) {
         console.error('Error loading data:', err);
         toastRef.value?.error('Gagal memuat data');
@@ -657,3 +658,4 @@ onMounted(async () => {
     await checkDateStatus(new Date());
 });
 </script>
+

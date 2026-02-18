@@ -22,6 +22,12 @@ const cache = {
     loading: false,
     lastUpdate: null,
   },
+  tipePembayaran: {
+    data: [],
+    loaded: false,
+    loading: false,
+    lastUpdate: null,
+  },
 };
 
 // Cache expires after 5 minutes
@@ -141,19 +147,58 @@ export function usePaymentCache() {
       cache.kategoriPembayaran.loading = false;
     }
   };
+  
+  // Load Tipe Pembayaran
+  const loadTipePembayaran = async (force = false) => {
+    // Check if cache is still valid
+    const now = Date.now();
+    const isExpired = cache.tipePembayaran.lastUpdate && (now - cache.tipePembayaran.lastUpdate) > CACHE_EXPIRY;
+    
+    if (cache.tipePembayaran.loaded && !force && !isExpired) {
+      return cache.tipePembayaran.data;
+    }
+
+    if (cache.tipePembayaran.loading) {
+      // Wait for ongoing request
+      return new Promise((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (!cache.tipePembayaran.loading) {
+            clearInterval(checkInterval);
+            resolve(cache.tipePembayaran.data);
+          }
+        }, 100);
+      });
+    }
+
+    try {
+      cache.tipePembayaran.loading = true;
+      const response = await masterDataAPI.tipePembayaran.list();
+      cache.tipePembayaran.data = response.data?.data || response.data || [];
+      cache.tipePembayaran.loaded = true;
+      cache.tipePembayaran.lastUpdate = Date.now();
+      return cache.tipePembayaran.data;
+    } catch (err) {
+      console.error('Error loading tipe pembayaran:', err);
+      return [];
+    } finally {
+      cache.tipePembayaran.loading = false;
+    }
+  };
 
   // Load all payment data in parallel
   const loadAll = async (siswaFilters = {}, force = false) => {
-    const [siswa, masterPembayaran, kategoriPembayaran] = await Promise.all([
+    const [siswa, masterPembayaran, kategoriPembayaran, tipePembayaran] = await Promise.all([
       loadSiswa(siswaFilters, force),
       loadMasterPembayaran(force),
       loadKategoriPembayaran(force),
+      loadTipePembayaran(force),
     ]);
 
     return {
       siswa,
       masterPembayaran,
       kategoriPembayaran,
+      tipePembayaran,
     };
   };
 
@@ -172,6 +217,10 @@ export function usePaymentCache() {
       cache.kategoriPembayaran.loaded = false;
       cache.kategoriPembayaran.data = [];
       cache.kategoriPembayaran.lastUpdate = null;
+    } else if (cache.tipePembayaran) {
+      cache.tipePembayaran.loaded = false;
+      cache.tipePembayaran.data = [];
+      cache.tipePembayaran.lastUpdate = null;
     } else {
       // Clear all
       cache.siswa.loaded = false;
@@ -184,6 +233,9 @@ export function usePaymentCache() {
       cache.kategoriPembayaran.loaded = false;
       cache.kategoriPembayaran.data = [];
       cache.kategoriPembayaran.lastUpdate = null;
+      cache.tipePembayaran.loaded = false;
+      cache.tipePembayaran.data = [];
+      cache.tipePembayaran.lastUpdate = null;
     }
   };
 
@@ -193,10 +245,12 @@ export function usePaymentCache() {
       siswa: cache.siswa.data,
       masterPembayaran: cache.masterPembayaran.data,
       kategoriPembayaran: cache.kategoriPembayaran.data,
+      tipePembayaran: cache.tipePembayaran.data,
       isLoaded: {
         siswa: cache.siswa.loaded,
         masterPembayaran: cache.masterPembayaran.loaded,
         kategoriPembayaran: cache.kategoriPembayaran.loaded,
+        tipePembayaran: cache.tipePembayaran.loaded,
       },
     };
   };
@@ -211,6 +265,7 @@ export function usePaymentCache() {
     loadSiswa,
     loadMasterPembayaran,
     loadKategoriPembayaran,
+    loadTipePembayaran,
     loadAll,
     clearCache,
     getCached,

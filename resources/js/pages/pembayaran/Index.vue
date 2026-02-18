@@ -408,10 +408,9 @@
                                     <select v-model="prosesForm.metodeBayar" required
                                         class="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all">
                                         <option value="">Pilih Metode</option>
-                                        <option value="TUNAI">Tunai</option>
-                                        <option value="TRANSFER">Transfer Bank</option>
-                                        <option value="E-WALLET">E-Wallet</option>
-                                        <option value="QRIS">QRIS</option>
+                                        <option v-for="tp in tipePembayaranList" :key="tp.id" :value="tp.nama">
+                                            {{ tp.nama }}
+                                        </option>
                                     </select>
                                 </div>
                             </div>
@@ -596,6 +595,7 @@ const showFilter = ref(false);
 // Master data
 const siswaList = ref([]);
 const masterPembayaranList = ref([]);
+const tipePembayaranList = ref([]);
 const rombelList = ref([]);
 
 const rombelSearchList = computed(() => {
@@ -680,16 +680,18 @@ const formatDateTime = (date) => {
 // Load master data
 const loadMasterData = async () => {
     try {
-        const [siswaRes, mpRes, rombelRes] = await Promise.all([
+        const [siswaRes, mpRes, rombelRes, tpRes] = await Promise.all([
             siswaAPI.list({ isActive: 1 }),
             masterPembayaranAPI.list({ isActive: 1 }),
             masterDataAPI.rombel.select({ isActive: 1 }),
+            masterDataAPI.tipePembayaran.list({ isActive: 1 }),
         ]);
 
         // Handle response structure - could be data.data or data.items or just data
         const siswaData = siswaRes.data?.data || siswaRes.data?.items || siswaRes.data || [];
         const mpData = mpRes.data?.data || mpRes.data?.items || mpRes.data || [];
         const rombelData = rombelRes.data?.data || rombelRes.data || [];
+        const tpData = tpRes.data?.data || tpRes.data || [];
 
         // Filter out null/undefined items and ensure they have id
         siswaList.value = Array.isArray(siswaData)
@@ -697,6 +699,9 @@ const loadMasterData = async () => {
             : [];
         masterPembayaranList.value = Array.isArray(mpData)
             ? mpData.filter(mp => mp && mp.id)
+            : [];
+        tipePembayaranList.value = Array.isArray(tpData)
+            ? tpData.filter(tp => tp && tp.id)
             : [];
         rombelList.value = Array.isArray(rombelData)
             ? rombelData.filter(r => r && r.id)
