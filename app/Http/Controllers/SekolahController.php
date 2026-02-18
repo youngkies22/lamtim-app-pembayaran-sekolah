@@ -166,6 +166,7 @@ class SekolahController extends Controller
                 'npsn' => 'sometimes|string|unique:lamtim_sekolahs,npsn,' . $id,
                 'kode' => 'sometimes|string|unique:lamtim_sekolahs,kode,' . $id,
                 'nama' => 'sometimes|string|max:255',
+                'namaYayasan' => 'nullable|string|max:255',
                 'alamat' => 'nullable|string',
                 'kota' => 'nullable|string',
                 'provinsi' => 'nullable|string',

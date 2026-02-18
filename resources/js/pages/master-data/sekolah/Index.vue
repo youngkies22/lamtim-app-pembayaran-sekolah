@@ -78,7 +78,12 @@
                   class="text-lg font-bold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {{ item.nama }}
                 </h3>
-                <p v-if="item.npsn" class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">NPSN: {{ item.npsn }}</p>
+                <p v-if="item.namaYayasan" class="text-xs text-blue-600 dark:text-blue-400 font-medium truncate">{{ item.namaYayasan }}</p>
+                <div class="flex items-center gap-2 mt-0.5">
+                  <p v-if="item.npsn" class="text-xs text-gray-500 dark:text-gray-400">NPSN: {{ item.npsn }}</p>
+                  <span v-if="item.npsn && item.kode" class="text-gray-300 dark:text-gray-600">•</span>
+                  <p v-if="item.kode" class="text-xs text-gray-500 dark:text-gray-400">Kode: {{ item.kode }}</p>
+                </div>
               </div>
             </div>
             <div class="relative">
@@ -518,7 +523,7 @@ const handleSubmit = async () => {
     // Create FormData for file upload
     const formData = new FormData();
     formData.append('nama', form.nama);
-    if (form.namaYayasan) formData.append('namaYayasan', form.namaYayasan);
+    formData.append('namaYayasan', form.namaYayasan || '');
     if (form.kode) formData.append('kode', form.kode);
     if (form.npsn) formData.append('npsn', form.npsn);
     if (form.alamat) formData.append('alamat', form.alamat);
