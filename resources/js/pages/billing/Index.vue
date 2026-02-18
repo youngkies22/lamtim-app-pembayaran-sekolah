@@ -1,6 +1,5 @@
 <template>
     <Layout :active-menu="'Payments'">
-        <!-- FIXED STRING -->
         <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <!-- Header -->
@@ -116,7 +115,8 @@
                                             Periode Ditutup
                                         </h3>
                                         <div class="mt-2 text-sm leading-5 text-red-700 dark:text-red-300">
-                                            <p>{{ closingMessage || 'Transaksi untuk tanggal ini telah ditutup. Silakan hubungi admin.' }}</p>
+                                            <p>{{ closingMessage || `Transaksi untuk tanggal ini telah ditutup. Silakan
+                                                hubungi admin.` }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -182,7 +182,7 @@
                                             class="w-full pl-12 pr-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
                                             @change="onTagihanChange">
                                             <option value="">{{ loadingTagihan ? 'Memuat tagihan...' : 'Pilih Tagihan'
-                                            }}</option>
+                                                }}</option>
                                             <option v-for="tagihan in tagihanList" :key="tagihan.id"
                                                 :value="tagihan.id">
                                                 [{{ tagihan.masterPembayaran?.kategori || '-' }}] {{
@@ -454,7 +454,7 @@ const initialForm = {
     idSiswa: '',
     idTagihan: '',
     nominalBayar: 0,
-    metodeBayar: 'Tunai',
+    metodeBayar: 'TUNAI',
     keterangan: '',
 };
 
@@ -658,4 +658,3 @@ onMounted(async () => {
     await checkDateStatus(new Date());
 });
 </script>
-

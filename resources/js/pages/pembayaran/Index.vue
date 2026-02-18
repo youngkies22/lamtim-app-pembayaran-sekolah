@@ -211,7 +211,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rombel</label>
+                            <label
+                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rombel</label>
                             <SearchableSelect v-model="filters.idRombel" :options="rombelSearchList" label-key="label"
                                 value-key="id" placeholder="Semua Rombel" search-placeholder="Cari rombel..."
                                 @change="loadData" />
@@ -636,7 +637,7 @@ const initialProsesForm = {
     idSiswa: '',
     idMasterPembayaran: '',
     nominalBayar: 0,
-    metodeBayar: '',
+    metodeBayar: 'TUNAI',
     channelBayar: '',
     namaChannel: '',
     buktiBayar: '',
