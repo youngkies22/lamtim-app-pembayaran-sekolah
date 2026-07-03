@@ -59,22 +59,53 @@
 
                             <!-- Filter: Sekolah + Mode Toggle -->
                             <div
-                                class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4 mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600">
-                                <!-- Pilih Sekolah -->
-                                <div class="flex-1">
+                                class="mb-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-200 dark:border-gray-600 space-y-4">
+                                <!-- Pilih Sekolah (radio cards) -->
+                                <div>
                                     <label
-                                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Sekolah</label>
-                                    <select v-model="selectedSekolah"
-                                        class="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
-                                        @change="onFilterChange">
-                                        <option value="">Semua Sekolah</option>
-                                        <option v-for="sekolah in sekolahList" :key="sekolah.id" :value="sekolah.id">
-                                            {{ sekolah.nama }}
-                                        </option>
-                                    </select>
+                                        class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wider">Pilih
+                                        Sekolah</label>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        <label v-for="opt in sekolahOptions" :key="opt.id || 'semua-sekolah'"
+                                            :title="opt.nama"
+                                            class="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all"
+                                            :class="selectedSekolah === opt.id
+                                                ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 shadow-sm'
+                                                : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700'">
+                                            <input type="radio" name="sekolahFilter" class="sr-only" :value="opt.id"
+                                                v-model="selectedSekolah" @change="onFilterChange" />
+                                            <span class="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 transition-colors"
+                                                :class="selectedSekolah === opt.id
+                                                    ? 'bg-emerald-500 text-white'
+                                                    : 'bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/40 group-hover:text-emerald-600'">
+                                                <svg v-if="!opt.id" class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                                </svg>
+                                                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 21h18M5 21V7l8-4v18M13 21V11l6 3v7M9 9h.01M9 12h.01M9 15h.01" />
+                                                </svg>
+                                            </span>
+                                            <span class="min-w-0 flex-1 text-sm font-semibold leading-snug"
+                                                :class="selectedSekolah === opt.id ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-200'">
+                                                {{ opt.nama }}
+                                            </span>
+                                            <svg v-if="selectedSekolah === opt.id"
+                                                class="w-4 h-4 text-emerald-500 shrink-0" fill="currentColor"
+                                                viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clip-rule="evenodd" />
+                                            </svg>
+                                        </label>
+                                    </div>
                                 </div>
                                 <!-- Mode Toggle -->
-                                <div class="flex-shrink-0">
+                                <div>
                                     <label
                                         class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Status
                                         Siswa</label>
@@ -128,6 +159,26 @@
                                     <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                                         Pilih Siswa <span class="text-red-500">*</span>
                                     </label>
+
+                                    <!-- Filter Tingkat Kelas -->
+                                    <div class="mb-3">
+                                        <span
+                                            class="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Filter
+                                            Tingkat Kelas</span>
+                                        <div class="flex flex-wrap gap-2">
+                                            <label v-for="opt in kelasOptions" :key="opt.id || 'semua-kelas'"
+                                                class="cursor-pointer">
+                                                <input type="radio" name="kelasFilter" class="sr-only" :value="opt.id"
+                                                    v-model="selectedKelas" @change="onFilterChange" />
+                                                <span class="inline-flex items-center px-3.5 py-1.5 rounded-full border-2 text-xs font-semibold transition-all"
+                                                    :class="selectedKelas === opt.id
+                                                        ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
+                                                        : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700'">
+                                                    {{ opt.nama }}
+                                                </span>
+                                            </label>
+                                        </div>
+                                    </div>
 
                                     <SearchableSelect v-model="form.idSiswa" :options="siswaOptions"
                                         placeholder="Cari & Pilih Siswa (NIS, Nama, atau Rombel)..."
@@ -437,6 +488,8 @@ const formError = ref('');
 // Filter state
 const sekolahList = ref([]);
 const selectedSekolah = ref('');
+const kelasList = ref([]);
+const selectedKelas = ref('');
 const billingMode = ref('aktif');
 
 const { appSettings } = useAppSettings();
@@ -501,6 +554,14 @@ const siswaOptions = computed(() => {
         }));
 });
 
+const sekolahOptions = computed(() => {
+    return [{ id: '', nama: 'Semua Sekolah' }, ...sekolahList.value];
+});
+
+const kelasOptions = computed(() => {
+    return [{ id: '', nama: 'Semua Kelas' }, ...kelasList.value.map(k => ({ id: k.id, nama: k.nama || k.kode }))];
+});
+
 // Helper
 const formatNumber = (num) => {
     return new Intl.NumberFormat('id-ID').format(num || 0);
@@ -561,6 +622,9 @@ const buildSiswaFilters = () => {
     if (selectedSekolah.value) {
         filters.idSekolah = selectedSekolah.value;
     }
+    if (selectedKelas.value) {
+        filters.idKelas = selectedKelas.value;
+    }
     return filters;
 };
 
@@ -589,6 +653,16 @@ const loadSekolahList = async () => {
         sekolahList.value = response.data?.data || response.data || [];
     } catch (err) {
         console.error('Error loading sekolah:', err);
+    }
+};
+
+// Load kelas list for filter (tingkat: X, XI, XII)
+const loadKelasList = async () => {
+    try {
+        const response = await masterDataAPI.kelas.select();
+        kelasList.value = response.data?.data || response.data || [];
+    } catch (err) {
+        console.error('Error loading kelas:', err);
     }
 };
 
@@ -676,7 +750,7 @@ const resetForm = () => {
 onMounted(async () => {
     // Set document title
     document.title = 'Billing Pembayaran - ' + (appSettings.nama_aplikasi || 'Sistem Pembayaran SPP');
-    await loadSekolahList();
+    await Promise.all([loadSekolahList(), loadKelasList()]);
     await loadData();
     await checkDateStatus(new Date());
 });

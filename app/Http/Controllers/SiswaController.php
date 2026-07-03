@@ -47,7 +47,7 @@ class SiswaController extends Controller
      */
     public function select(Request $request)
     {
-        $filters = $request->only(['isActive', 'idSekolah', 'mode']);
+        $filters = $request->only(['isActive', 'idSekolah', 'idKelas', 'mode']);
         $cacheKey = CacheHelper::keyFor('siswa_select', $filters);
 
         // Try to get from cache first (tag 'siswa' — di-flush otomatis oleh Observer)
@@ -79,6 +79,13 @@ class SiswaController extends Controller
         if (!empty($filters['idSekolah'])) {
             $query->whereHas('currentRombel.rombel', function ($q) use ($filters) {
                 $q->where('idSekolah', $filters['idSekolah']);
+            });
+        }
+
+        // Filter by kelas / tingkat (X, XI, XII) via rombel relationship
+        if (!empty($filters['idKelas'])) {
+            $query->whereHas('currentRombel.rombel', function ($q) use ($filters) {
+                $q->where('idKelas', $filters['idKelas']);
             });
         }
 
