@@ -3,65 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
-use App\Models\LamtimSiswa;
-use App\Models\LamtimPembayaran;
-use App\Models\LamtimTagihan;
+use App\Services\DashboardService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        protected DashboardService $service
+    ) {}
+
     /**
      * Get dashboard statistics
      */
     public function stats(Request $request)
     {
         try {
-            // Stats Siswa
-            $totalSiswa = LamtimSiswa::active()->count(); // Hanya yang AKTIF dan BUKAN ALUMNI
-            $totalAlumni = LamtimSiswa::where('isAlumni', 1)->count();
-            $siswaOff = LamtimSiswa::where('isActive', 2)->count();
-
-            // Total pembayaran (all time)
-            $totalPembayaran = LamtimPembayaran::where('status', 1)->sum('nominalBayar');
-            $jumlahTransaksi = LamtimPembayaran::where('status', 1)->count();
-
-            // Tagihan belum lunas (Cached for 60 minutes)
-            $tagihanStats = \Illuminate\Support\Facades\Cache::remember('dashboard.tagihan_stats', 60 * 60, function () {
-                return [
-                    'count' => LamtimTagihan::where('status', 0)->count(),
-                    'nominal' => LamtimTagihan::where('status', 0)->sum('nominalTagihan'),
-                ];
-            });
-            
-            $tagihanBelumLunas = $tagihanStats['count'];
-            $nominalBelumLunas = $tagihanStats['nominal'];
-
-            // Pembayaran bulan ini
-            $startOfMonth = now()->startOfMonth();
-            $endOfMonth = now()->endOfMonth();
-            
-            $pembayaranBulanIni = LamtimPembayaran::where('status', 1)
-                ->whereBetween('tanggalBayar', [$startOfMonth, $endOfMonth])
-                ->sum('nominalBayar');
-            
-            $transaksiBulanIni = LamtimPembayaran::where('status', 1)
-                ->whereBetween('tanggalBayar', [$startOfMonth, $endOfMonth])
-                ->count();
-
-            return ResponseHelper::success([
-                'totalSiswa' => $totalSiswa,
-                'totalAlumni' => $totalAlumni,
-                'totalSiswaOff' => $siswaOff,
-                'totalPembayaran' => $totalPembayaran,
-                'jumlahTransaksi' => $jumlahTransaksi,
-                'tagihanBelumLunas' => $tagihanBelumLunas,
-                'nominalBelumLunas' => $nominalBelumLunas,
-                'pembayaranBulanIni' => $pembayaranBulanIni,
-                'transaksiBulanIni' => $transaksiBulanIni,
-            ]);
+            return ResponseHelper::success($this->service->getStats());
         } catch (\Exception $e) {
-            return ResponseHelper::error('Gagal memuat statistik: ' . $e->getMessage(), 500);
+            Log::error('Dashboard stats failed', ['error' => $e->getMessage()]);
+            return ResponseHelper::error('Gagal memuat statistik dashboard', 500);
         }
     }
 
@@ -71,14 +32,12 @@ class DashboardController extends Controller
     public function recentPayments(Request $request)
     {
         try {
-            $payments = LamtimPembayaran::with(['siswa', 'masterPembayaran'])
-                ->orderBy('tanggalBayar', 'desc')
-                ->limit($request->get('limit', 5))
-                ->get();
+            $limit = min((int) $request->get('limit', 5), 50);
 
-            return ResponseHelper::success($payments);
+            return ResponseHelper::success($this->service->getRecentPayments($limit));
         } catch (\Exception $e) {
-            return ResponseHelper::error('Gagal memuat data pembayaran: ' . $e->getMessage(), 500);
+            Log::error('Dashboard recent payments failed', ['error' => $e->getMessage()]);
+            return ResponseHelper::error('Gagal memuat data pembayaran terbaru', 500);
         }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Helpers\CacheHelper;
 use App\Models\LamtimSetting;
 use App\Models\LamtimSekolah;
-use Illuminate\Support\Facades\Cache;
 
 class PublicDataService
 {
@@ -13,9 +13,9 @@ class PublicDataService
      */
     public function getPublicSettings(): array
     {
-        return Cache::remember('public_settings', 3600, function () {
+        return CacheHelper::remember(['settings'], 'public_settings', 3600, function () {
             $settings = LamtimSetting::first();
-            
+
             return [
                 'logo_aplikasi' => $settings->logo_aplikasi ?? null,
                 'nama_aplikasi' => $settings->nama_aplikasi ?? 'Sistem Manajemen SPP',
@@ -28,9 +28,9 @@ class PublicDataService
      */
     public function getPublicSekolah(): array
     {
-        return Cache::remember('public_sekolah', 3600, function () {
+        return CacheHelper::remember(['sekolah'], 'public_sekolah', 3600, function () {
             $sekolah = LamtimSekolah::first(); // Ambil sekolah pertama
-            
+
             return [
                 'nama' => $sekolah->nama ?? 'Sekolah',
                 'logo' => $sekolah->logo ?? null,
@@ -46,7 +46,6 @@ class PublicDataService
      */
     public function clearCache(): void
     {
-        Cache::forget('public_settings');
-        Cache::forget('public_sekolah');
+        CacheHelper::flushTags(['settings', 'sekolah']);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\CacheHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
@@ -66,7 +67,7 @@ class Closing extends Model
         $dateObj = Carbon::parse($date);
         $cacheKey = 'closing_status_' . $dateObj->format('Y-m-d');
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 60, function () use ($dateObj) {
+        return CacheHelper::remember(['closing'], $cacheKey, 300, function () use ($dateObj) {
             // Check Daily Closing
             $dailyClosed = self::daily()
                 ->whereDate('date', $dateObj->format('Y-m-d'))
@@ -103,19 +104,8 @@ class Closing extends Model
 
     protected static function clearCache($model)
     {
-        if ($model->type === 'daily') {
-            $key = 'closing_status_' . $model->date->format('Y-m-d');
-            \Illuminate\Support\Facades\Cache::forget($key);
-        } else {
-             // For monthly, we need to clear all days in that month?
-             // Or we just rely on the short cache duration (60s).
-             // Clearing all days in a month is expensive to calculate keys.
-             // Given the closing frequency is low, 60 seconds (or even longer) cache is fine.
-             // But if we want immediate consistency, we can rely on manual clearing or key tags (if redis).
-             // For simplicity, let's stick to short duration cache or accept that monthly might take a moment.
-             // Actually, if we use Cache tags it's easy. But file driver doesn't support tags.
-             // Let's just use 60 seconds cache for read.
-        }
+        // Flush per-tag: closing harian maupun bulanan langsung konsisten.
+        CacheHelper::flushTags(['closing']);
     }
 
     /**

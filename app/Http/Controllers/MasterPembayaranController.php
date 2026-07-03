@@ -8,6 +8,7 @@ use App\Http\Requests\StoreMasterPembayaranRequest;
 use App\Http\Requests\UpdateMasterPembayaranRequest;
 use App\Http\Resources\MasterPembayaranResource;
 use App\Services\MasterPembayaranService;
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -54,10 +55,10 @@ class MasterPembayaranController extends Controller
     public function select(Request $request)
     {
         $filters = $request->only(['isActive']);
-        $cacheKey = 'master_pembayaran_select_' . md5(json_encode($filters));
-        
-        // Try to get from cache first
-        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $cacheKey = CacheHelper::keyFor('master_pembayaran_select', $filters);
+
+        // Try to get from cache first (tag 'master_pembayaran' — di-flush otomatis oleh Observer)
+        $cached = CacheHelper::get(['master_pembayaran'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return ResponseHelper::success($cached);
         }
@@ -74,8 +75,8 @@ class MasterPembayaranController extends Controller
         $masters = $query->orderBy('kode')->get()->toArray();
         
         // Cache for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $masters, 300);
-        
+        CacheHelper::put(['master_pembayaran'], $cacheKey, $masters, 300);
+
         return ResponseHelper::success($masters);
     }
 

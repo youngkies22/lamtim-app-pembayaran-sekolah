@@ -36,6 +36,21 @@ class ResponseHelper
     }
 
     /**
+     * Error response dari exception dengan kode HTTP semantik.
+     * Kode exception dipakai jika merupakan kode HTTP valid (400–599), selain itu 500.
+     * Untuk kode 500, pesan internal tidak dibocorkan ke client.
+     */
+    public static function fromException(\Throwable $e, string $fallbackMessage = 'Terjadi kesalahan pada server'): JsonResponse
+    {
+        $code = $e->getCode();
+        $httpCode = (is_int($code) && $code >= 400 && $code < 600) ? $code : 500;
+
+        $message = $httpCode >= 500 ? $fallbackMessage : $e->getMessage();
+
+        return self::error($message, $httpCode);
+    }
+
+    /**
      * Validation error response
      */
     public static function validationError($errors, string $message = 'Validation failed'): JsonResponse

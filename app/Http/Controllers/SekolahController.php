@@ -6,6 +6,7 @@ use App\Models\LamtimSekolah;
 
 use App\Services\SekolahService;
 use App\Services\PublicDataService;
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -43,9 +44,9 @@ class SekolahController extends Controller
     public function select(Request $request)
     {
         $cacheKey = 'sekolah_select';
-        
-        // Try to get from cache first
-        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+
+        // Try to get from cache first (tag 'sekolah' — di-flush otomatis oleh Observer)
+        $cached = CacheHelper::get(['sekolah'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return ResponseHelper::success($cached);
         }
@@ -57,8 +58,8 @@ class SekolahController extends Controller
             ->toArray();
         
         // Cache for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $sekolah, 300);
-        
+        CacheHelper::put(['sekolah'], $cacheKey, $sekolah, 300);
+
         return ResponseHelper::success($sekolah);
     }
 

@@ -21,7 +21,7 @@ class SettingService
      */
     public function getSettings(): ?LamtimSetting
     {
-        $settings = Cache::rememberForever('app_settings', function () {
+        $settings = CacheHelper::remember(['settings'], 'app_settings', 86400, function () {
             return LamtimSetting::first();
         });
 
@@ -42,7 +42,7 @@ class SettingService
      */
     public function getPublicSettings(): array
     {
-        $settings = Cache::rememberForever('app_settings', function () {
+        $settings = CacheHelper::remember(['settings'], 'app_settings', 86400, function () {
             return LamtimSetting::first();
         });
 
@@ -165,7 +165,7 @@ class SettingService
      */
     public static function isJobEnabled(string $jobKey): bool
     {
-        $settings = Cache::rememberForever('app_settings', function () {
+        $settings = CacheHelper::remember(['settings'], 'app_settings', 86400, function () {
             return LamtimSetting::first();
         });
 
@@ -181,7 +181,7 @@ class SettingService
      */
     protected function clearCache(): void
     {
-        Cache::forget('app_settings');
+        CacheHelper::flushTags(['settings']);
         $this->publicDataService->clearCache();
     }
 }

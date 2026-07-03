@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\PublicDataService;
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use Illuminate\Http\Request;
 
@@ -20,8 +21,8 @@ class ConfigController extends Controller
      */
     public function index(Request $request)
     {
-        // Cache config for 1 hour
-        $config = \Illuminate\Support\Facades\Cache::remember('app_config', 3600, function () {
+        // Cache config for 1 hour (tag 'settings')
+        $config = CacheHelper::remember(['settings'], 'app_config', 3600, function () {
             return [
                 'label_jurusan' => config('app.label_jurusan', 'Jurusan'),
                 'label_nip' => config('app.label_nip', 'NIP'),

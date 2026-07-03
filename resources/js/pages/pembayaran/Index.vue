@@ -632,12 +632,14 @@ const resetFilters = () => {
     loadData();
 };
 
-// Proses Form
+// Proses Form — metode bayar default: Tunai
+const DEFAULT_METODE = 'Tunai';
+
 const initialProsesForm = {
     idSiswa: '',
     idMasterPembayaran: '',
     nominalBayar: 0,
-    metodeBayar: 'TUNAI',
+    metodeBayar: DEFAULT_METODE,
     channelBayar: '',
     namaChannel: '',
     buktiBayar: '',
@@ -645,6 +647,16 @@ const initialProsesForm = {
 };
 
 const prosesForm = reactive({ ...initialProsesForm });
+
+// Cocokkan metode bayar dengan daftar tipe pembayaran (case-insensitive).
+// Jika tidak ada yang cocok, pakai "Tunai" dari daftar, atau opsi pertama.
+const resolveMetodeBayar = (preferred = DEFAULT_METODE) => {
+    const list = tipePembayaranList.value || [];
+    const match = list.find(tp => (tp.nama || '').toLowerCase() === (preferred || '').toLowerCase());
+    if (match) return match.nama;
+    const tunai = list.find(tp => (tp.nama || '').toLowerCase() === DEFAULT_METODE.toLowerCase());
+    return tunai?.nama || list[0]?.nama || DEFAULT_METODE;
+};
 
 // Computed
 const selectedMaster = computed(() => {
@@ -848,6 +860,7 @@ const loadData = () => {
 // Modal handlers
 const openProsesModal = () => {
     Object.assign(prosesForm, initialProsesForm);
+    prosesForm.metodeBayar = resolveMetodeBayar();
     formError.value = '';
     showProsesModal.value = true;
 };
@@ -873,6 +886,11 @@ const handleProsesPembayaran = async () => {
     try {
         loading.value = true;
         formError.value = '';
+
+        // Pastikan metode bayar selalu terisi (default: Tunai)
+        if (!prosesForm.metodeBayar) {
+            prosesForm.metodeBayar = resolveMetodeBayar();
+        }
 
         await pembayaranAPI.proses(prosesForm);
         toastRef.value?.success('Pembayaran berhasil diproses');

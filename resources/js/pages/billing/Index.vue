@@ -449,16 +449,32 @@ const siswaList = ref(Array.isArray(cached.siswa) ? [...cached.siswa] : []);
 const tipePembayaranList = ref(Array.isArray(cached.tipePembayaran) ? [...cached.tipePembayaran] : []);
 const tagihanList = ref([]);
 
-// Form
+// Form — metode bayar default: Tunai
+const DEFAULT_METODE = 'Tunai';
+
 const initialForm = {
     idSiswa: '',
     idTagihan: '',
     nominalBayar: 0,
-    metodeBayar: 'TUNAI',
+    metodeBayar: DEFAULT_METODE,
     keterangan: '',
 };
 
 const form = reactive({ ...initialForm, nominalBayarFormatted: '0' });
+
+// Cocokkan metode bayar dengan daftar tipe pembayaran (case-insensitive).
+// Jika tidak ada yang cocok, pakai "Tunai" dari daftar, atau opsi pertama.
+const resolveMetodeBayar = (preferred = DEFAULT_METODE) => {
+    const list = tipePembayaranList.value || [];
+    const match = list.find(tp => (tp.nama || '').toLowerCase() === (preferred || '').toLowerCase());
+    if (match) return match.nama;
+    const tunai = list.find(tp => (tp.nama || '').toLowerCase() === DEFAULT_METODE.toLowerCase());
+    return tunai?.nama || list[0]?.nama || DEFAULT_METODE;
+};
+
+const applyDefaultMetode = () => {
+    form.metodeBayar = resolveMetodeBayar(form.metodeBayar);
+};
 
 // Computed
 const selectedSiswa = computed(() => {
@@ -559,6 +575,7 @@ const loadData = async () => {
         ]);
         siswaList.value = siswaResult || [];
         tipePembayaranList.value = tipeResult || [];
+        applyDefaultMetode();
     } catch (err) {
         console.error('Error loading data:', err);
         toastRef.value?.error('Gagal memuat data');
@@ -628,6 +645,11 @@ const handleSubmit = async () => {
         loading.value = true;
         formError.value = '';
 
+        // Pastikan metode bayar selalu terisi (default: Tunai)
+        if (!form.metodeBayar) {
+            form.metodeBayar = resolveMetodeBayar();
+        }
+
         await pembayaranAPI.proses(form);
         toastRef.value?.success('Pembayaran berhasil diproses');
 
@@ -647,6 +669,7 @@ const handleSubmit = async () => {
 
 const resetForm = () => {
     Object.assign(form, { ...initialForm, nominalBayarFormatted: '0' });
+    applyDefaultMetode();
     formError.value = '';
 };
 

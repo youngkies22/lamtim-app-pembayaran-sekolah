@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use App\Services\SiswaService;
 use App\Http\Requests\StoreSiswaRequest;
 use App\Http\Requests\UpdateSiswaRequest;
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\LamtimSiswa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Yajra\DataTables\Facades\DataTables;
 
 class SiswaController extends Controller
@@ -48,10 +48,10 @@ class SiswaController extends Controller
     public function select(Request $request)
     {
         $filters = $request->only(['isActive', 'idSekolah', 'mode']);
-        $cacheKey = 'siswa_select_' . md5(json_encode($filters));
+        $cacheKey = CacheHelper::keyFor('siswa_select', $filters);
 
-        // Try to get from cache first
-        $cached = Cache::get($cacheKey);
+        // Try to get from cache first (tag 'siswa' — di-flush otomatis oleh Observer)
+        $cached = CacheHelper::get(['siswa'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return ResponseHelper::success($cached);
         }
@@ -103,7 +103,7 @@ class SiswaController extends Controller
         })->toArray();
 
         // Cache for 5 minutes
-       Cache::put($cacheKey, $formatted, 300);
+        CacheHelper::put(['siswa'], $cacheKey, $formatted, 300);
 
         return ResponseHelper::success($formatted);
     }
@@ -114,10 +114,10 @@ class SiswaController extends Controller
     public function datatable(Request $request)
     {
         // Build cache key from request params
-        $cacheKey = 'siswa_datatable_' . md5(json_encode($request->all()));
+        $cacheKey = CacheHelper::keyFor('siswa_datatable', $request->all());
 
-        // Try to get from cache first
-        $cached = Cache::get($cacheKey);
+        // Try to get from cache first (tag 'siswa' — di-flush otomatis oleh Observer)
+        $cached = CacheHelper::get(['siswa'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return response()->json($cached);
         }
@@ -267,7 +267,7 @@ class SiswaController extends Controller
         }
 
         // Cache the filtered result for 5 minutes
-        Cache::put($cacheKey, $data, 300);
+        CacheHelper::put(['siswa'], $cacheKey, $data, 300);
 
         return response()->json($data);
     }
@@ -425,8 +425,8 @@ class SiswaController extends Controller
 
             $result = $this->service->markAsAlumni($validated['siswa_ids']);
 
-            // Clear siswa select cache
-            Cache::forget('siswa_select_' . md5(json_encode([])));
+            // Clear semua cache siswa (per-tag)
+            CacheHelper::flushTags(['siswa']);
 
             return ResponseHelper::success($result, 'Siswa berhasil dijadikan alumni');
         } catch (\Exception $e) {

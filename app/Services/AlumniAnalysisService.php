@@ -2,12 +2,16 @@
 
 namespace App\Services;
 
+use App\Helpers\CacheHelper;
 use App\Repositories\Interfaces\AlumniAnalysisRepositoryInterface;
 use Illuminate\Support\Facades\Cache;
 
 class AlumniAnalysisService
 {
     private const CACHE_TTL = 60 * 60 * 24; // 24 hours
+
+    /** Tag cache: ikut ter-flush saat data siswa/tagihan/pembayaran berubah. */
+    private const CACHE_TAGS = ['siswa', 'tagihan', 'pembayaran'];
 
     public function __construct(
         private readonly AlumniAnalysisRepositoryInterface $repository
@@ -20,7 +24,7 @@ class AlumniAnalysisService
     {
         $cacheKey = 'alumni_analysis_years_' . ($idSekolah ?? 'all');
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($idSekolah) {
+        return CacheHelper::remember(self::CACHE_TAGS, $cacheKey, self::CACHE_TTL, function () use ($idSekolah) {
             return $this->repository->getAvailableYears($idSekolah)->toArray();
         });
     }
@@ -34,13 +38,13 @@ class AlumniAnalysisService
         $yearsCacheKey = 'alumni_analysis_years_' . ($idSekolah ?? 'all');
 
         if ($refresh) {
-            Cache::forget($statsCacheKey);
-            Cache::forget($yearsCacheKey);
+            CacheHelper::forget(self::CACHE_TAGS, $statsCacheKey);
+            CacheHelper::forget(self::CACHE_TAGS, $yearsCacheKey);
         }
 
         $availableYears = $this->getAvailableYears($idSekolah);
 
-        $data = Cache::remember($statsCacheKey, self::CACHE_TTL, function () use ($tahunAngkatan, $idSekolah) {
+        $data = CacheHelper::remember(self::CACHE_TAGS, $statsCacheKey, self::CACHE_TTL, function () use ($tahunAngkatan, $idSekolah) {
             $byYear = $this->repository->getStatsByYear($tahunAngkatan, $idSekolah);
 
             $summary = [

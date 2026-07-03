@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\CacheHelper;
 use App\Models\LamtimInvoice;
 use App\Models\LamtimSekolah;
 use App\Models\LamtimTahunAjaran;
@@ -13,10 +14,11 @@ class InvoiceService
 {
     /**
      * Get cached invoice statistics.
+     * Di-invalidasi otomatis oleh MasterDataObserver via tag 'invoice'.
      */
     public function getStats(): array
     {
-        $stats = Cache::rememberForever('invoice_stats', function () {
+        $stats = CacheHelper::remember(['invoice', 'dashboard'], 'invoice_stats', 3600, function () {
             return LamtimInvoice::where('isActive', 1)
                 ->selectRaw('
                     SUM(CASE WHEN "status" = 1 THEN "nominalInvoice" ELSE 0 END) as total,

@@ -11,14 +11,13 @@ use App\Models\LamtimTahunAjaran;
 use App\Repositories\Interfaces\PembayaranRepositoryInterface;
 use App\Repositories\Interfaces\TagihanRepositoryInterface;
 use App\Models\LamtimPembayaran;
-use App\Models\LamtimTagihan;
 use App\Services\Interfaces\AcademicIntegrationServiceInterface;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Models\Closing;
+use App\Helpers\CacheHelper;
 use App\Helpers\FormatHelper;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -53,68 +52,69 @@ class PembayaranService
         try {
             DB::beginTransaction();
 
-            // 1. Cari tagihan
+            // 1. Cari tagihan (eager loaded: siswa, masterPembayaran)
             $tagihan = $this->tagihanRepository->find($idTagihan);
-            
+
             if (!$tagihan) {
-                throw new \Exception('Tagihan tidak ditemukan');
+                throw new \Exception('Tagihan tidak ditemukan', 404);
             }
 
             // Validasi tagihan milik siswa yang benar
             if ($tagihan->idSiswa !== $idSiswa) {
-                throw new \Exception('Tagihan tidak sesuai dengan siswa yang dipilih');
+                throw new \Exception('Tagihan tidak sesuai dengan siswa yang dipilih', 422);
             }
 
             // Validasi tagihan belum lunas penuh (bisa status 0 atau 3, tapi tidak 1)
             if ($tagihan->status == 1) {
-                throw new \Exception('Tagihan sudah lunas');
+                throw new \Exception('Tagihan sudah lunas', 422);
             }
 
             // Validasi masih ada sisa yang harus dibayar
             if ($tagihan->totalSisa <= 0) {
-                throw new \Exception('Tagihan sudah lunas (tidak ada sisa)');
+                throw new \Exception('Tagihan sudah lunas (tidak ada sisa)', 422);
             }
 
             // 2. Validasi nominal
             if ($nominalBayar > $tagihan->totalSisa) {
-                throw new \Exception('Nominal pembayaran melebihi sisa tagihan');
+                throw new \Exception('Nominal pembayaran melebihi sisa tagihan', 422);
             }
 
             // Validasi minimum cicilan
             $master = $tagihan->masterPembayaran;
+            $siswa = $tagihan->siswa;
             if ($master->isCicilan && $master->minCicilan) {
                 if ($nominalBayar < $master->minCicilan) {
-                    throw new \Exception('Minimum cicilan adalah ' . number_format($master->minCicilan, 0, ',', '.'));
+                    throw new \Exception('Minimum cicilan adalah ' . number_format($master->minCicilan, 0, ',', '.'), 422);
                 }
             }
 
-        // Get semester dari tagihan atau current semester
-        $idSemester = $tagihan->idSemester;
-        if (!$idSemester) {
-            $semesterModel = \App\Models\LamtimSemester::getCurrent();
-            $idSemester = $semesterModel?->id;
-        }
+            // Get semester dari tagihan atau current semester
+            $idSemester = $tagihan->idSemester;
+            if (!$idSemester) {
+                $semesterModel = \App\Models\LamtimSemester::getCurrent();
+                $idSemester = $semesterModel?->id;
+            }
 
-        // 3. BUAT INVOICE (saat ada pembayaran) dengan snapshot data
-        $invoice = LamtimInvoice::create([
-            'idSiswa' => $idSiswa,
-            'idTagihan' => $tagihan->id,
-            'idMasterPembayaran' => $tagihan->idMasterPembayaran,
-            'idTahunAjaran' => $tagihan->idTahunAjaran,
-            'idRombel' => $tagihan->idRombel,
-            'idKelas' => $tagihan->idKelas, // Snapshot from tagihan
-            'idJurusan' => $tagihan->idJurusan, // Snapshot from tagihan
-            'idSekolah' => $tagihan->idSekolah, // Snapshot from tagihan
-            'idSemester' => $idSemester, // Snapshot from tagihan or current
-            'noInvoice' => $this->generateNoInvoice($tagihan->idMasterPembayaran, $idSiswa),
-            'kodeInvoice' => $this->generateKodeInvoice($tagihan->idMasterPembayaran, $idSiswa),
-            'tanggalInvoice' => now(),
-            'nominalInvoice' => $nominalBayar,
-            'nominalSisa' => $nominalBayar,
-            'status' => 0,
-            'isActive' => 1,
-            'createdBy' => auth()->id(),
-        ]);
+            // 3. BUAT INVOICE (saat ada pembayaran) dengan snapshot data
+            $invoice = LamtimInvoice::create([
+                'idSiswa' => $idSiswa,
+                'idTagihan' => $tagihan->id,
+                'idMasterPembayaran' => $tagihan->idMasterPembayaran,
+                'idTahunAjaran' => $tagihan->idTahunAjaran,
+                'idRombel' => $tagihan->idRombel,
+                'idKelas' => $tagihan->idKelas, // Snapshot from tagihan
+                'idJurusan' => $tagihan->idJurusan, // Snapshot from tagihan
+                'idSekolah' => $tagihan->idSekolah, // Snapshot from tagihan
+                'idSemester' => $idSemester, // Snapshot from tagihan or current
+                'noInvoice' => $this->generateNoInvoice($master, $siswa),
+                'kodeInvoice' => $this->generateKodeInvoice($master, $siswa),
+                'tanggalInvoice' => now(),
+                'nominalInvoice' => $nominalBayar,
+                'nominalSisa' => $nominalBayar,
+                'status' => 0,
+                'isActive' => 1,
+                'createdBy' => auth()->id(),
+            ]);
 
             // 4. INPUT PEMBAYARAN ke invoice dengan snapshot data
             $pembayaran = $this->pembayaranRepository->create([
@@ -173,25 +173,27 @@ class PembayaranService
 
             $pembayaran = $this->pembayaranRepository->find($id);
             if (!$pembayaran) {
-                throw new \Exception('Pembayaran tidak ditemukan');
+                throw new \Exception('Pembayaran tidak ditemukan', 404);
             }
 
             $pembayaran->verify(auth()->id());
 
             DB::commit();
-
-            // Trigger sync to academic system (budutwj) after verification
-            if (!SettingService::isJobEnabled('job_push_academic_enabled')) {
-                throw new \Exception('Push Academic Data Job tidak aktif. Aktifkan di Pengaturan.');
-            }
-            \App\Jobs\PushAcademicDataJob::dispatch($pembayaran);
-
-            return $pembayaran->fresh(['invoice', 'tagihan', 'siswa']);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error verifying pembayaran', ['id' => $id, 'error' => $e->getMessage()]);
             throw $e;
         }
+
+        // Sync ke sistem akademik setelah verifikasi tersimpan.
+        // Jika job dimatikan, verifikasi tetap sukses — sync bisa diulang lewat retrySync.
+        if (SettingService::isJobEnabled('job_push_academic_enabled')) {
+            \App\Jobs\PushAcademicDataJob::dispatch($pembayaran);
+        } else {
+            Log::warning('Push Academic Data Job nonaktif, sync dilewati', ['idPembayaran' => $id]);
+        }
+
+        return $pembayaran->fresh(['invoice', 'tagihan', 'siswa']);
     }
 
     /**
@@ -204,7 +206,7 @@ class PembayaranService
 
             $pembayaran = $this->pembayaranRepository->find($id);
             if (!$pembayaran) {
-                throw new \Exception('Pembayaran tidak ditemukan');
+                throw new \Exception('Pembayaran tidak ditemukan', 404);
             }
 
             $pembayaran->cancel($alasan, auth()->id());
@@ -221,10 +223,11 @@ class PembayaranService
 
     /**
      * Get cached pembayaran statistics.
+     * Di-invalidasi otomatis oleh MasterDataObserver via tag 'pembayaran'.
      */
     public function getStats(): array
     {
-        $stats = Cache::rememberForever('pembayaran_stats', function () {
+        $stats = CacheHelper::remember(['pembayaran', 'dashboard'], 'pembayaran_stats', 3600, function () {
             return LamtimPembayaran::where('isActive', 1)
                 ->selectRaw('
                     SUM(CASE WHEN "status" = 1 THEN "nominalBayar" ELSE 0 END) as total,
@@ -341,7 +344,7 @@ class PembayaranService
         $pembayaran = $this->pembayaranRepository->find($id);
 
         if (!$pembayaran) {
-            throw new \Exception('Pembayaran tidak ditemukan');
+            throw new \Exception('Pembayaran tidak ditemukan', 404);
         }
 
         $pembayaran->softDelete();
@@ -365,42 +368,39 @@ class PembayaranService
     }
 
     /**
-     * Generate nomor invoice
+     * Generate nomor invoice.
+     * Menerima model yang sudah di-load agar tidak query ulang (anti N+1).
      */
-    private function generateNoInvoice(string $idMasterPembayaran, string $idSiswa): string
+    private function generateNoInvoice(LamtimMasterPembayaran $master, LamtimSiswa $siswa): string
     {
-        $master = LamtimMasterPembayaran::find($idMasterPembayaran);
-        $siswa = LamtimSiswa::find($idSiswa);
         $prefix = strtoupper($master->jenisPembayaran);
         $tahun = now()->format('Y');
         $nis = $siswa->nis ?? substr($siswa->id, 0, 8);
-        $count = LamtimInvoice::where('idMasterPembayaran', $idMasterPembayaran)
+        $count = LamtimInvoice::where('idMasterPembayaran', $master->id)
             ->whereYear('created_at', $tahun)
             ->count() + 1;
-        
+
         return "INV-{$prefix}-{$tahun}-{$nis}-" . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Generate kode invoice
+     * Generate kode invoice.
      */
-    private function generateKodeInvoice(string $idMasterPembayaran, string $idSiswa): string
+    private function generateKodeInvoice(LamtimMasterPembayaran $master, LamtimSiswa $siswa): string
     {
-        $master = LamtimMasterPembayaran::find($idMasterPembayaran);
-        $siswa = LamtimSiswa::find($idSiswa);
         $prefix = strtoupper($master->jenisPembayaran);
         $tahun = now()->format('Y');
         $nis = $siswa->nis ?? substr($siswa->id, 0, 8);
         $timestamp = now()->format('YmdHis');
-        
+
         return "{$prefix}-{$tahun}-{$nis}-{$timestamp}";
     }
 
     /**
-     * Generate kode pembayaran
+     * Generate kode pembayaran (suffix acak mencegah tabrakan pada detik yang sama).
      */
     private function generateKodePembayaran(): string
     {
-        return 'PAY-' . now()->format('YmdHis');
+        return 'PAY-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(4));
     }
 }

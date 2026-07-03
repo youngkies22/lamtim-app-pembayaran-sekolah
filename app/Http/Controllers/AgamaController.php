@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\AgamaService;
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\LamtimAgama;
 use Illuminate\Http\Request;
@@ -24,10 +25,10 @@ class AgamaController extends Controller
             $filters = $request->only(['search']);
 
             // Create cache key based on filters
-            $cacheKey = 'agama_list_' . md5(json_encode($filters));
+            $cacheKey = CacheHelper::keyFor('agama_list', $filters);
 
-            // Cache for 1 hour (agama rarely changes)
-            $agama = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function () use ($filters) {
+            // Tag 'agama' — di-invalidasi otomatis oleh Observer (agama jarang berubah)
+            $agama = CacheHelper::remember(['agama'], $cacheKey, 3600, function () use ($filters) {
                 return $this->service->getAll($filters);
             });
 

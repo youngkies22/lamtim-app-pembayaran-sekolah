@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\JurusanService;
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\LamtimJurusan;
 use Illuminate\Http\Request;
@@ -27,14 +28,14 @@ class JurusanController extends Controller
             $forceRefresh = $request->has('_t');
             
             // Create cache key based on filters
-            $cacheKey = 'jurusan_list_' . md5(json_encode($filters));
-            
+            $cacheKey = CacheHelper::keyFor('jurusan_list', $filters);
+
             // If force refresh, skip cache
             if ($forceRefresh) {
                 $jurusan = $this->service->getAll($filters);
             } else {
-                // Cache for 5 minutes (reduced from 30 minutes for better data freshness)
-                $jurusan = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($filters) {
+                // Tag 'jurusan' — di-invalidasi otomatis oleh Observer saat data berubah
+                $jurusan = CacheHelper::remember(['jurusan'], $cacheKey, 300, function () use ($filters) {
                     return $this->service->getAll($filters);
                 });
             }
@@ -51,10 +52,10 @@ class JurusanController extends Controller
     public function datatable(Request $request)
     {
         // Build cache key from request params
-        $cacheKey = 'jurusan_datatable_' . md5(json_encode($request->all()));
-        
+        $cacheKey = CacheHelper::keyFor('jurusan_datatable', $request->all());
+
         // Try to get from cache first
-        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $cached = CacheHelper::get(['jurusan'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return response()->json($cached);
         }
@@ -94,7 +95,7 @@ class JurusanController extends Controller
             ->make(true);
 
         // Cache the result for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $result->getData(true), 300);
+        CacheHelper::put(['jurusan'], $cacheKey, $result->getData(true), 300);
 
         return $result;
     }
@@ -227,10 +228,10 @@ class JurusanController extends Controller
     public function select(Request $request)
     {
         $filters = $request->only(['idSekolah']);
-        $cacheKey = 'jurusan_select_' . md5(json_encode($filters));
-        
+        $cacheKey = CacheHelper::keyFor('jurusan_select', $filters);
+
         // Try to get from cache first
-        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $cached = CacheHelper::get(['jurusan'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return ResponseHelper::success($cached);
         }
@@ -243,41 +244,19 @@ class JurusanController extends Controller
         }
         
         $jurusan = $query->orderBy('kode')->get()->toArray();
-        
+
         // Cache for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $jurusan, 300);
-        
+        CacheHelper::put(['jurusan'], $cacheKey, $jurusan, 300);
+
         return ResponseHelper::success($jurusan);
     }
 
     /**
-     * Clear all jurusan cache patterns
+     * Clear all jurusan cache (per-tag).
+     * Observer sudah otomatis flush saat model berubah; ini untuk pemanggilan eksplisit.
      */
     protected function clearJurusanCache(): void
     {
-        // Clear cache by trying to forget common filter combinations
-        $commonFilters = [
-            [],
-            ['search' => ''],
-            ['search' => null],
-            ['idSekolah' => null],
-            ['idSekolah' => ''],
-        ];
-
-        foreach ($commonFilters as $filters) {
-            $cacheKey = 'jurusan_list_' . md5(json_encode($filters));
-            \Illuminate\Support\Facades\Cache::forget($cacheKey);
-        }
-        
-        // Also clear cache without filters (empty array)
-        \Illuminate\Support\Facades\Cache::forget('jurusan_list_' . md5('[]'));
-        
-        // Try to clear with empty string search
-        $emptySearchKey = 'jurusan_list_' . md5(json_encode(['search' => '']));
-        \Illuminate\Support\Facades\Cache::forget($emptySearchKey);
-        
-        // Try to clear with null search
-        $nullSearchKey = 'jurusan_list_' . md5(json_encode(['search' => null]));
-        \Illuminate\Support\Facades\Cache::forget($nullSearchKey);
+        CacheHelper::flushTags(['jurusan']);
     }
 }

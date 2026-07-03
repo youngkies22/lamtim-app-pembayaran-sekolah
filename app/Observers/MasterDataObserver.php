@@ -2,219 +2,98 @@
 
 namespace App\Observers;
 
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Redis;
-use Illuminate\Database\Eloquent\Model;
-use App\Models\LamtimJurusan;
-use App\Models\LamtimKelas;
-use App\Models\LamtimRombel;
+use App\Helpers\CacheHelper;
 use App\Models\LamtimAgama;
-use App\Models\LamtimSiswa;
-use App\Models\LamtimSekolah;
+use App\Models\LamtimInvoice;
+use App\Models\LamtimJenisPembayaran;
+use App\Models\LamtimJurusan;
+use App\Models\LamtimKategoriPembayaran;
+use App\Models\LamtimKelas;
 use App\Models\LamtimMasterPembayaran;
 use App\Models\LamtimPembayaran;
+use App\Models\LamtimRombel;
+use App\Models\LamtimSekolah;
+use App\Models\LamtimSemester;
+use App\Models\LamtimSetting;
+use App\Models\LamtimSiswa;
+use App\Models\LamtimTagihan;
+use App\Models\LamtimTahunAjaran;
+use App\Models\LamtimTipePembayaran;
+use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Invalidasi cache Redis per-tag saat model berubah.
+ *
+ * Setiap model dipetakan ke tag utamanya + tag terkait yang ikut basi.
+ * Tag per-record ('{tag}:{uuid}') juga di-flush agar cache detail ikut bersih.
+ */
 class MasterDataObserver
 {
     /**
-     * Handle the model "created" event.
+     * Peta model => [tag utama, ...tag terkait yang ikut basi].
+     *
+     * @var array<class-string, array<int, string>>
      */
+    protected const TAG_MAP = [
+        LamtimJurusan::class => ['jurusan', 'rombel', 'siswa'],
+        LamtimKelas::class => ['kelas', 'rombel', 'siswa'],
+        LamtimRombel::class => ['rombel', 'siswa'],
+        LamtimAgama::class => ['agama'],
+        LamtimSiswa::class => ['siswa', 'dashboard'],
+        LamtimSekolah::class => ['sekolah', 'jurusan', 'rombel', 'siswa'],
+        LamtimSemester::class => ['semester'],
+        LamtimTahunAjaran::class => ['tahun_ajaran'],
+        LamtimMasterPembayaran::class => ['master_pembayaran', 'tagihan'],
+        LamtimTagihan::class => ['tagihan', 'dashboard'],
+        LamtimInvoice::class => ['invoice', 'dashboard'],
+        LamtimPembayaran::class => ['pembayaran', 'invoice', 'tagihan', 'dashboard'],
+        LamtimTipePembayaran::class => ['tipe_pembayaran'],
+        LamtimJenisPembayaran::class => ['jenis_pembayaran'],
+        LamtimKategoriPembayaran::class => ['kategori_pembayaran'],
+        LamtimSetting::class => ['settings'],
+    ];
+
     public function created(Model $model): void
     {
-        $this->clearCache($model);
+        $this->flushFor($model);
     }
 
-    /**
-     * Handle the model "updated" event.
-     */
     public function updated(Model $model): void
     {
-        $this->clearCache($model);
+        $this->flushFor($model);
     }
 
-    /**
-     * Handle the model "deleted" event.
-     */
     public function deleted(Model $model): void
     {
-        $this->clearCache($model);
+        $this->flushFor($model);
     }
 
-    /**
-     * Handle the model "restored" event.
-     */
     public function restored(Model $model): void
     {
-        $this->clearCache($model);
+        $this->flushFor($model);
     }
 
-    /**
-     * Handle the model "force deleted" event.
-     */
     public function forceDeleted(Model $model): void
     {
-        $this->clearCache($model);
+        $this->flushFor($model);
     }
 
     /**
-     * Clear cache based on model type
+     * Flush tag utama, tag terkait, dan tag per-record milik model.
      */
-    protected function clearCache(Model $model): void
+    protected function flushFor(Model $model): void
     {
-        $modelName = $this->getModelName($model);
-        
-        if (!$modelName) {
+        $tags = static::TAG_MAP[get_class($model)] ?? null;
+
+        if (!$tags) {
             return;
         }
 
-        // Clear all cache patterns for this model type using Redis pattern matching
-        $this->clearModelCache($modelName);
-        
-        // Also clear related caches
-        $this->clearRelatedCaches($modelName, $model);
-    }
+        $primaryTag = $tags[0];
 
-    /**
-     * Get model name for cache key
-     */
-    protected function getModelName(Model $model): ?string
-    {
-        $class = get_class($model);
-        
-        // Map model classes to cache key names
-        $map = [
-            LamtimJurusan::class => 'jurusan',
-            LamtimKelas::class => 'kelas',
-            LamtimRombel::class => 'rombel',
-            LamtimAgama::class => 'agama',
-            LamtimSiswa::class => 'siswa',
-            LamtimSekolah::class => 'sekolah',
-            LamtimMasterPembayaran::class => 'master_pembayaran',
-            LamtimPembayaran::class => 'pembayaran',
-            \App\Models\LamtimSetting::class => 'app_settings',
-        ];
-
-        return $map[$class] ?? null;
-    }
-
-    /**
-     * Clear all cache patterns for a model type using Redis pattern matching
-     */
-    protected function clearModelCache(string $modelName): void
-    {
-        // Clear single key cache (e.g. 'app_settings')
-        Cache::forget($modelName);
-
-        try {
-            // Get Redis connection
-            $redis = Redis::connection();
-            
-            // Pattern untuk datatable cache
-            $datatablePattern = config('cache.prefix', 'lamtim_cache') . ':' . $modelName . '_datatable_*';
-            $this->clearRedisPattern($redis, $datatablePattern);
-            
-            // Pattern untuk select cache
-            $selectPattern = config('cache.prefix', 'lamtim_cache') . ':' . $modelName . '_select_*';
-            $this->clearRedisPattern($redis, $selectPattern);
-            
-            // Pattern untuk list cache (jika ada)
-            $listPattern = config('cache.prefix', 'lamtim_cache') . ':' . $modelName . '_list_*';
-            $this->clearRedisPattern($redis, $listPattern);
-            
-        } catch (\Exception $e) {
-            // Fallback to Cache facade if Redis fails
-            $this->clearCacheFallback($modelName);
-        }
-    }
-
-    /**
-     * Clear Redis keys by pattern
-     */
-    protected function clearRedisPattern($redis, string $pattern): void
-    {
-        try {
-            // Get all keys matching pattern
-            $keys = $redis->keys($pattern);
-            
-            if (!empty($keys)) {
-                // Remove prefix if exists (Laravel adds prefix automatically)
-                $prefix = config('database.redis.options.prefix', '');
-                if ($prefix) {
-                    $keys = array_map(function($key) use ($prefix) {
-                        return str_replace($prefix, '', $key);
-                    }, $keys);
-                }
-                
-                // Delete keys
-                foreach ($keys as $key) {
-                    Cache::forget($key);
-                }
-            }
-        } catch (\Exception $e) {
-            // Silently fail if Redis pattern matching fails
-        }
-    }
-
-    /**
-     * Fallback cache clearing method
-     */
-    protected function clearCacheFallback(string $modelName): void
-    {
-        // Clear common filter combinations
-        $commonFilters = [
-            [],
-            ['search' => ''],
-            ['idSekolah' => null],
-            ['idJurusan' => null],
-            ['idKelas' => null],
-            ['isActive' => 1],
-            ['isActive' => 0],
-        ];
-
-        foreach ($commonFilters as $filters) {
-            // Datatable cache
-            $datatableKey = $modelName . '_datatable_' . md5(json_encode($filters));
-            Cache::forget($datatableKey);
-            
-            // Select cache
-            $selectKey = $modelName . '_select_' . md5(json_encode($filters));
-            Cache::forget($selectKey);
-            
-            // List cache
-            $listKey = $modelName . '_list_' . md5(json_encode($filters));
-            Cache::forget($listKey);
-        }
-    }
-
-    /**
-     * Clear related caches when a model changes
-     */
-    protected function clearRelatedCaches(string $modelName, Model $model): void
-    {
-        // Clear related model caches
-        switch ($modelName) {
-            case 'rombel':
-                // Clear siswa cache when rombel changes
-                $this->clearModelCache('siswa');
-                break;
-            case 'jurusan':
-                // Clear rombel and siswa cache when jurusan changes
-                $this->clearModelCache('rombel');
-                $this->clearModelCache('siswa');
-                break;
-            case 'kelas':
-                // Clear rombel cache when kelas changes
-                $this->clearModelCache('rombel');
-                break;
-            case 'sekolah':
-                // Clear all related caches when sekolah changes
-                $this->clearModelCache('jurusan');
-                $this->clearModelCache('rombel');
-                $this->clearModelCache('siswa');
-                break;
-            case 'pembayaran':
-                Cache::forget('pembayaran_stats');
-                break;
-        }
+        CacheHelper::flushTags([
+            ...$tags,
+            "{$primaryTag}:{$model->getKey()}",
+        ]);
     }
 }

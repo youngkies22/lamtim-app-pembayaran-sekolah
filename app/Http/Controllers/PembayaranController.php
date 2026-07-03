@@ -11,6 +11,7 @@ use App\Helpers\ResponseHelper;
 use App\Helpers\FormatHelper;
 use App\Exports\PembayaranExport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\Closing;
@@ -81,7 +82,13 @@ class PembayaranController extends Controller
                 'tagihan' => new TagihanResource($result['tagihan']),
             ], 'Pembayaran berhasil diproses. Invoice telah dibuat.');
         } catch (\Exception $e) {
-            return ResponseHelper::error($e->getMessage(), 500);
+            Log::error('Proses pembayaran gagal', [
+                'idSiswa' => $request->idSiswa,
+                'idTagihan' => $request->idTagihan,
+                'user' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+            return ResponseHelper::fromException($e, 'Gagal memproses pembayaran');
         }
     }
 
@@ -98,7 +105,8 @@ class PembayaranController extends Controller
                 'Pembayaran berhasil diverifikasi'
             );
         } catch (\Exception $e) {
-            return ResponseHelper::error($e->getMessage(), 500);
+            Log::error('Verifikasi pembayaran gagal', ['id' => $id, 'user' => auth()->id(), 'error' => $e->getMessage()]);
+            return ResponseHelper::fromException($e, 'Gagal memverifikasi pembayaran');
         }
     }
 
@@ -112,7 +120,8 @@ class PembayaranController extends Controller
 
             return ResponseHelper::success(null, 'Pembayaran berhasil dibatalkan');
         } catch (\Exception $e) {
-            return ResponseHelper::error($e->getMessage(), 500);
+            Log::error('Pembatalan pembayaran gagal', ['id' => $id, 'user' => auth()->id(), 'error' => $e->getMessage()]);
+            return ResponseHelper::fromException($e, 'Gagal membatalkan pembayaran');
         }
     }
 
@@ -155,7 +164,8 @@ class PembayaranController extends Controller
 
             return ResponseHelper::success(null, 'Pembayaran berhasil dihapus');
         } catch (\Exception $e) {
-            return ResponseHelper::error($e->getMessage(), 500);
+            Log::error('Hapus pembayaran gagal', ['id' => $id, 'user' => auth()->id(), 'error' => $e->getMessage()]);
+            return ResponseHelper::fromException($e, 'Gagal menghapus pembayaran');
         }
     }
 
@@ -178,7 +188,8 @@ class PembayaranController extends Controller
 
             return ResponseHelper::success(null, 'Sync job dispatched');
         } catch (\Exception $e) {
-            return ResponseHelper::error($e->getMessage(), 500);
+            Log::error('Retry sync pembayaran gagal', ['id' => $id, 'error' => $e->getMessage()]);
+            return ResponseHelper::fromException($e, 'Gagal menjalankan ulang sync');
         }
     }
 }

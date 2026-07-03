@@ -35,6 +35,12 @@ use App\Models\LamtimMasterPembayaran;
 use App\Models\LamtimSemester;
 use App\Models\LamtimPembayaran;
 use App\Models\LamtimSetting;
+use App\Models\LamtimTagihan;
+use App\Models\LamtimInvoice;
+use App\Models\LamtimTahunAjaran;
+use App\Models\LamtimTipePembayaran;
+use App\Models\LamtimJenisPembayaran;
+use App\Models\LamtimKategoriPembayaran;
 use App\Observers\MasterDataObserver;
 use App\Repositories\ImportRepository;
 use App\Repositories\Interfaces\ImportRepositoryInterface;
@@ -162,7 +168,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Register Observers for Master Data models
+        // Register Observers — invalidasi cache per-tag saat data berubah
         LamtimJurusan::observe(MasterDataObserver::class);
         LamtimKelas::observe(MasterDataObserver::class);
         LamtimRombel::observe(MasterDataObserver::class);
@@ -173,5 +179,11 @@ class AppServiceProvider extends ServiceProvider
         LamtimSemester::observe(MasterDataObserver::class);
         LamtimPembayaran::observe(MasterDataObserver::class);
         LamtimSetting::observe(MasterDataObserver::class);
+        LamtimTagihan::observe(MasterDataObserver::class);
+        LamtimInvoice::observe(MasterDataObserver::class);
+        LamtimTahunAjaran::observe(MasterDataObserver::class);
+        LamtimTipePembayaran::observe(MasterDataObserver::class);
+        LamtimJenisPembayaran::observe(MasterDataObserver::class);
+        LamtimKategoriPembayaran::observe(MasterDataObserver::class);
     }
 }

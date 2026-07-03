@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\CacheHelper;
 use App\Repositories\Interfaces\RombelRepositoryInterface;
 use App\Models\LamtimRombel;
 use Illuminate\Database\Eloquent\Collection;
@@ -140,13 +141,13 @@ class RombelService
 
     /**
      * Get cached rombel list for API.
+     * Di-invalidasi otomatis oleh MasterDataObserver via tag 'rombel'.
      */
     public function getCachedList(array $filters = []): Collection
     {
-        $version = $this->getCacheVersion();
-        $cacheKey = "rombel_list_v{$version}_" . md5(json_encode($filters));
+        $cacheKey = CacheHelper::keyFor('rombel_list', $filters);
 
-        return Cache::remember($cacheKey, 3600, function () use ($filters) {
+        return CacheHelper::remember(['rombel'], $cacheKey, 3600, function () use ($filters) {
             return $this->getAll($filters);
         });
     }
@@ -156,11 +157,10 @@ class RombelService
      */
     public function getSelectOptions(array $filters = [], bool $bustCache = false): array
     {
-        $version = $this->getCacheVersion();
-        $cacheKey = "rombel_select_v{$version}_" . md5(json_encode($filters));
+        $cacheKey = CacheHelper::keyFor('rombel_select', $filters);
 
         if (!$bustCache) {
-            $cached = Cache::get($cacheKey);
+            $cached = CacheHelper::get(['rombel'], $cacheKey);
             if ($cached) {
                 return $cached;
             }
@@ -209,7 +209,7 @@ class RombelService
             ];
         })->toArray();
 
-        Cache::put($cacheKey, $result, 3600);
+        CacheHelper::put(['rombel'], $cacheKey, $result, 3600);
 
         return $result;
     }
@@ -239,18 +239,11 @@ class RombelService
 
     /**
      * Invalidate all rombel-related caches.
+     * Catatan: MasterDataObserver sudah otomatis flush tag ini pada event model;
+     * method ini dipertahankan untuk pemanggilan eksplisit dari controller.
      */
     public function invalidateCache(): void
     {
-        $version = Cache::get('rombel_cache_version', 1);
-        Cache::put('rombel_cache_version', $version + 1);
-    }
-
-    /**
-     * Get current cache version.
-     */
-    public function getCacheVersion(): int
-    {
-        return (int) Cache::get('rombel_cache_version', 2);
+        CacheHelper::flushTags(['rombel']);
     }
 }

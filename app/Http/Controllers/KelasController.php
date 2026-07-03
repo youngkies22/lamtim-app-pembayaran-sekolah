@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\KelasService;
+use App\Helpers\CacheHelper;
 use App\Helpers\ResponseHelper;
 use App\Models\LamtimKelas;
 use Illuminate\Http\Request;
@@ -30,14 +31,14 @@ class KelasController extends Controller
             $forceRefresh = $request->has('_t');
             
             // Create cache key based on filters
-            $cacheKey = 'kelas_list_' . md5(json_encode($filters));
-            
+            $cacheKey = CacheHelper::keyFor('kelas_list', $filters);
+
             // If force refresh, skip cache
             if ($forceRefresh) {
                 $kelas = $this->service->getAll($filters);
             } else {
-                // Cache for 5 minutes (reduced from 30 minutes for better data freshness)
-                $kelas = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($filters) {
+                // Tag 'kelas' — di-invalidasi otomatis oleh Observer saat data berubah
+                $kelas = CacheHelper::remember(['kelas'], $cacheKey, 300, function () use ($filters) {
                     return $this->service->getAll($filters);
                 });
             }
@@ -58,10 +59,10 @@ class KelasController extends Controller
     public function datatable(Request $request)
     {
         // Build cache key from request params
-        $cacheKey = 'kelas_datatable_' . md5(json_encode($request->all()));
-        
+        $cacheKey = CacheHelper::keyFor('kelas_datatable', $request->all());
+
         // Try to get from cache first
-        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $cached = CacheHelper::get(['kelas'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return response()->json($cached);
         }
@@ -97,7 +98,7 @@ class KelasController extends Controller
             ->make(true);
 
         // Cache the result for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $result->getData(true), 300);
+        CacheHelper::put(['kelas'], $cacheKey, $result->getData(true), 300);
 
         return $result;
     }
@@ -250,9 +251,9 @@ class KelasController extends Controller
     public function select(Request $request)
     {
         $cacheKey = 'kelas_select';
-        
+
         // Try to get from cache first
-        $cached = \Illuminate\Support\Facades\Cache::get($cacheKey);
+        $cached = CacheHelper::get(['kelas'], $cacheKey);
         if ($cached && !$request->has('_t')) {
             return ResponseHelper::success($cached);
         }
@@ -262,39 +263,19 @@ class KelasController extends Controller
             ->orderBy('kode')
             ->get()
             ->toArray();
-        
+
         // Cache for 5 minutes
-        \Illuminate\Support\Facades\Cache::put($cacheKey, $kelas, 300);
-        
+        CacheHelper::put(['kelas'], $cacheKey, $kelas, 300);
+
         return ResponseHelper::success($kelas);
     }
 
     /**
-     * Clear all kelas cache patterns
+     * Clear all kelas cache (per-tag).
+     * Observer sudah otomatis flush saat model berubah; ini untuk pemanggilan eksplisit.
      */
     protected function clearKelasCache(): void
     {
-        // Clear cache by trying to forget common filter combinations
-        $commonFilters = [
-            [],
-            ['search' => ''],
-            ['search' => null],
-        ];
-
-        foreach ($commonFilters as $filters) {
-            $cacheKey = 'kelas_list_' . md5(json_encode($filters));
-            \Illuminate\Support\Facades\Cache::forget($cacheKey);
-        }
-        
-        // Also clear cache without filters (empty array)
-        \Illuminate\Support\Facades\Cache::forget('kelas_list_' . md5('[]'));
-        
-        // Try to clear with empty string search
-        $emptySearchKey = 'kelas_list_' . md5(json_encode(['search' => '']));
-        \Illuminate\Support\Facades\Cache::forget($emptySearchKey);
-        
-        // Try to clear with null search
-        $nullSearchKey = 'kelas_list_' . md5(json_encode(['search' => null]));
-        \Illuminate\Support\Facades\Cache::forget($nullSearchKey);
+        CacheHelper::flushTags(['kelas']);
     }
 }
