@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Helpers\CacheHelper;
 use App\Models\LamtimSetting;
 use App\Models\LamtimSekolah;
 use App\Models\LamtimTahunAjaran;
