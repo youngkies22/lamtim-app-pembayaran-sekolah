@@ -216,8 +216,14 @@ class SiswaService
             $errors = [];
             $rombelIdsToDeactivate = [];
 
+            // Ambil semua siswa dalam satu query, bukan satu query per id di dalam loop.
+            $siswaById = LamtimSiswa::with(['currentRombel.rombel.kelas'])
+                ->whereIn('id', $siswaIds)
+                ->get()
+                ->keyBy('id');
+
             foreach ($siswaIds as $id) {
-                $siswa = LamtimSiswa::with(['currentRombel.rombel.kelas'])->find($id);
+                $siswa = $siswaById->get($id);
 
                 if (!$siswa) {
                     $errors[] = "Siswa {$id} tidak ditemukan";

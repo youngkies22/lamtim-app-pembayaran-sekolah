@@ -5,11 +5,12 @@
     <div v-if="loading" class="h-[320px] flex items-center justify-center">
       <div class="animate-pulse w-full h-full bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
     </div>
-    <apexchart v-else type="area" height="320" :options="chartOptions" :series="series" />
+    <VueApexCharts v-else type="area" height="320" :options="chartOptions" :series="series" />
   </div>
 </template>
 
 <script setup>
+import VueApexCharts from 'vue3-apexcharts';
 import { computed } from 'vue';
 
 const props = defineProps({

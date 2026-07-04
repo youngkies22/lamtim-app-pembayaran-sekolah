@@ -3,7 +3,7 @@
     <h3 class="font-bold text-gray-900 dark:text-white mb-4 text-sm">Rasio Terbayar vs Tunggakan</h3>
     <div v-if="loading" class="h-72 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse"></div>
     <div v-else>
-      <apexchart type="donut" height="240" :options="chartOptions" :series="series" />
+      <VueApexCharts type="donut" height="240" :options="chartOptions" :series="series" />
       <div class="mt-3 grid grid-cols-2 gap-2 text-center text-xs">
         <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-2">
           <p class="text-emerald-600 font-bold">{{ formatCurrency(props.summary.totalTerbayar) }}</p>
@@ -19,6 +19,7 @@
 </template>
 
 <script setup>
+import VueApexCharts from 'vue3-apexcharts';
 import { computed } from 'vue';
 
 const props = defineProps({

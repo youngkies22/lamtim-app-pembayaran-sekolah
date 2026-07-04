@@ -83,7 +83,14 @@ class TrashService
             DB::beginTransaction();
 
             $model = $this->getModelClass($type);
-            $items = $model::where('isActive', 0)->get();
+            $query = $model::where('isActive', 0);
+            // Tagihan menghapus invoice via relation query (invoices()->delete()),
+            // jadi tidak butuh eager load. Pembayaran mengakses $item->invoice
+            // langsung, jadi perlu di-eager-load agar tidak query per baris.
+            if ($type === 'pembayaran') {
+                $query->with('invoice');
+            }
+            $items = $query->get();
 
             foreach ($items as $item) {
                 $this->deleteWithRelations($item, $type);

@@ -119,18 +119,21 @@ class LamtimMasterPembayaran extends Model
     /**
      * Generate tagihan untuk siswa berdasarkan master ini
      */
+    /**
+     * Buat tagihan untuk satu siswa.
+     *
+     * Catatan: pengecekan tagihan yang sudah ada TIDAK dilakukan di sini —
+     * kedua caller (TagihanService::generateTagihanUntukSiswa dan
+     * ::generateTagihanBatch) sudah memverifikasi ketiadaan tagihan sebelum
+     * memanggil method ini, agar batch generate tidak melakukan query cek
+     * duplikat per-siswa di dalam loop.
+     *
+     * @param LamtimSiswaRombel|null $rombel Mapping rombel siswa yang sudah
+     *        di-eager-load oleh caller (idSiswa.currentRombel), agar tidak
+     *        query ulang per siswa saat dipanggil dalam loop batch.
+     */
     public function generateTagihanUntukSiswa($siswa, $tahunAjaran = null, $rombel = null, $bulan = null)
     {
-        // Cek apakah tagihan sudah ada
-        $existing = LamtimTagihan::where('idSiswa', $siswa->id)
-            ->where('idMasterPembayaran', $this->id)
-            ->where('isActive', 1)
-            ->first();
-
-        if ($existing) {
-            return $existing; // Return existing tagihan
-        }
-
         // Generate kode tagihan
         $kodeTagihan = $this->generateKodeTagihan($siswa, $bulan);
 

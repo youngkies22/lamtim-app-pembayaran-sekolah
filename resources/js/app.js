@@ -2,7 +2,6 @@ import './bootstrap';
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { initFlowbite } from 'flowbite';
-import VueApexCharts from 'vue3-apexcharts';
 
 // Initialize dark mode as early as possible
 import { useDarkMode } from './composables/useDarkMode';
@@ -13,48 +12,50 @@ initDarkMode();
 // Import Root Component
 import App from './App.vue';
 
-// Import Pages
-import Dashboard from './pages/Dashboard.vue';
-import Login from './pages/Login.vue';
-import SiswaIndex from './pages/siswa/Index.vue';
-import SiswaCreate from './pages/siswa/Create.vue';
-import SiswaEdit from './pages/siswa/Edit.vue';
-import SiswaRombelMapping from './pages/siswa-rombel/Mapping.vue';
-import SiswaRombelIndex from './pages/siswa-rombel/Index.vue';
-import KenaikanKelas from './pages/siswa/KenaikanKelas.vue';
-import Alumni from './pages/siswa/Alumni.vue';
-import AlumniData from './pages/siswa/AlumniData.vue';
-import MasterPembayaranIndex from './pages/master-pembayaran/Index.vue';
-import TagihanIndex from './pages/tagihan/Index.vue';
-import InvoiceIndex from './pages/invoice/Index.vue';
-import PembayaranIndex from './pages/pembayaran/Index.vue';
-import BillingIndex from './pages/billing/Index.vue';
-import SekolahIndex from './pages/master-data/sekolah/Index.vue';
-import MasterDataIndex from './pages/master-data/Index.vue';
-import JurusanIndex from './pages/master-data/jurusan/Index.vue';
-import KelasIndex from './pages/master-data/kelas/Index.vue';
-import RombelIndex from './pages/master-data/rombel/Index.vue';
-import JenisPembayaranIndex from './pages/master-data/jenis-pembayaran/Index.vue';
-import KategoriPembayaranIndex from './pages/master-data/kategori-pembayaran/Index.vue';
-import TipePembayaranIndex from './pages/master-data/tipe-pembayaran/Index.vue';
-import TahunAjaranIndex from './pages/master-data/tahun-ajaran/Index.vue';
-import SemesterIndex from './pages/master-data/semester/Index.vue';
-import Reports from './pages/Reports.vue';
-import ReportSiswa from './pages/reports/ReportSiswa.vue';
-import ReportRombel from './pages/reports/ReportRombel.vue';
-import PrintReportRombel from './pages/reports/PrintReportRombel.vue';
-import PrintSiswa from './pages/reports/PrintSiswa.vue';
-import AlumniAnalysis from './pages/reports/AlumniAnalysis.vue';
-import AlumniDiagram from './pages/reports/AlumniDiagram.vue';
-import ActiveStudentDiagram from './pages/reports/ActiveStudentDiagram.vue';
-import Settings from './pages/Settings.vue';
-import Profile from './pages/Profile.vue';
-import UsersIndex from './pages/users/Index.vue';
-import TrashIndex from './pages/trash/Index.vue';
-import ClosingIndex from './pages/Closing/Index.vue';
-import BackupIndex from './pages/Backups/Index.vue';
-import SyncIndex from './pages/Sync/Index.vue';
-import FailedJobs from './pages/System/FailedJobs.vue';
+// Pages — lazy-loaded per route so the initial bundle only contains what's
+// needed to render the current page. Vite splits each of these into its own
+// chunk, fetched on navigation instead of all up-front at app boot.
+const Dashboard = () => import('./pages/Dashboard.vue');
+const Login = () => import('./pages/Login.vue');
+const SiswaIndex = () => import('./pages/siswa/Index.vue');
+const SiswaCreate = () => import('./pages/siswa/Create.vue');
+const SiswaEdit = () => import('./pages/siswa/Edit.vue');
+const SiswaRombelMapping = () => import('./pages/siswa-rombel/Mapping.vue');
+const SiswaRombelIndex = () => import('./pages/siswa-rombel/Index.vue');
+const KenaikanKelas = () => import('./pages/siswa/KenaikanKelas.vue');
+const Alumni = () => import('./pages/siswa/Alumni.vue');
+const AlumniData = () => import('./pages/siswa/AlumniData.vue');
+const MasterPembayaranIndex = () => import('./pages/master-pembayaran/Index.vue');
+const TagihanIndex = () => import('./pages/tagihan/Index.vue');
+const InvoiceIndex = () => import('./pages/invoice/Index.vue');
+const PembayaranIndex = () => import('./pages/pembayaran/Index.vue');
+const BillingIndex = () => import('./pages/billing/Index.vue');
+const SekolahIndex = () => import('./pages/master-data/sekolah/Index.vue');
+const MasterDataIndex = () => import('./pages/master-data/Index.vue');
+const JurusanIndex = () => import('./pages/master-data/jurusan/Index.vue');
+const KelasIndex = () => import('./pages/master-data/kelas/Index.vue');
+const RombelIndex = () => import('./pages/master-data/rombel/Index.vue');
+const JenisPembayaranIndex = () => import('./pages/master-data/jenis-pembayaran/Index.vue');
+const KategoriPembayaranIndex = () => import('./pages/master-data/kategori-pembayaran/Index.vue');
+const TipePembayaranIndex = () => import('./pages/master-data/tipe-pembayaran/Index.vue');
+const TahunAjaranIndex = () => import('./pages/master-data/tahun-ajaran/Index.vue');
+const SemesterIndex = () => import('./pages/master-data/semester/Index.vue');
+const Reports = () => import('./pages/Reports.vue');
+const ReportSiswa = () => import('./pages/reports/ReportSiswa.vue');
+const ReportRombel = () => import('./pages/reports/ReportRombel.vue');
+const PrintReportRombel = () => import('./pages/reports/PrintReportRombel.vue');
+const PrintSiswa = () => import('./pages/reports/PrintSiswa.vue');
+const AlumniAnalysis = () => import('./pages/reports/AlumniAnalysis.vue');
+const AlumniDiagram = () => import('./pages/reports/AlumniDiagram.vue');
+const ActiveStudentDiagram = () => import('./pages/reports/ActiveStudentDiagram.vue');
+const Settings = () => import('./pages/Settings.vue');
+const Profile = () => import('./pages/Profile.vue');
+const UsersIndex = () => import('./pages/users/Index.vue');
+const TrashIndex = () => import('./pages/trash/Index.vue');
+const ClosingIndex = () => import('./pages/Closing/Index.vue');
+const BackupIndex = () => import('./pages/Backups/Index.vue');
+const SyncIndex = () => import('./pages/Sync/Index.vue');
+const FailedJobs = () => import('./pages/System/FailedJobs.vue');
 
 // Import API service
 import { authAPI } from './services/api';
@@ -410,9 +411,6 @@ try {
 
     // Register global plugins
     app.use(router);
-
-    // Register ApexCharts globally
-    app.use(VueApexCharts);
 
     app.mount('#app');
     

@@ -2,68 +2,82 @@
 
 namespace App\Http\Resources;
 
+use App\Helpers\CacheHelper;
+use App\Helpers\FormatHelper;
+use App\Models\LamtimSekolah;
+use App\Models\LamtimTagihan;
+use App\Models\LamtimTahunAjaran;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class InvoiceResource extends JsonResource
 {
+    /**
+     * Memoization per-request agar tidak query berulang per baris invoice
+     * saat dirender lewat InvoiceResource::collection() (list/datatable).
+     *
+     * @var array<string, array>
+     */
+    private static array $tagihanBySiswaCache = [];
+
+    /** @var array<string, string> */
+    private static array $adminNameCache = [];
+
     public function toArray(Request $request): array
     {
-        // Get tahun ajaran aktif
-        $tahunAjaranAktif = \App\Models\LamtimTahunAjaran::active()->first();
-        
-        // Get sekolah (ambil sekolah pertama dari database)
-        $sekolah = \App\Models\LamtimSekolah::first();
-        
-        // Get rombel siswa aktif (ambil yang terbaru)
-        $rombelSiswa = null;
-        if ($this->siswa) {
-            $siswaRombel = $this->siswa->rombels()
-                ->with(['rombel.kelas', 'rombel.jurusan'])
-                ->orderBy('created_at', 'desc')
-                ->first();
-            if ($siswaRombel && $siswaRombel->rombel) {
-                $rombelSiswa = $siswaRombel->rombel;
-            }
-        }
-        
-        // Get semua tagihan siswa yang aktif
+        // Tahun ajaran aktif & sekolah sama untuk semua baris — cache tag,
+        // bukan query ulang per invoice. Di-invalidasi otomatis oleh Observer.
+        $tahunAjaranAktif = CacheHelper::remember(['tahun_ajaran'], 'tahun_ajaran_aktif', 3600, fn () => LamtimTahunAjaran::active()->first());
+        $sekolah = CacheHelper::remember(['sekolah'], 'sekolah_pertama', 3600, fn () => LamtimSekolah::first());
+
+        // Rombel siswa — pakai relasi yang sudah di-eager-load oleh
+        // InvoiceService (siswa.currentRombel.rombel.kelas/jurusan),
+        // bukan query baru per invoice.
+        $rombelSiswa = $this->siswa?->currentRombel?->rombel;
+
+        // Semua tagihan siswa — memoized per idSiswa dalam satu request,
+        // supaya siswa dengan banyak invoice di halaman yang sama tidak
+        // memicu query berulang.
         $semuaTagihan = [];
         if ($this->siswa) {
-            $tagihanList = \App\Models\LamtimTagihan::where('idSiswa', $this->siswa->id)
-                ->where('isActive', 1)
-                ->with(['masterPembayaran:id,kode,nama'])
-                ->get();
-            foreach ($tagihanList as $t) {
-                $semuaTagihan[] = [
-                    'id' => $t->id,
-                    'kodeTagihan' => $t->kodeTagihan,
-                    'nama' => $t->masterPembayaran->nama ?? '-',
-                    'nominalTagihan' => (float) $t->nominalTagihan,
-                    'totalSudahBayar' => (float) $t->totalSudahBayar,
-                    'totalSisa' => (float) $t->totalSisa,
-                    'status' => $t->status,
-                ];
+            $idSiswa = $this->siswa->id;
+            if (!array_key_exists($idSiswa, self::$tagihanBySiswaCache)) {
+                self::$tagihanBySiswaCache[$idSiswa] = LamtimTagihan::where('idSiswa', $idSiswa)
+                    ->where('isActive', 1)
+                    ->with(['masterPembayaran:id,kode,nama'])
+                    ->get()
+                    ->map(fn ($t) => [
+                        'id' => $t->id,
+                        'kodeTagihan' => $t->kodeTagihan,
+                        'nama' => $t->masterPembayaran->nama ?? '-',
+                        'nominalTagihan' => (float) $t->nominalTagihan,
+                        'totalSudahBayar' => (float) $t->totalSudahBayar,
+                        'totalSisa' => (float) $t->totalSisa,
+                        'status' => $t->status,
+                    ])
+                    ->all();
             }
+            $semuaTagihan = self::$tagihanBySiswaCache[$idSiswa];
         }
-        
+
         return [
             'id' => $this->id,
             'noInvoice' => $this->noInvoice,
             'kodeInvoice' => $this->kodeInvoice,
             'tanggalInvoice' => $this->tanggalInvoice?->format('Y-m-d'),
-            'tanggalInvoiceFormatted' => \App\Helpers\FormatHelper::date($this->tanggalInvoice),
+            'tanggalInvoiceFormatted' => FormatHelper::date($this->tanggalInvoice),
             'nominalInvoice' => (float) $this->nominalInvoice,
-            'nominalInvoiceFormatted' => \App\Helpers\FormatHelper::currency($this->nominalInvoice),
+            'nominalInvoiceFormatted' => FormatHelper::currency($this->nominalInvoice),
             'nominalPotongan' => (float) $this->nominalPotongan,
-            'nominalPotonganFormatted' => \App\Helpers\FormatHelper::currency($this->nominalPotongan),
+            'nominalPotonganFormatted' => FormatHelper::currency($this->nominalPotongan),
             'nominalBayar' => (float) $this->nominalBayar,
-            'nominalBayarFormatted' => \App\Helpers\FormatHelper::currency($this->nominalBayar),
+            'nominalBayarFormatted' => FormatHelper::currency($this->nominalBayar),
             'nominalSisa' => (float) $this->nominalSisa,
-            'nominalSisaFormatted' => \App\Helpers\FormatHelper::currency($this->nominalSisa),
+            'nominalSisaFormatted' => FormatHelper::currency($this->nominalSisa),
             'status' => $this->status,
             'statusLabel' => $this->statusLabel,
-            'statusBadge' => \App\Helpers\FormatHelper::statusBadge($this->status, 'tagihan'),
+            'statusBadge' => FormatHelper::statusBadge($this->status, 'tagihan'),
             'tanggalLunas' => $this->tanggalLunas?->format('Y-m-d'),
             'keterangan' => $this->keterangan,
             'catatan' => $this->catatan,
@@ -144,10 +158,10 @@ class InvoiceResource extends JsonResource
             }),
             'pembayarans' => PembayaranResource::collection($this->whenLoaded('pembayarans')),
             
-            // Admin yang memproses
+            // Admin yang memproses — memoized per createdBy dalam satu request
             'admin' => $this->createdBy ? [
                 'id' => $this->createdBy,
-                'nama' => \App\Models\User::find($this->createdBy)?->name ?? 'Admin',
+                'nama' => self::$adminNameCache[$this->createdBy] ??= (User::find($this->createdBy)?->name ?? 'Admin'),
             ] : null,
             
             'created_at' => $this->created_at?->format('Y-m-d H:i:s'),

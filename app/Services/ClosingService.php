@@ -27,6 +27,7 @@ class ClosingService
         
         // Get existing closings for this month
         $closings = Closing::daily()
+            ->with('user')
             ->whereMonth('date', $month)
             ->whereYear('date', $year)
             ->get()
@@ -77,6 +78,7 @@ class ClosingService
     {
         // Get existing monthly closings for this year
         $closings = Closing::monthly()
+            ->with('user')
             ->where('year', $year)
             ->get()
             ->keyBy('month');

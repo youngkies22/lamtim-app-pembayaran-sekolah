@@ -155,9 +155,11 @@ class TagihanService
             $tahunAjaranAktif = \App\Models\LamtimTahunAjaran::active()->first();
             $idTahunAjaran = $master->idTahunAjaran ?? ($tahunAjaranAktif?->id);
 
-            // Get siswa list
-            $query = LamtimSiswa::active();
-            
+            // Get siswa list — eager-load currentRombel.rombel agar
+            // generateTagihanUntukSiswa() tidak query rombel per siswa di loop.
+            $query = LamtimSiswa::active()
+                ->with(['currentRombel.rombel.sekolah', 'currentRombel.rombel.jurusan', 'currentRombel.rombel.kelas']);
+
             if (!empty($siswaIds)) {
                 $query->whereIn('id', $siswaIds);
             }
@@ -176,20 +178,29 @@ class TagihanService
 
             $siswaList = $query->get();
 
+            // Cek tagihan yang sudah ada untuk master ini dalam satu query,
+            // bukan satu query cek-eksistensi per siswa di dalam loop.
+            $existingSiswaIds = LamtimTagihan::where('idMasterPembayaran', $idMasterPembayaran)
+                ->where('isActive', 1)
+                ->whereIn('idSiswa', $siswaList->pluck('id'))
+                ->pluck('idSiswa')
+                ->flip();
+
             $generated = [];
+            $generatedTagihans = [];
             $skipped = [];
 
             foreach ($siswaList as $siswa) {
-                // Cek apakah tagihan sudah ada
-                $existing = $this->repository->findBySiswa($siswa->id, $idMasterPembayaran);
-                if ($existing) {
+                if ($existingSiswaIds->has($siswa->id)) {
                     $skipped[] = $siswa->id;
                     continue;
                 }
 
-                // Generate tagihan dengan tahun ajaran
-                $tagihan = $master->generateTagihanUntukSiswa($siswa, $tahunAjaranAktif);
+                // Generate tagihan dengan tahun ajaran; rombel sudah di-eager-load
+                // di atas jadi tidak perlu query ulang per siswa di dalam model.
+                $tagihan = $master->generateTagihanUntukSiswa($siswa, $tahunAjaranAktif, $siswa->currentRombel);
                 $generated[] = $tagihan->id;
+                $generatedTagihans[] = $tagihan;
             }
 
             DB::commit();
@@ -199,11 +210,8 @@ class TagihanService
                 throw new \Exception('Push Academic Data Job tidak aktif. Aktifkan di Pengaturan.');
             }
 
-            foreach ($generated as $tagihanId) {
-                $tagihan = \App\Models\LamtimTagihan::find($tagihanId);
-                if ($tagihan) {
-                    \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
-                }
+            foreach ($generatedTagihans as $tagihan) {
+                \App\Jobs\PushAcademicDataJob::dispatch($tagihan);
             }
 
             return [

@@ -2,11 +2,12 @@
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5">
     <h3 class="font-bold text-gray-900 dark:text-white mb-4 text-sm">Rasio Pembayaran per Bulan</h3>
     <div v-if="loading" class="h-72 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse"></div>
-    <apexchart v-else type="bar" height="280" :options="chartOptions" :series="series" />
+    <VueApexCharts v-else type="bar" height="280" :options="chartOptions" :series="series" />
   </div>
 </template>
 
 <script setup>
+import VueApexCharts from 'vue3-apexcharts';
 import { computed } from 'vue';
 
 const props = defineProps({

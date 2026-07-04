@@ -7,8 +7,6 @@ use App\Models\LamtimInvoice;
 use App\Models\LamtimSekolah;
 use App\Models\LamtimTahunAjaran;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class InvoiceService
 {
@@ -44,7 +42,7 @@ class InvoiceService
     public function getPaginated(array $filters = [], int $perPage = 15): LengthAwarePaginator
     {
         $query = LamtimInvoice::query()
-            ->with(['siswa.currentRombel.rombel.kelas', 'tagihan', 'masterPembayaran'])
+            ->with(['siswa.currentRombel.rombel.kelas', 'siswa.currentRombel.rombel.jurusan', 'tagihan.masterPembayaran', 'masterPembayaran'])
             ->where('isActive', 1);
 
         if (isset($filters['idSiswa'])) {
@@ -71,7 +69,13 @@ class InvoiceService
      */
     public function find(string $id): ?LamtimInvoice
     {
-        return LamtimInvoice::with(['siswa', 'tagihan', 'masterPembayaran', 'pembayarans'])->find($id);
+        return LamtimInvoice::with([
+            'siswa.currentRombel.rombel.kelas',
+            'siswa.currentRombel.rombel.jurusan',
+            'tagihan.masterPembayaran',
+            'masterPembayaran',
+            'pembayarans',
+        ])->find($id);
     }
 
     /**
@@ -80,7 +84,7 @@ class InvoiceService
     public function buildDatatableQuery(array $filters = [])
     {
         $query = LamtimInvoice::query()
-            ->with(['siswa.currentRombel.rombel.kelas', 'tagihan', 'masterPembayaran'])
+            ->with(['siswa.currentRombel.rombel.kelas', 'siswa.currentRombel.rombel.jurusan', 'tagihan.masterPembayaran', 'masterPembayaran'])
             ->select('lamtim_invoices.*')
             ->where('isActive', 1)
             ->orderBy('tanggalInvoice', 'desc');

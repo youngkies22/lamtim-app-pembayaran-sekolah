@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\CacheHelper;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -97,17 +98,21 @@ class LamtimSemester extends Model
     }
 
     /**
-     * Get semester saat ini berdasarkan bulan saat ini
+     * Get semester saat ini berdasarkan bulan saat ini.
+     * Di-cache karena dipanggil per-siswa saat generate tagihan batch;
+     * di-invalidasi otomatis oleh Observer saat data semester berubah.
      */
     public static function getCurrent(): ?self
     {
-        // Prioritas: Ambil yang ditandai isActive = 1
-        $active = static::active()->first();
-        if ($active) {
-            return $active;
-        }
+        return CacheHelper::remember(['semester'], 'semester_current', 3600, function () {
+            // Prioritas: Ambil yang ditandai isActive = 1
+            $active = static::active()->first();
+            if ($active) {
+                return $active;
+            }
 
-        $currentMonth = (int) now()->format('m');
-        return static::getByBulan($currentMonth);
+            $currentMonth = (int) now()->format('m');
+            return static::getByBulan($currentMonth);
+        });
     }
 }

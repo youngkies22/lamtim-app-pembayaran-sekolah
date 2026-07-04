@@ -169,14 +169,17 @@ class SiswaRombelService
             $created = [];
             $errors = [];
 
+            // Cek mapping yang sudah ada untuk rombel ini dalam satu query,
+            // bukan satu query cek-eksistensi per siswa di dalam loop.
+            $existingSiswaIds = LamtimSiswaRombel::where('idRombel', $data['idRombel'])
+                ->whereIn('idSiswa', $data['siswa_ids'])
+                ->pluck('idSiswa')
+                ->flip();
+
             foreach ($data['siswa_ids'] as $idSiswa) {
                 try {
                     // Check if student is already mapped to this rombel
-                    $existing = LamtimSiswaRombel::where('idSiswa', $idSiswa)
-                        ->where('idRombel', $data['idRombel'])
-                        ->first();
-
-                    if ($existing) {
+                    if ($existingSiswaIds->has($idSiswa)) {
                         continue; // Skip if already mapped to this rombel
                     }
 
@@ -299,12 +302,17 @@ class SiswaRombelService
             $promoted = 0;
             $errors = [];
 
+            // Ambil semua mapping siswa di rombel asal dalam satu query,
+            // bukan satu query per siswa di dalam loop.
+            $mappingsBySiswa = LamtimSiswaRombel::where('idRombel', $fromRombelId)
+                ->whereIn('idSiswa', $siswaIds)
+                ->get()
+                ->keyBy('idSiswa');
+
             foreach ($siswaIds as $idSiswa) {
                 try {
                     // Find existing mapping in source rombel
-                    $mapping = LamtimSiswaRombel::where('idSiswa', $idSiswa)
-                        ->where('idRombel', $fromRombelId)
-                        ->first();
+                    $mapping = $mappingsBySiswa->get($idSiswa);
 
                     if (!$mapping) {
                         $errors[] = "Siswa {$idSiswa} tidak terdaftar di rombel asal";
