@@ -15,12 +15,12 @@ class LamtimAgamaSeeder extends Seeder
     public function run(): void
     {
         $agamaData = [
-            ['kode' => 'ISLAM', 'nama' => 'Islam'],
-            ['kode' => 'KRISTEN', 'nama' => 'Kristen'],
-            ['kode' => 'KATOLIK', 'nama' => 'Katolik'],
-            ['kode' => 'HINDU', 'nama' => 'Hindu'],
-            ['kode' => 'BUDDHA', 'nama' => 'Buddha'],
-            ['kode' => 'KONGHUCU', 'nama' => 'Khonghucu'],
+            ['kode' => 'ISLAM', 'nama' => 'ISLAM'],
+            ['kode' => 'KRISTEN', 'nama' => 'KRISTEN'],
+            ['kode' => 'KATOLIK', 'nama' => 'KATOLIK'],
+            ['kode' => 'HINDU', 'nama' => 'HINDU'],
+            ['kode' => 'BUDDHA', 'nama' => 'BUDDHA'],
+            ['kode' => 'KONGHUCU', 'nama' => 'KONG HU CU'],
         ];
 
         foreach ($agamaData as $agama) {

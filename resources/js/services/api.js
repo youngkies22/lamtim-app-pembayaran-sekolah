@@ -338,6 +338,7 @@ export const masterDataAPI = {
 export const siswaAPI = {
     list: (params = {}) => api.get('/siswa', { params }),
     select: (params = {}) => api.get('/siswa/select', { params }),
+    byTahunAngkatan: (tahunAngkatan) => api.get('/siswa/by-tahun-angkatan', { params: { tahunAngkatan } }),
     datatable: (params = {}) => api.get('/siswa/datatable', { params }),
     get: (id) => api.get(`/siswa/${id}`),
     create: (data) => api.post('/siswa', data),
@@ -355,6 +356,7 @@ export const siswaRombelAPI = {
     create: (data) => api.post('/siswa-rombel', data),
     batchCreate: (data) => api.post('/siswa-rombel/batch', data),
     promote: (data) => api.post('/siswa-rombel/promote', data),
+    promoteByAngkatan: (data) => api.post('/siswa-rombel/promote-by-angkatan', data),
     update: (id, data) => api.put(`/siswa-rombel/${id}`, data),
     delete: (id) => api.delete(`/siswa-rombel/${id}`),
 };

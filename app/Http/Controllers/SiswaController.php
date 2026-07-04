@@ -40,6 +40,50 @@ class SiswaController extends Controller
     }
 
     /**
+     * Get non-alumni students of a given tahunAngkatan, with their current
+     * rombel/kelas info exposed (bukan string gabungan) — dipakai oleh
+     * Kenaikan Kelas & Jadikan Alumni untuk mode "Per Tahun Angkatan",
+     * karena siswa satu angkatan bisa tersebar di beberapa rombel berbeda.
+     */
+    public function byTahunAngkatan(Request $request)
+    {
+        $tahunAngkatan = trim((string) $request->query('tahunAngkatan', ''));
+
+        if ($tahunAngkatan === '') {
+            return ResponseHelper::error('Parameter tahunAngkatan wajib diisi', 422);
+        }
+
+        $siswa = LamtimSiswa::query()
+            ->select('id', 'username', 'nis', 'nisn', 'nama', 'isActive', 'tahunAngkatan')
+            ->where('tahunAngkatan', $tahunAngkatan)
+            ->where('isAlumni', 0)
+            ->with([
+                'currentRombel:id,idSiswa,idRombel',
+                'currentRombel.rombel:id,nama,idKelas',
+                'currentRombel.rombel.kelas:id,kode',
+            ])
+            ->orderBy('username')
+            ->get()
+            ->map(function ($item) {
+                $rombel = $item->currentRombel?->rombel;
+
+                return [
+                    'id' => $item->id,
+                    'username' => $item->username,
+                    'nis' => $item->nis,
+                    'nisn' => $item->nisn,
+                    'nama' => $item->nama,
+                    'isActive' => $item->isActive,
+                    'idRombel' => $rombel?->id,
+                    'rombelNama' => $rombel?->nama,
+                    'kelasKode' => $rombel?->kelas?->kode,
+                ];
+            });
+
+        return ResponseHelper::success($siswa);
+    }
+
+    /**
      * Get options for select dropdown (id, nis, nama, rombel)
      * Supports filters: idSekolah, mode (aktif|alumni)
      * - aktif (default): returns isActive=1 students

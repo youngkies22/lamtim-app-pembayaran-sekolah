@@ -349,4 +349,71 @@ class SiswaRombelService
             throw $e;
         }
     }
+
+    /**
+     * Promote seluruh siswa satu angkatan (tahunAngkatan) ke kelas berikutnya.
+     *
+     * Siswa satu angkatan bisa tersebar di beberapa rombel berbeda (mis. X RPL 1,
+     * X RPL 2, X TKJ 1), jadi di sini mereka dikelompokkan per rombel lalu tiap
+     * kelompok diproses lewat promoteStudents() yang sudah ada — sehingga tidak
+     * perlu klik rombel satu-per-satu untuk menaikkan seluruh angkatan sekaligus.
+     *
+     * Setiap kelompok rombel diproses dalam transaksi terpisah (di dalam
+     * promoteStudents), sehingga kegagalan pada satu rombel tidak membatalkan
+     * rombel lain yang sudah berhasil diproses.
+     */
+    public function promoteStudentsByAngkatan(string $tahunAngkatan, array $siswaIds = []): array
+    {
+        $query = LamtimSiswa::where('tahunAngkatan', $tahunAngkatan)
+            ->where('isActive', 1)
+            ->where('isAlumni', 0)
+            ->with('currentRombel');
+
+        if (!empty($siswaIds)) {
+            $query->whereIn('id', $siswaIds);
+        }
+
+        $students = $query->get();
+
+        $withRombel = $students->filter(fn ($s) => $s->currentRombel);
+        $withoutRombel = $students->reject(fn ($s) => $s->currentRombel);
+
+        $totalPromoted = 0;
+        $errors = [];
+        $details = [];
+
+        foreach ($withoutRombel as $siswa) {
+            $errors[] = "Siswa {$siswa->nama} tidak memiliki rombel aktif, dilewati";
+        }
+
+        $byRombel = $withRombel->groupBy(fn ($s) => $s->currentRombel->idRombel);
+
+        foreach ($byRombel as $idRombel => $groupSiswa) {
+            try {
+                $result = $this->promoteStudents($idRombel, $groupSiswa->pluck('id')->toArray());
+                $totalPromoted += $result['promoted_count'];
+                $errors = array_merge($errors, $result['errors']);
+                $details[] = [
+                    'rombel_nama' => $result['rombel_nama'],
+                    'from_kelas' => $result['from_kelas'],
+                    'to_kelas' => $result['to_kelas'],
+                    'promoted_count' => $result['promoted_count'],
+                ];
+            } catch (\Exception $e) {
+                $errors[] = "Rombel {$idRombel}: " . $e->getMessage();
+            }
+        }
+
+        if ($totalPromoted === 0 && !empty($errors)) {
+            throw new \Exception(implode('; ', $errors));
+        }
+
+        return [
+            'promoted_count' => $totalPromoted,
+            'errors' => $errors,
+            'details' => $details,
+            'tahun_angkatan' => $tahunAngkatan,
+            'rombel_count' => count($details),
+        ];
+    }
 }

@@ -259,4 +259,28 @@ class SiswaRombelController extends Controller
             return ResponseHelper::error('Gagal memproses kenaikan kelas: ' . $e->getMessage(), 500);
         }
     }
+
+    /**
+     * Promote seluruh siswa satu tahun angkatan sekaligus, meskipun mereka
+     * tersebar di beberapa rombel berbeda.
+     */
+    public function promoteByAngkatan(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'tahunAngkatan' => 'required|string',
+                'siswa_ids' => 'nullable|array',
+                'siswa_ids.*' => 'uuid|exists:lamtim_siswas,id',
+            ]);
+
+            $result = $this->service->promoteStudentsByAngkatan(
+                $validated['tahunAngkatan'],
+                $validated['siswa_ids'] ?? []
+            );
+
+            return ResponseHelper::success($result, 'Kenaikan kelas per angkatan berhasil diproses');
+        } catch (\Exception $e) {
+            return ResponseHelper::error('Gagal memproses kenaikan kelas: ' . $e->getMessage(), 500);
+        }
+    }
 }

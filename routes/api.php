@@ -111,6 +111,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Siswa Routes - Read for all, write only for admin and operator
     Route::get('siswa/datatable', [SiswaController::class, 'datatable'])->name('api.siswa.datatable');
     Route::get('siswa/select', [SiswaController::class, 'select'])->name('api.siswa.select');
+    Route::get('siswa/by-tahun-angkatan', [SiswaController::class, 'byTahunAngkatan'])->name('api.siswa.by-tahun-angkatan');
     Route::get('siswa', [SiswaController::class, 'index'])->name('api.siswa.index');
     Route::get('siswa/{id}', [SiswaController::class, 'show'])->name('api.siswa.show');
     Route::post('siswa', [SiswaController::class, 'store'])->middleware('role:1,2')->name('api.siswa.store');
@@ -124,6 +125,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('siswa-rombel', [SiswaRombelController::class, 'index'])->name('api.siswa-rombel.index');
     Route::get('siswa-rombel/{id}', [SiswaRombelController::class, 'show'])->name('api.siswa-rombel.show');
     Route::post('siswa-rombel/promote', [SiswaRombelController::class, 'promote'])->middleware('role:1,2')->name('api.siswa-rombel.promote');
+    Route::post('siswa-rombel/promote-by-angkatan', [SiswaRombelController::class, 'promoteByAngkatan'])->middleware('role:1,2')->name('api.siswa-rombel.promote-by-angkatan');
     Route::post('siswa-rombel/batch', [SiswaRombelController::class, 'batchStore'])->middleware('role:1,2')->name('api.siswa-rombel.batch');
     Route::post('siswa-rombel', [SiswaRombelController::class, 'store'])->middleware('role:1,2')->name('api.siswa-rombel.store');
     Route::put('siswa-rombel/{id}', [SiswaRombelController::class, 'update'])->middleware('role:1,2')->name('api.siswa-rombel.update');
