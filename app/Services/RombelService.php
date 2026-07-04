@@ -221,6 +221,7 @@ class RombelService
     {
         $query = LamtimRombel::query()
             ->select('lamtim_rombels.id', 'lamtim_rombels.kode', 'lamtim_rombels.nama', 'lamtim_rombels.idSekolah', 'lamtim_rombels.idJurusan', 'lamtim_rombels.idKelas', 'lamtim_rombels.isActive')
+            ->where('isActive', 1)
             ->with([
                 'sekolah:id,kode,nama',
                 'jurusan:id,kode,nama',
