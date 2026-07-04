@@ -16,6 +16,10 @@
                                 </svg>
                             </div>
                             Invoice
+                            <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                                title="Informasi Invoice">
+                                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                            </button>
                         </h1>
                         <p class="mt-2 text-purple-100">Kelola dan lihat invoice pembayaran siswa</p>
                     </div>
@@ -296,17 +300,37 @@
         <!-- Print Modal -->
         <InvoicePrintModal :show="showPrintModal" :invoice="printInvoice" @close="showPrintModal = false" />
 
+        <!-- Info Modal -->
+        <InfoModal :show="showInfoModal" title="Informasi Invoice"
+          subtitle="Pelajari fungsi halaman invoice" :sections="infoSections" @close="showInfoModal = false" />
+
         <Toast ref="toastRef" />
     </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import Toast from '../../components/Toast.vue';
 import InvoicePrintModal from '../../components/InvoicePrintModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import { invoiceAPI } from '../../services/api';
 import { useAppSettings } from '../../composables/useAppSettings';
+import { InformationCircleIcon, DocumentDuplicateIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Invoice dibuat otomatis oleh sistem setiap kali ada pembayaran masuk untuk suatu tagihan. Halaman ini untuk melihat, mencetak, dan mengekspor riwayat invoice.',
+    icon: markRaw(DocumentDuplicateIcon),
+    items: [
+      { name: 'Dibuat Otomatis', description: 'Invoice muncul sendiri saat siswa melakukan pembayaran, tidak dibuat manual' },
+      { name: 'Export & Print', description: 'Unduh Excel atau cetak invoice untuk arsip/bukti pembayaran' },
+      { name: 'Filter', description: 'Saring berdasarkan tanggal atau status invoice' },
+    ],
+  },
+];
 import { useClosingCheck } from '../../composables/useClosingCheck';
 
 const { appSettings } = useAppSettings();

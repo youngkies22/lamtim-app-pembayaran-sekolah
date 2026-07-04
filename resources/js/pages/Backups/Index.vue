@@ -12,6 +12,10 @@
                 <CircleStackIcon class="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               Database Backups
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Database Backups">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-blue-100 text-sm md:text-base">
               Kelola backup database aplikasi untuk keamanan data
@@ -147,16 +151,36 @@
       type="danger" confirm-text="Hapus" :loading="deleteLoading" @confirm="handleDelete" @cancel="closeDeleteModal"
       @close="closeDeleteModal" />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Database Backups"
+      subtitle="Pelajari fungsi halaman database backups" :sections="infoSections" @close="showInfoModal = false" />
+
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, markRaw } from 'vue'
 import Layout from '../../components/layout/Layout.vue'
 import ConfirmModal from '../../components/ConfirmModal.vue'
+import InfoModal from '../../components/InfoModal.vue'
 import Toast from '../../components/Toast.vue'
 import axios from 'axios'
+import { InformationCircleIcon } from '@heroicons/vue/24/outline'
+
+const showInfoModal = ref(false)
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk membuat dan mengelola cadangan (backup) database aplikasi, sehingga data bisa dipulihkan jika terjadi masalah pada server atau kesalahan input massal.',
+    icon: markRaw(CircleStackIcon),
+    items: [
+      { name: 'Backup Spatie', description: 'Backup menggunakan paket Spatie Laravel Backup' },
+      { name: 'Backup Laravel', description: 'Backup menggunakan mekanisme bawaan aplikasi' },
+      { name: 'Unduh & Hapus', description: 'Unduh file backup untuk disimpan di luar server, atau hapus backup lama' },
+    ],
+  },
+]
 import {
   CircleStackIcon,
   PlusIcon,

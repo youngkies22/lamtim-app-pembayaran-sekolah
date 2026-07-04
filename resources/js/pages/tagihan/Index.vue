@@ -16,6 +16,10 @@
                 </svg>
               </div>
               Tagihan
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Tagihan">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-emerald-100">Generate dan kelola tagihan siswa dengan mudah</p>
           </div>
@@ -377,17 +381,23 @@
       :message="`Apakah Anda yakin ingin menghapus tagihan '${deletingItem?.kodeTagihan || ''}'?`"
       confirm-text="Ya, Hapus" :loading="deleteLoading" @confirm="confirmDelete" @cancel="showDeleteModal = false" />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Tagihan"
+      subtitle="Pelajari fungsi halaman tagihan" :sections="infoSections" @close="showInfoModal = false" />
+
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, nextTick, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import SearchableSelect from '../../components/SearchableSelect.vue';
 import { tagihanAPI, masterPembayaranAPI, masterDataAPI } from '../../services/api';
+import { InformationCircleIcon, DocumentTextIcon } from '@heroicons/vue/24/outline';
 
 // Refs
 const tableRef = ref(null);
@@ -396,6 +406,19 @@ const toastRef = ref(null);
 const showGenerateModal = ref(false);
 const showDetailModal = ref(false);
 const showDeleteModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Tagihan adalah kewajiban bayar yang dibuat untuk siswa berdasarkan Master Pembayaran. Halaman ini untuk men-generate tagihan massal dan memantau status lunas/belum.',
+    icon: markRaw(DocumentTextIcon),
+    items: [
+      { name: 'Generate', description: 'Buat tagihan baru untuk siswa/rombel tertentu berdasarkan master pembayaran yang dipilih' },
+      { name: 'Status Tagihan', description: 'Belum Lunas, Lunas, Terlambat, atau Sebagian (cicilan)' },
+      { name: 'Terhubung ke Pembayaran', description: 'Saat siswa membayar, sistem otomatis mengurangi sisa tagihan ini' },
+    ],
+  },
+];
 const loading = ref(false);
 const deleteLoading = ref(false);
 const formError = ref('');

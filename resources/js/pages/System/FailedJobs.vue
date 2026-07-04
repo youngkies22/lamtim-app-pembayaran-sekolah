@@ -11,6 +11,10 @@
                                 <ExclamationTriangleIcon class="w-8 h-8 text-white" />
                             </div>
                             Failed Jobs
+                            <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                                title="Informasi Failed Jobs">
+                                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                            </button>
                         </h1>
                         <p class="mt-2 text-rose-100">Kelola dan pantau antrean pekerjaan yang gagal</p>
                     </div>
@@ -134,14 +138,34 @@
             message="Apakah Anda yakin ingin menghapus SEMUA data pekerjaan yang gagal?"
             confirm-text="Ya, Bersihkan" :loading="actionLoading" @confirm="confirmFlush" @cancel="showFlushModal = false" />
 
+        <!-- Info Modal -->
+        <InfoModal :show="showInfoModal" title="Informasi Failed Jobs"
+            subtitle="Pelajari fungsi halaman failed jobs" :sections="infoSections" @close="showInfoModal = false" />
+
         <Toast ref="toastRef" />
     </Layout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Failed Jobs adalah daftar proses background (mis. push data akademik, sync eksternal) yang gagal dijalankan. Halaman ini untuk memantau dan mencoba ulang proses yang gagal tersebut.',
+    icon: markRaw(ExclamationTriangleIcon),
+    items: [
+      { name: 'Retry', description: 'Coba jalankan ulang satu atau semua job yang gagal' },
+      { name: 'Flush', description: 'Hapus semua catatan job gagal (job tidak akan dicoba lagi)' },
+      { name: 'Detail Error', description: 'Lihat pesan error lengkap untuk mendiagnosis penyebab kegagalan' },
+    ],
+  },
+];
 import Toast from '../../components/Toast.vue';
 import { jobsAPI } from '../../services/api';
 import { 

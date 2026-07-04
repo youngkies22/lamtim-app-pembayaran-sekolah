@@ -3,7 +3,13 @@
     <div class="space-y-6">
       <div class="flex justify-between items-center">
         <div>
-          <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Closing</h1>
+          <h1 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            Closing
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Closing">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-110 transition-transform" />
+            </button>
+          </h1>
           <p class="text-gray-600 dark:text-gray-400 mt-1">Manage daily and monthly financial closings.</p>
         </div>
       </div>
@@ -197,18 +203,38 @@
         @confirm="processAction" @close="showConfirmModal = false" />
 
       <Toast ref="toastRef" />
+
+      <!-- Info Modal -->
+      <InfoModal :show="showInfoModal" title="Informasi Closing"
+        subtitle="Pelajari fungsi halaman closing" :sections="infoSections" @close="showInfoModal = false" />
     </div>
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, watch } from 'vue';
+import { ref, reactive, onMounted, computed, watch, markRaw } from 'vue';
 import axios from 'axios';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { useAppSettings } from '../../composables/useAppSettings';
 import { useRoleAccess } from '../../composables/useRoleAccess';
+import { LockClosedIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Closing mengunci transaksi pada periode tertentu (harian/bulanan) agar tidak bisa diubah lagi setelah ditutup — menjaga integritas laporan keuangan yang sudah difinalisasi.',
+    icon: markRaw(LockClosedIcon),
+    items: [
+      { name: 'Daily Closing', description: 'Tutup transaksi untuk tanggal tertentu' },
+      { name: 'Monthly Closing', description: 'Tutup transaksi untuk satu bulan penuh' },
+      { name: 'Dampak', description: 'Setelah ditutup, input/edit pembayaran pada periode tersebut akan diblokir (kecuali admin)' },
+    ],
+  },
+];
 
 const { appSettings } = useAppSettings();
 const { isAdminUser } = useRoleAccess();

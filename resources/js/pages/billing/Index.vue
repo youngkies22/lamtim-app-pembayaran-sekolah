@@ -15,7 +15,12 @@
                                 </svg>
                             </div>
                             <div>
-                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Billing Pembayaran
+                                <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                                    Billing Pembayaran
+                                    <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                                        title="Informasi Billing Pembayaran">
+                                        <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:scale-110 transition-transform" />
+                                    </button>
                                 </h1>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Input pembayaran siswa dengan cepat
                                     dan mudah</p>
@@ -464,23 +469,43 @@
             </div>
         </div>
 
+        <!-- Info Modal -->
+        <InfoModal :show="showInfoModal" title="Informasi Billing Pembayaran"
+            subtitle="Pelajari fungsi halaman billing pembayaran" :sections="infoSections" @close="showInfoModal = false" />
+
         <Toast ref="toastRef" />
     </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import Layout from '../../components/layout/Layout.vue';
 import Toast from '../../components/Toast.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import { pembayaranAPI, tagihanAPI, masterDataAPI } from '../../services/api';
 import { usePaymentCache } from '../../composables/usePaymentCache';
 import { useAppSettings } from '../../composables/useAppSettings';
 import SearchableSelect from '../../components/SearchableSelect.vue';
 import { useClosingCheck } from '../../composables/useClosingCheck';
+import { InformationCircleIcon, BoltIcon } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 const toastRef = ref(null);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Billing adalah cara tercepat untuk input satu pembayaran: pilih sekolah, kelas, siswa, tagihan, lalu bayar — semua dalam satu halaman ringkas dengan pratinjau struk.',
+    icon: markRaw(BoltIcon),
+    items: [
+      { name: 'Pilih Sekolah & Kelas', description: 'Saring siswa berdasarkan sekolah dan tingkat kelas (X/XI/XII) via tombol radio' },
+      { name: 'Pilih Siswa & Tagihan', description: 'Cari siswa, lalu pilih salah satu tagihan yang belum lunas' },
+      { name: 'Metode Bayar', description: 'Otomatis terisi "Tunai", bisa diganti sesuai metode yang dipakai' },
+      { name: 'Preview Struk', description: 'Panel kanan menampilkan pratinjau struk sebelum pembayaran diproses' },
+    ],
+  },
+];
 const loading = ref(false);
 const loadingTagihan = ref(false);
 const formError = ref('');

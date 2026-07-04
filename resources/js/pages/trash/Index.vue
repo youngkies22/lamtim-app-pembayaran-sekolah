@@ -5,6 +5,10 @@
         <h1 class="text-3xl font-bold text-white flex items-center gap-3">
           <TrashIcon class="w-8 h-8" />
           Tempat Sampah (Trash)
+          <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+            title="Informasi Tempat Sampah">
+            <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+          </button>
         </h1>
         <p class="mt-2 text-gray-300">Kelola data yang telah dihapus (soft delete). Anda dapat memulihkan atau menghapus
           permanen.</p>
@@ -78,16 +82,35 @@
       </div>
     </div>
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Tempat Sampah"
+      subtitle="Pelajari fungsi halaman tempat sampah" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast Notification -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import Toast from '../../components/Toast.vue';
-import { TrashIcon } from '@heroicons/vue/24/outline';
+import InfoModal from '../../components/InfoModal.vue';
+import { TrashIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Data yang dihapus (tagihan/pembayaran) tidak langsung hilang, melainkan masuk ke Trash (soft delete) terlebih dahulu, sehingga bisa dipulihkan jika terhapus tanpa sengaja.',
+    icon: markRaw(TrashIcon),
+    items: [
+      { name: 'Pulihkan', description: 'Kembalikan data yang terhapus ke kondisi semula' },
+      { name: 'Hapus Permanen', description: 'Hapus data selamanya dari database (tidak bisa dibatalkan)' },
+      { name: 'Kosongkan Sampah', description: 'Hapus permanen semua data di tab yang sedang aktif sekaligus' },
+    ],
+  },
+];
 import axios from 'axios';
 
 const activeTab = ref('tagihan');

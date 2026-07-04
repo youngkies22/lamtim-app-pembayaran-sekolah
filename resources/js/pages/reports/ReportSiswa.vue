@@ -11,6 +11,10 @@
               <UserGroupIcon class="w-8 h-8 text-white" />
             </div>
             Laporan per Siswa
+            <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+              title="Informasi Laporan per Siswa">
+              <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="mt-2 text-emerald-100">Lihat rincian tagihan dan pembayaran per siswa</p>
         </div>
@@ -284,13 +288,19 @@
         <p class="text-gray-500 dark:text-gray-400">Silakan pilih siswa terlebih dahulu untuk melihat laporan</p>
       </div>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Laporan per Siswa"
+      subtitle="Pelajari fungsi halaman laporan per siswa" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, onMounted, computed, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 import {
   UserGroupIcon,
   MagnifyingGlassIcon,
@@ -315,6 +325,19 @@ const loading = ref(false);
 const selectedSiswaId = ref('');
 const searchQuery = ref('');
 const showDropdown = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Cari satu siswa untuk melihat seluruh riwayat tagihan dan pembayarannya secara rinci dalam satu tampilan, cocok untuk menjawab pertanyaan orang tua/wali tentang status pembayaran anaknya.',
+    icon: markRaw(InformationCircleIcon),
+    items: [
+      { name: 'Cari Siswa', description: 'Ketik nama atau NIS untuk menemukan siswa yang dituju' },
+      { name: 'Rincian Tagihan', description: 'Lihat semua tagihan siswa beserta status lunas/belum' },
+      { name: 'Rincian Pembayaran', description: 'Lihat riwayat transaksi pembayaran yang sudah dilakukan' },
+    ],
+  },
+];
 const searchContainer = ref(null);
 
 const siswaList = ref([]);

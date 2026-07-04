@@ -4,7 +4,13 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Edit Siswa</h1>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            Edit Siswa
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Edit Siswa">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-110 transition-transform" />
+            </button>
+          </h1>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Ubah data siswa di bawah</p>
         </div>
         <button @click="$router.push('/siswa')"
@@ -186,24 +192,42 @@
       </div>
     </div>
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Edit Siswa"
+      subtitle="Pelajari fungsi halaman edit siswa" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { siswaAPI, masterDataAPI } from '../../services/api';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, InformationCircleIcon, PencilSquareIcon } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 const route = useRoute();
 const toastRef = ref(null);
 const { loadAll } = useMasterDataCache();
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Form ini digunakan untuk mengubah data siswa yang sudah terdaftar. Perubahan di sini akan langsung memengaruhi data yang dipakai di tagihan, pembayaran, dan laporan.',
+    icon: markRaw(PencilSquareIcon),
+    items: [
+      { name: 'Data Pribadi', description: 'Ubah nama, NIS/NISN, jenis kelamin, agama, dan data lain sesuai kebutuhan' },
+      { name: 'Status Siswa', description: 'Perhatikan status aktif/tidak aktif — memengaruhi tampilan di halaman lain' },
+    ],
+  },
+];
 
 // Master data
 const agamaList = ref([]);

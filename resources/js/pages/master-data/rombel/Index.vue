@@ -16,6 +16,10 @@
                 </svg>
               </div>
               Data Rombel
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Data Rombel">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-purple-100">Kelola data rombongan belajar dengan mudah dan efisien</p>
           </div>
@@ -251,30 +255,48 @@
     <ImportModal :show="showImportModal" type="rombel" @close="showImportModal = false"
       @success="handleImportSuccess" />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Data Rombel"
+      subtitle="Pelajari fungsi halaman data rombel" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, markRaw } from 'vue';
 import Layout from '../../../components/layout/Layout.vue';
 import ActionButton from '../../../components/ActionButton.vue';
 import FormModal from '../../../components/FormModal.vue';
 import ConfirmModal from '../../../components/ConfirmModal.vue';
 import ImportModal from '../../../components/ImportModal.vue';
+import InfoModal from '../../../components/InfoModal.vue';
 import Toast from '../../../components/Toast.vue';
 import { masterDataAPI } from '../../../services/api';
 import { useDataTable } from '../../../composables/useDataTable';
 import { useMasterDataCache } from '../../../composables/useMasterDataCache';
 import { useRoleAccess } from '../../../composables/useRoleAccess';
-import { MagnifyingGlassIcon } from '@heroicons/vue/24/outline';
+import { MagnifyingGlassIcon, UsersIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 
 const { canEditData, canDeleteData, canCreateData } = useRoleAccess();
 
 const editingId = ref(null);
 const deletingItem = ref(null);
 const showModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Rombel (rombongan belajar) adalah gabungan dari kelas + jurusan + nama rombel, misalnya "XI RPL 1". Setiap siswa aktif harus ditempatkan di satu rombel.',
+    icon: markRaw(UsersIcon),
+    items: [
+      { name: 'Tambah/Edit/Hapus', description: 'Kelola daftar rombel per sekolah, kelas, dan jurusan' },
+      { name: 'Import', description: 'Unggah data rombel secara massal lewat file Excel/CSV' },
+      { name: 'Dipakai di Mapping', description: 'Rombel ini yang dipilih saat menempatkan siswa di halaman Mapping Rombel' },
+    ],
+  },
+];
 const showDeleteModal = ref(false);
 const showImportModal = ref(false);
 const submitLoading = ref(false);

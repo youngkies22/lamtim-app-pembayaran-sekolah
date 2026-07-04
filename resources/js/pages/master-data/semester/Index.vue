@@ -11,6 +11,10 @@
                 <AcademicCapIcon class="w-8 h-8 text-white" />
               </div>
               Data Semester
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Data Semester">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-indigo-100">Kelola data semester dengan mudah dan efisien</p>
           </div>
@@ -189,19 +193,25 @@
       @cancel="showDeleteModal = false"
     />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Data Semester"
+      subtitle="Pelajari fungsi halaman data semester" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, markRaw } from 'vue';
 import Layout from '../../../components/layout/Layout.vue';
 import FormModal from '../../../components/FormModal.vue';
 import ConfirmModal from '../../../components/ConfirmModal.vue';
+import InfoModal from '../../../components/InfoModal.vue';
 import Toast from '../../../components/Toast.vue';
 import { masterDataAPI } from '../../../services/api';
 import { useRoleAccess } from '../../../composables/useRoleAccess';
+import { AcademicCapIcon as InfoAcademicCapIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import {
   AcademicCapIcon,
   PlusIcon,
@@ -216,6 +226,18 @@ const { canCreateData, canEditData, canDeleteData } = useRoleAccess();
 const tableData = ref([]);
 const loading = ref(true);
 const showModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Semester (Ganjil/Genap) menandai periode dalam satu tahun ajaran. Data ini dipakai untuk mencatat snapshot tagihan dan pembayaran per periode.',
+    icon: markRaw(InfoAcademicCapIcon),
+    items: [
+      { name: 'Ganjil & Genap', description: 'Kelola dua periode semester dalam satu tahun ajaran' },
+      { name: 'Semester Aktif', description: 'Sistem menggunakan semester aktif sebagai default snapshot transaksi baru' },
+    ],
+  },
+];
 const editingId = ref(null);
 const submitLoading = ref(false);
 const formError = ref('');

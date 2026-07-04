@@ -11,6 +11,10 @@
                 <Cog6ToothIcon class="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               Pengaturan Aplikasi
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Pengaturan Aplikasi">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-indigo-100 text-sm md:text-base">Kelola logo, nama aplikasi, dan konfigurasi job</p>
           </div>
@@ -231,18 +235,36 @@
       </div>
     </div>
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Pengaturan Aplikasi"
+      subtitle="Pelajari fungsi halaman pengaturan aplikasi" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import Layout from '../components/layout/Layout.vue';
 import Toast from '../components/Toast.vue';
+import InfoModal from '../components/InfoModal.vue';
 import { settingsAPI } from '../services/api';
 import { useAppSettings } from '../composables/useAppSettings';
-import { Cog6ToothIcon, BoltIcon } from '@heroicons/vue/24/outline';
+import { Cog6ToothIcon, BoltIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk konfigurasi identitas aplikasi (nama, logo) dan mengaktifkan/menonaktifkan job otomatis (sinkronisasi, push data akademik, dll).',
+    icon: markRaw(Cog6ToothIcon),
+    items: [
+      { name: 'Nama & Logo', description: 'Tampil di header, invoice, dan berbagai tempat di sistem' },
+      { name: 'Job Toggle', description: 'Aktifkan/nonaktifkan proses background seperti sync eksternal dan push data akademik' },
+    ],
+  },
+];
 
 const { refreshAppSettings } = useAppSettings();
 

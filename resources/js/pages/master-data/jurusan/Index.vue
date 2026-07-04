@@ -16,6 +16,10 @@
                 </svg>
               </div>
               Data {{ labelJurusan }}
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Data Jurusan">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-blue-100">Kelola data {{ labelJurusan.toLowerCase() }} dengan mudah dan efisien</p>
           </div>
@@ -210,18 +214,24 @@
     <ImportModal :show="showImportModal" type="jurusan" @close="showImportModal = false"
       @success="handleImportSuccess" />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Data Jurusan"
+      subtitle="Pelajari fungsi halaman data jurusan" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import Layout from '../../../components/layout/Layout.vue';
 import ActionButton from '../../../components/ActionButton.vue';
 import FormModal from '../../../components/FormModal.vue';
 import ConfirmModal from '../../../components/ConfirmModal.vue';
 import ImportModal from '../../../components/ImportModal.vue';
+import InfoModal from '../../../components/InfoModal.vue';
+import { AcademicCapIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import Toast from '../../../components/Toast.vue';
 import { masterDataAPI } from '../../../services/api';
 import { useMasterDataCache } from '../../../composables/useMasterDataCache';
@@ -233,6 +243,18 @@ const { clearCache } = useMasterDataCache();
 
 const toastRef = ref(null);
 const showModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Jurusan (kompetensi keahlian) mengelompokkan siswa berdasarkan bidang studi/keahlian. Data ini dipakai saat membuat Rombel dan filter siswa di berbagai halaman.',
+    icon: markRaw(AcademicCapIcon),
+    items: [
+      { name: 'Tambah/Edit/Hapus', description: 'Kelola daftar jurusan yang ada di sekolah' },
+      { name: 'Import', description: 'Unggah data jurusan secara massal lewat file Excel/CSV' },
+    ],
+  },
+];
 const showDeleteModal = ref(false);
 const showImportModal = ref(false);
 const editingId = ref(null);

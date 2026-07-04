@@ -12,6 +12,10 @@
                 <ArrowsRightLeftIcon class="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               Mapping Rombel Siswa
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Mapping Rombel Siswa">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-indigo-100 text-sm md:text-base">Pilih siswa yang belum memiliki rombel dan mapping ke
               rombel yang dipilih</p>
@@ -158,15 +162,20 @@
     <ConfirmModal :show="showConfirm" title="Konfirmasi Mapping Rombel" :message="confirmMessage" type="warning"
       confirm-text="Ya, Map Sekarang" :loading="mappingLoading" @confirm="executeBatchMapping"
       @cancel="showConfirm = false" />
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Mapping Rombel Siswa"
+      subtitle="Pelajari fungsi halaman mapping rombel massal" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import Layout from '../../components/layout/Layout.vue';
 import Toast from '../../components/Toast.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import { siswaRombelAPI, masterDataAPI } from '../../services/api';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
 import { useRoleAccess } from '../../composables/useRoleAccess';
@@ -177,12 +186,27 @@ import {
   CheckIcon,
   MagnifyingGlassIcon,
   InboxStackIcon,
+  InformationCircleIcon,
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
 const toastRef = ref(null);
 const { canCreateData } = useRoleAccess();
 const { loadAll, getCached } = useMasterDataCache();
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk menempatkan banyak siswa sekaligus (yang belum punya rombel) ke satu rombel tujuan dalam satu kali proses — lebih cepat dibanding mapping satu-per-satu.',
+    icon: markRaw(ArrowsRightLeftIcon),
+    items: [
+      { name: 'Pilih Rombel Tujuan', description: 'Tentukan rombel yang akan menampung siswa terpilih' },
+      { name: 'Pilih Siswa', description: 'Centang siswa satu per satu atau gunakan "Pilih Semua"' },
+      { name: 'Proses Mapping', description: 'Klik tombol proses untuk menyimpan semua mapping sekaligus' },
+    ],
+  },
+];
 
 // Data
 const siswaList = ref([]);

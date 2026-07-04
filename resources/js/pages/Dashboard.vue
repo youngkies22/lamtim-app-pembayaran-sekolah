@@ -15,6 +15,10 @@
               </svg>
             </div>
             Dashboard
+            <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+              title="Informasi Dashboard">
+              <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <div class="mt-2 flex items-center justify-between">
             <p class="text-blue-100">Selamat datang! Berikut ringkasan sistem SPP.</p>
@@ -85,14 +89,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Dashboard"
+      subtitle="Pelajari fungsi halaman dashboard" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import Layout from '../components/layout/Layout.vue';
+import InfoModal from '../components/InfoModal.vue';
 import { dashboardAPI } from '../services/api';
+import { HomeIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import {
   UserGroupIcon,
   CreditCardIcon,
@@ -114,6 +124,19 @@ const router = useRouter();
 // Loading states
 const loadingStats = ref(true);
 const showValues = ref(localStorage.getItem('dashboard_show_values') === 'true'); // Default hidden (false) unless explicitly 'true'
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Dashboard menampilkan ringkasan cepat kondisi sistem: jumlah siswa, alumni, total pembayaran, tagihan yang belum lunas, serta pintasan (quick actions) ke halaman lain yang sering dipakai.',
+    icon: markRaw(HomeIcon),
+    items: [
+      { name: 'Kartu Statistik', description: 'Angka ringkas seperti total siswa, total pembayaran, dan tagihan belum lunas' },
+      { name: 'Sembunyikan Nilai', description: 'Tombol "Hide Values" untuk menyembunyikan angka nominal dari layar (privasi saat presentasi)' },
+      { name: 'Quick Actions', description: 'Pintasan langsung ke halaman yang sering digunakan' },
+    ],
+  },
+];
 
 const togglePrivacy = () => {
   showValues.value = !showValues.value;

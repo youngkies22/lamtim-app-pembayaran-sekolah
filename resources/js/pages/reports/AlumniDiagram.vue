@@ -8,6 +8,10 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <PresentationChartBarIcon class="w-8 h-8 text-indigo-600" />
             Diagram Alumni
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Diagram Alumni">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Visualisasi data keuangan alumni dalam bentuk diagram interaktif.
@@ -147,12 +151,17 @@
         </div>
       </template>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Diagram Alumni"
+      subtitle="Pelajari fungsi halaman diagram alumni" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import { reportAPI } from '../../services/api';
 import { useDarkMode } from '../../composables/useDarkMode';
 import AlumniStackedBarChart from '../../components/charts/AlumniStackedBarChart.vue';
@@ -162,6 +171,7 @@ import AlumniTrendLineChart from '../../components/charts/AlumniTrendLineChart.v
 import {
   PresentationChartBarIcon,
   ArrowPathIcon,
+  InformationCircleIcon,
   BanknotesIcon,
   CheckBadgeIcon,
   ExclamationTriangleIcon,
@@ -173,6 +183,18 @@ import {
 const { isDark } = useDarkMode();
 
 const loading = ref(true);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Visualisasi data keuangan alumni dalam bentuk grafik interaktif (batang, donat, tren) agar mudah dibaca dibanding tabel angka biasa.',
+    icon: markRaw(PresentationChartBarIcon),
+    items: [
+      { name: 'Filter Sekolah & Angkatan', description: 'Pilih sekolah dan tahun angkatan untuk memperbarui grafik' },
+      { name: 'Jenis Grafik', description: 'Grafik batang untuk perbandingan per angkatan, donat untuk komposisi, tren untuk melihat pola dari waktu ke waktu' },
+    ],
+  },
+];
 const hasData = ref(false);
 const filterSekolah = ref(null);
 const filterYear = ref(null);

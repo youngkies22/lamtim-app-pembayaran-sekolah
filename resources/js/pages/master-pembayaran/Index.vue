@@ -12,6 +12,10 @@
                 <CreditCardIcon class="w-8 h-8 text-white" />
               </div>
               Master Pembayaran
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Master Pembayaran">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-amber-100">Kelola template pembayaran (SPP, PKL, KI, UKOM, dll)</p>
           </div>
@@ -323,28 +327,47 @@
       :message="`Apakah Anda yakin ingin menghapus master pembayaran '${deletingItem?.nama || ''}'?`"
       confirm-text="Ya, Hapus" :loading="deleteLoading" @confirm="confirmDelete" @cancel="showDeleteModal = false" />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Master Pembayaran"
+      subtitle="Pelajari fungsi halaman master pembayaran" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import ActionButton from '../../components/ActionButton.vue';
 import FormModal from '../../components/FormModal.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { masterPembayaranAPI, masterDataAPI } from '../../services/api';
 import {
   CreditCardIcon,
   FunnelIcon,
   MagnifyingGlassIcon,
+  InformationCircleIcon,
 } from '@heroicons/vue/24/outline';
 
 const toastRef = ref(null);
 const showModal = ref(false);
 const showDeleteModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Master Pembayaran adalah template biaya yang akan ditagihkan ke siswa (mis. SPP, PKL, KI, UKOM). Setiap master berisi nominal, jenis, kategori, dan aturan cicilan.',
+    icon: markRaw(CreditCardIcon),
+    items: [
+      { name: 'Nominal & Cicilan', description: 'Tentukan total biaya dan apakah boleh dicicil beserta nominal minimum cicilan' },
+      { name: 'Jenis & Kategori', description: 'Klasifikasikan pembayaran agar mudah difilter di laporan' },
+      { name: 'Generate Tagihan', description: 'Master ini dipakai di halaman Tagihan untuk membuat tagihan ke siswa' },
+    ],
+  },
+];
 const editingId = ref(null);
 const deletingItem = ref(null);
 const loading = ref(false);

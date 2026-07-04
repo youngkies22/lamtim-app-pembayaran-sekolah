@@ -8,6 +8,10 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ChartBarIcon class="w-8 h-8 text-blue-600" />
             Laporan Alumni
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Laporan Alumni">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Silakan pilih sekolah &amp; angkatan untuk menampilkan analisa data.
@@ -222,16 +226,22 @@
         <p class="text-gray-500 font-medium">Memuat pilihan angkatan...</p>
       </div>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Laporan Alumni"
+      subtitle="Pelajari fungsi halaman laporan alumni" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import { reportAPI } from '../../services/api';
 import {
   ChartBarIcon,
   ArrowPathIcon,
+  InformationCircleIcon,
   BanknotesIcon,
   CheckBadgeIcon,
   ExclamationTriangleIcon,
@@ -241,6 +251,18 @@ import {
 } from '@heroicons/vue/24/outline';
 
 const loading = ref(true);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Analisis data keuangan alumni (siswa yang sudah lulus) berdasarkan sekolah dan tahun angkatan, termasuk kemungkinan tunggakan yang masih tersisa.',
+    icon: markRaw(ChartBarIcon),
+    items: [
+      { name: 'Filter Sekolah & Angkatan', description: 'Pilih sekolah dan tahun angkatan untuk menampilkan analisis' },
+      { name: 'Ringkasan & Grafik', description: 'Lihat total tagihan, terbayar, dan tunggakan dalam bentuk tabel dan grafik' },
+    ],
+  },
+];
 const hasData = ref(false);
 const filterSekolah = ref(null);
 const filterYear = ref(null);

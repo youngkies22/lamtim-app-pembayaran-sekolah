@@ -8,6 +8,10 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <PresentationChartBarIcon class="w-8 h-8 text-teal-600" />
             Diagram Siswa Aktif
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Diagram Siswa Aktif">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Visualisasi data keuangan siswa aktif per bulan.
@@ -130,12 +134,17 @@
         </div>
       </template>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Diagram Siswa Aktif"
+      subtitle="Pelajari fungsi halaman diagram siswa aktif" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import { reportAPI } from '../../services/api';
 import { useDarkMode } from '../../composables/useDarkMode';
 import StudentStackedBarChart from '../../components/charts/StudentStackedBarChart.vue';
@@ -145,6 +154,7 @@ import StudentTrendLineChart from '../../components/charts/StudentTrendLineChart
 import {
   PresentationChartBarIcon,
   ArrowPathIcon,
+  InformationCircleIcon,
   BanknotesIcon,
   CheckBadgeIcon,
   ExclamationTriangleIcon,
@@ -156,6 +166,18 @@ import {
 const { isDark } = useDarkMode();
 
 const loading = ref(true);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Visualisasi data keuangan siswa aktif per bulan dalam bentuk grafik, membantu melihat tren pembayaran/tagihan dari waktu ke waktu.',
+    icon: markRaw(PresentationChartBarIcon),
+    items: [
+      { name: 'Filter Sekolah', description: 'Pilih sekolah untuk memperbarui grafik yang ditampilkan' },
+      { name: 'Grafik per Bulan', description: 'Lihat perbandingan tagihan dan pembayaran bulanan dalam berbagai jenis grafik' },
+    ],
+  },
+];
 const hasData = ref(false);
 const filterSekolah = ref(null);
 const schools = ref([]);

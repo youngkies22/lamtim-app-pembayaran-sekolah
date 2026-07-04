@@ -12,6 +12,10 @@
                 <ArrowPathIcon class="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               Sinkronisasi Data
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Sinkronisasi Data">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-emerald-100 text-sm md:text-base">
               Sinkronisasi data dari API eksternal ke database lokal
@@ -173,15 +177,35 @@
       </div>
     </div>
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Sinkronisasi Data"
+      subtitle="Pelajari fungsi halaman sinkronisasi data" :sections="infoSections" @close="showInfoModal = false" />
+
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, markRaw } from 'vue'
 import Layout from '../../components/layout/Layout.vue'
+import InfoModal from '../../components/InfoModal.vue'
 import Toast from '../../components/Toast.vue'
 import { syncAPI } from '../../services/api'
+import { ArrowPathIcon as InfoSyncIcon, InformationCircleIcon } from '@heroicons/vue/24/outline'
+
+const showInfoModal = ref(false)
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk menarik (pull) data akademik dari sistem eksternal (siswa, kelas, jurusan, rombel, tahun ajaran, semester) ke database lokal agar tetap sinkron.',
+    icon: markRaw(InfoSyncIcon),
+    items: [
+      { name: 'Tes Koneksi', description: 'Periksa apakah koneksi ke API eksternal berfungsi sebelum sinkronisasi' },
+      { name: 'Sinkronisasi', description: 'Tarik data terbaru dari sistem eksternal ke database lokal' },
+      { name: 'Riwayat', description: 'Lihat waktu dan status sinkronisasi terakhir' },
+    ],
+  },
+]
 import { useAppSettings } from '../../composables/useAppSettings'
 import { useMasterDataCache } from '../../composables/useMasterDataCache'
 import {

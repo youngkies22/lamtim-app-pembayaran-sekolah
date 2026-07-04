@@ -4,7 +4,13 @@
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Tambah Siswa</h1>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            Tambah Siswa
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Tambah Siswa">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-110 transition-transform" />
+            </button>
+          </h1>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5">Isi form di bawah untuk menambahkan siswa baru</p>
         </div>
         <button @click="$router.push('/siswa')"
@@ -171,19 +177,38 @@
       </div>
     </div>
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Tambah Siswa"
+      subtitle="Pelajari fungsi halaman tambah siswa" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { siswaAPI, masterDataAPI } from '../../services/api';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
-import { ArrowLeftIcon } from '@heroicons/vue/24/outline';
+import { ArrowLeftIcon, InformationCircleIcon, UserPlusIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Form ini digunakan untuk mendaftarkan siswa baru ke sistem. Data yang tersimpan di sini menjadi data induk siswa yang dipakai di seluruh modul (tagihan, pembayaran, rombel, dll).',
+    icon: markRaw(UserPlusIcon),
+    items: [
+      { name: 'Username & Password', description: 'Dipakai siswa untuk login ke portal (jika tersedia)' },
+      { name: 'NIS / NISN', description: 'Nomor induk siswa — harus unik, dipakai sebagai referensi utama' },
+      { name: 'Data Pribadi', description: 'Nama, jenis kelamin, agama, tahun angkatan, dan data lain sesuai form' },
+    ],
+  },
+];
 
 const router = useRouter();
 const toastRef = ref(null);

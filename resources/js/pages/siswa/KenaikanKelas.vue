@@ -10,7 +10,13 @@
               <ArrowUpCircleIcon class="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Kenaikan Kelas</h1>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                Kenaikan Kelas
+                <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                  title="Informasi Kenaikan Kelas">
+                  <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:scale-110 transition-transform" />
+                </button>
+              </h1>
               <p class="text-sm text-gray-500 dark:text-gray-400">Naikkan siswa ke tingkat kelas berikutnya</p>
             </div>
           </div>
@@ -166,19 +172,38 @@
     <ConfirmModal :show="showConfirm" title="Konfirmasi Kenaikan Kelas" :message="confirmMessage" type="warning"
       confirm-text="Ya, Naikkan Sekarang" :loading="submitting" @confirm="executePromote"
       @cancel="showConfirm = false" />
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Kenaikan Kelas"
+      subtitle="Pelajari fungsi halaman kenaikan kelas" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import SearchableSelect from '../../components/SearchableSelect.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { siswaRombelAPI, masterDataAPI, cacheAPI } from '../../services/api';
 import { useAppSettings } from '../../composables/useAppSettings';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
-import { ArrowUpCircleIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { ArrowUpCircleIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk menaikkan siswa dari satu rombel ke rombel tingkat berikutnya (mis. X ke XI) secara massal di akhir tahun ajaran.',
+    icon: markRaw(ArrowUpCircleIcon),
+    items: [
+      { name: 'Pilih Rombel Asal', description: 'Sistem otomatis menampilkan rombel tujuan satu tingkat di atasnya' },
+      { name: 'Pilih Siswa', description: 'Centang siswa yang akan dinaikkan, atau pilih semua sekaligus' },
+      { name: 'Proses', description: 'Siswa terpilih akan dipindahkan mapping rombelnya ke rombel tujuan' },
+    ],
+  },
+];
 
 const KELAS_CATEGORIES = {
   'SD': ['1', '2', '3', '4', '5', '6'],

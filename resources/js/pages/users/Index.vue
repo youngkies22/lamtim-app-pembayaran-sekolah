@@ -11,6 +11,10 @@
                 <UserGroupIcon class="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               Manajemen Akun
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Manajemen Akun">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-indigo-100 text-sm md:text-base">Kelola pengguna sistem (Admin, Operator, Kepala Sekolah)</p>
           </div>
@@ -319,20 +323,26 @@
       @cancel="showDeleteModal = false"
     />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Manajemen Akun"
+      subtitle="Pelajari fungsi halaman manajemen akun" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import FormModal from '../../components/FormModal.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { usersAPI, authAPI } from '../../services/api';
 import {
   UserGroupIcon,
+  InformationCircleIcon,
   PlusIcon,
   MagnifyingGlassIcon,
   PencilIcon,
@@ -348,6 +358,19 @@ import {
 const toastRef = ref(null);
 const showModal = ref(false);
 const showDeleteModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk mengelola akun pengguna sistem beserta peran (role) mereka. Setiap peran memiliki hak akses berbeda terhadap fitur aplikasi.',
+    icon: markRaw(UserGroupIcon),
+    items: [
+      { name: 'Admin', description: 'Akses penuh: pengaturan, manajemen user, backup, dan semua modul' },
+      { name: 'Operator', description: 'Akses ke pembayaran, sinkronisasi, dan manajemen siswa' },
+      { name: 'Lainnya', description: 'Akses baca saja (read-only) ke sebagian besar modul' },
+    ],
+  },
+];
 const editingId = ref(null);
 const deletingItem = ref(null);
 const loading = ref(false);

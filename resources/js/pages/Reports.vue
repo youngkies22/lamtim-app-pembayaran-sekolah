@@ -11,6 +11,10 @@
               <ChartBarIcon class="w-8 h-8 text-white" />
             </div>
             Laporan & Analitik
+            <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+              title="Informasi Laporan & Analitik">
+              <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="mt-2 text-indigo-100">Analisis data pembayaran dan biaya sekolah</p>
         </div>
@@ -172,12 +176,18 @@
         </div>
       </div>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Laporan & Analitik"
+      subtitle="Pelajari fungsi halaman laporan & analitik" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import Layout from '../components/layout/Layout.vue';
+import InfoModal from '../components/InfoModal.vue';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 import {
   ChartBarIcon,
   FunnelIcon,
@@ -191,6 +201,18 @@ import {
 import { pembayaranAPI, tagihanAPI, masterDataAPI, reportAPI } from '../services/api';
 
 const loading = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini menampilkan ringkasan laporan keuangan sekolah berdasarkan filter periode dan jenis pembayaran. Untuk laporan lebih rinci, gunakan menu Laporan per Siswa, per Rombel, atau Analisis Alumni.',
+    icon: markRaw(ChartBarIcon),
+    items: [
+      { name: 'Filter Periode', description: 'Pilih rentang tanggal awal-akhir untuk menampilkan data' },
+      { name: 'Filter Jenis Pembayaran', description: 'Persempit laporan ke jenis pembayaran tertentu (SPP, PKL, dll)' },
+    ],
+  },
+];
 const reportData = ref([]);
 const jenisPembayaranList = ref([]);
 

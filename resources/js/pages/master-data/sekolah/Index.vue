@@ -13,6 +13,10 @@
               </svg>
             </div>
             <span>Data Sekolah</span>
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Data Sekolah">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="mt-1.5 text-sm text-gray-600 dark:text-gray-400">Kelola informasi sekolah</p>
         </div>
@@ -325,16 +329,22 @@
       :message="`Apakah Anda yakin ingin menghapus sekolah '${deletingItem?.nama || ''}'?`" confirm-text="Ya, Hapus"
       :loading="deleteLoading" @confirm="confirmDelete" @cancel="showDeleteModal = false" />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Data Sekolah"
+      subtitle="Pelajari fungsi halaman data sekolah" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, markRaw } from 'vue';
 import Layout from '../../../components/layout/Layout.vue';
 import FormModal from '../../../components/FormModal.vue';
 import ConfirmModal from '../../../components/ConfirmModal.vue';
+import InfoModal from '../../../components/InfoModal.vue';
+import { BuildingLibraryIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import Toast from '../../../components/Toast.vue';
 import { masterDataAPI } from '../../../services/api';
 import { useRoleAccess } from '../../../composables/useRoleAccess';
@@ -345,6 +355,18 @@ const { appSettings } = useAppSettings();
 
 const toastRef = ref(null);
 const showModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk mengelola profil sekolah: nama, alamat, logo, dan data kontak. Sekolah adalah data master tertinggi yang menaungi jurusan, kelas, dan rombel.',
+    icon: markRaw(BuildingLibraryIcon),
+    items: [
+      { name: 'Profil Sekolah', description: 'Nama, alamat, kontak, dan logo yang tampil di invoice/laporan' },
+      { name: 'Multi-Sekolah', description: 'Jika sistem menaungi lebih dari satu sekolah, data di sini yang membedakannya' },
+    ],
+  },
+];
 const showDeleteModal = ref(false);
 const editingId = ref(null);
 const deletingItem = ref(null);

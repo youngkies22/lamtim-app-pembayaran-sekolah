@@ -10,7 +10,13 @@
               <UserMinusIcon class="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">Jadikan Alumni</h1>
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                Jadikan Alumni
+                <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+                  title="Informasi Jadikan Alumni">
+                  <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 group-hover:scale-110 transition-transform" />
+                </button>
+              </h1>
               <p class="text-sm text-gray-500 dark:text-gray-400">Pilih siswa (Aktif & Keluar) tingkat akhir untuk
                 dijadikan alumni</p>
             </div>
@@ -161,19 +167,38 @@
     <ConfirmModal :show="showConfirm" title="Konfirmasi Jadikan Alumni" :message="confirmMessage"
       confirm-text="Ya, Jadikan Alumni" cancel-text="Batal" @confirm="executeMarkAlumni"
       @cancel="showConfirm = false" />
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Jadikan Alumni"
+      subtitle="Pelajari fungsi halaman jadikan alumni" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import SearchableSelect from '../../components/SearchableSelect.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { siswaAPI, siswaRombelAPI, masterDataAPI, cacheAPI } from '../../services/api';
 import { useAppSettings } from '../../composables/useAppSettings';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
-import { UserMinusIcon, ExclamationTriangleIcon, CheckCircleIcon } from '@heroicons/vue/24/outline';
+import { UserMinusIcon, ExclamationTriangleIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini untuk menandai siswa tingkat akhir yang sudah lulus sebagai Alumni. Siswa yang dijadikan alumni akan berstatus tidak aktif namun tetap tercatat riwayat tagihan/pembayarannya.',
+    icon: markRaw(UserMinusIcon),
+    items: [
+      { name: 'Pilih Rombel Tingkat Akhir', description: 'Hanya rombel kelas akhir (XII/12/9/6) yang muncul di daftar' },
+      { name: 'Pilih Siswa', description: 'Centang siswa yang benar-benar sudah lulus untuk dijadikan alumni' },
+      { name: 'Setelah Diproses', description: 'Siswa berpindah status ke Alumni dan muncul di halaman Data Alumni' },
+    ],
+  },
+];
 
 const KELAS_CATEGORIES = {
   'SD': ['1', '2', '3', '4', '5', '6'],

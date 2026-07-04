@@ -11,6 +11,10 @@
                 <CalendarIcon class="w-8 h-8 text-white" />
               </div>
               Data Tahun Ajaran
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Data Tahun Ajaran">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-amber-100">Kelola data tahun ajaran dengan mudah dan efisien</p>
           </div>
@@ -190,19 +194,25 @@
       @cancel="showDeleteModal = false"
     />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Data Tahun Ajaran"
+      subtitle="Pelajari fungsi halaman data tahun ajaran" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, markRaw } from 'vue';
 import Layout from '../../../components/layout/Layout.vue';
 import FormModal from '../../../components/FormModal.vue';
 import ConfirmModal from '../../../components/ConfirmModal.vue';
+import InfoModal from '../../../components/InfoModal.vue';
 import Toast from '../../../components/Toast.vue';
 import { masterDataAPI } from '../../../services/api';
 import { useRoleAccess } from '../../../composables/useRoleAccess';
+import { CalendarIcon as InfoCalendarIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
 import {
   CalendarIcon,
   PlusIcon,
@@ -217,6 +227,18 @@ const { canCreateData, canEditData, canDeleteData } = useRoleAccess();
 const tableData = ref([]);
 const loading = ref(true);
 const showModal = ref(false);
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Tahun Ajaran menandai periode belajar (mis. 2024/2025). Hanya satu tahun ajaran yang boleh berstatus aktif pada satu waktu — status ini memengaruhi generate tagihan dan laporan.',
+    icon: markRaw(InfoCalendarIcon),
+    items: [
+      { name: 'Set Aktif', description: 'Tandai tahun ajaran yang sedang berjalan sebagai aktif' },
+      { name: 'Riwayat', description: 'Tahun ajaran lama tetap tersimpan untuk keperluan laporan historis' },
+    ],
+  },
+];
 const editingId = ref(null);
 const submitLoading = ref(false);
 const formError = ref('');

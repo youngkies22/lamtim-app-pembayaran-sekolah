@@ -11,6 +11,10 @@
               <Squares2X2Icon class="w-8 h-8 text-white" />
             </div>
             Laporan per Rombel
+            <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group no-print"
+              title="Informasi Laporan per Rombel">
+              <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="mt-2 text-emerald-100">Analisis data tagihan dan pembayaran per rombel (kelas)</p>
         </div>
@@ -139,12 +143,18 @@
         </div>
       </div>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Laporan per Rombel"
+      subtitle="Pelajari fungsi halaman laporan per rombel" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick } from 'vue';
+import { ref, reactive, onMounted, nextTick, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
+import { InformationCircleIcon } from '@heroicons/vue/24/outline';
 import {
   Squares2X2Icon,
   MagnifyingGlassIcon,
@@ -160,6 +170,18 @@ import {
 import SearchableSelect from '../../components/SearchableSelect.vue';
 import { masterDataAPI, reportAPI, masterPembayaranAPI } from '../../services/api';
 
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Analisis tagihan dan pembayaran seluruh siswa dalam satu rombel (kelas) sekaligus — cocok untuk wali kelas memantau kondisi pembayaran anak didiknya.',
+    icon: markRaw(InformationCircleIcon),
+    items: [
+      { name: 'Pilih Rombel', description: 'Cari dan pilih satu rombel untuk ditampilkan datanya' },
+      { name: 'Ringkasan per Siswa', description: 'Tabel menampilkan status tagihan/pembayaran tiap siswa dalam rombel tersebut' },
+    ],
+  },
+];
 const tableRef = ref(null);
 const dataTable = ref(null);
 const rombelList = ref([]);

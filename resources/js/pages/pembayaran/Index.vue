@@ -16,6 +16,10 @@
                                 </svg>
                             </div>
                             Pembayaran
+                            <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                                title="Informasi Pembayaran">
+                                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+                            </button>
                         </h1>
                         <p class="mt-2 text-sky-100">Kelola dan proses pembayaran siswa dengan mudah</p>
                     </div>
@@ -557,20 +561,41 @@
             confirm-text="Ya, Hapus" :loading="actionLoading" @confirm="confirmDelete"
             @cancel="showDeleteModal = false" />
 
+        <!-- Info Modal -->
+        <InfoModal :show="showInfoModal" title="Informasi Pembayaran"
+          subtitle="Pelajari fungsi halaman pembayaran" :sections="infoSections" @close="showInfoModal = false" />
+
         <Toast ref="toastRef" />
     </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, nextTick, computed } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, nextTick, computed, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import SearchableSelect from '../../components/SearchableSelect.vue';
 import { pembayaranAPI, siswaAPI, masterPembayaranAPI, masterDataAPI } from '../../services/api';
 import { useRoleAccess } from '../../composables/useRoleAccess';
 import { useAppSettings } from '../../composables/useAppSettings';
 import { useClosingCheck } from '../../composables/useClosingCheck';
+import { InformationCircleIcon, BanknotesIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman ini menampilkan seluruh riwayat transaksi pembayaran siswa. Anda bisa memproses pembayaran baru, memverifikasi, membatalkan, atau mengekspor data.',
+    icon: markRaw(BanknotesIcon),
+    items: [
+      { name: 'Proses Pembayaran', description: 'Input pembayaran baru untuk siswa terhadap tagihan yang belum lunas' },
+      { name: 'Verifikasi', description: 'Tandai pembayaran sebagai terverifikasi setelah dicek kebenarannya' },
+      { name: 'Batalkan/Hapus', description: 'Batalkan transaksi yang salah input, atau hapus (masuk ke Trash)' },
+      { name: 'Export & Print', description: 'Unduh Excel atau cetak daftar transaksi untuk laporan' },
+    ],
+  },
+];
 
 const { appSettings } = useAppSettings();
 const { isClosed, checkDateStatus } = useClosingCheck();

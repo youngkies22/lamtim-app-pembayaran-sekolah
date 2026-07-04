@@ -9,6 +9,10 @@
               <BuildingLibraryIcon class="w-6 h-6 md:w-7 md:h-7" />
             </div>
             <span>Data Master</span>
+            <button @click="showInfoModal = true" class="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors group"
+              title="Informasi Data Master">
+              <InformationCircleIcon class="w-5 h-5 text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:scale-110 transition-transform" />
+            </button>
           </h1>
           <p class="mt-1.5 text-sm text-gray-600 dark:text-gray-400">Kelola data master sistem sekolah</p>
         </div>
@@ -77,11 +81,17 @@
         </div>
       </div>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Data Master"
+      subtitle="Pelajari fungsi halaman data master" :sections="infoSections" @close="showInfoModal = false" />
   </Layout>
 </template>
 
 <script setup>
+import { ref, markRaw } from 'vue';
 import Layout from '../../components/layout/Layout.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import { useRouter } from 'vue-router';
 import {
   BuildingLibraryIcon,
@@ -89,6 +99,7 @@ import {
   BuildingOfficeIcon,
   UsersIcon,
   ChevronRightIcon,
+  InformationCircleIcon,
 } from '@heroicons/vue/24/outline';
 
 const router = useRouter();
@@ -96,4 +107,19 @@ const router = useRouter();
 const goTo = (path) => {
   router.push(path);
 };
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Data Master adalah pusat navigasi ke data-data pokok yang menjadi dasar seluruh sistem: sekolah, jurusan, kelas, dan rombel. Perubahan di data master akan berdampak ke seluruh modul lain (siswa, tagihan, laporan, dll).',
+    icon: markRaw(BuildingLibraryIcon),
+    items: [
+      { name: 'Sekolah', description: 'Profil sekolah: nama, alamat, logo' },
+      { name: 'Jurusan', description: 'Kompetensi keahlian / jurusan yang tersedia' },
+      { name: 'Kelas', description: 'Tingkat kelas, misalnya X, XI, XII' },
+      { name: 'Rombel', description: 'Rombongan belajar — gabungan kelas + jurusan + nama rombel' },
+    ],
+  },
+];
 </script>

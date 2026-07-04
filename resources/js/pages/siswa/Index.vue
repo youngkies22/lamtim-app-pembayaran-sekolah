@@ -12,6 +12,10 @@
                 <UserGroupIcon class="w-6 h-6 md:w-8 md:h-8 text-white" />
               </div>
               Data Siswa
+              <button @click="showInfoModal = true" class="p-1.5 rounded-lg hover:bg-white/20 transition-colors group"
+                title="Informasi Data Siswa">
+                <InformationCircleIcon class="w-5 h-5 text-white group-hover:scale-110 transition-transform" />
+              </button>
             </h1>
             <p class="mt-2 text-blue-100 text-sm md:text-base">Kelola data siswa dan mapping rombel dengan mudah dan
               efisien</p>
@@ -203,23 +207,43 @@
       :message="`Apakah Anda yakin ingin menghapus siswa '${deletingItem?.nama || ''}'?`" confirm-text="Ya, Hapus"
       :loading="deleteLoading" @confirm="confirmDelete" @cancel="showDeleteModal = false" />
 
+    <!-- Info Modal -->
+    <InfoModal :show="showInfoModal" title="Informasi Data Siswa"
+      subtitle="Pelajari fungsi halaman data siswa" :sections="infoSections" @close="showInfoModal = false" />
+
     <!-- Toast -->
     <Toast ref="toastRef" />
   </Layout>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import Layout from '../../components/layout/Layout.vue';
 import ConfirmModal from '../../components/ConfirmModal.vue';
+import InfoModal from '../../components/InfoModal.vue';
 import Toast from '../../components/Toast.vue';
 import { siswaAPI } from '../../services/api';
 import { useDataTable } from '../../composables/useDataTable';
 import { useMasterDataCache } from '../../composables/useMasterDataCache';
 import { useRoleAccess } from '../../composables/useRoleAccess';
 import SearchableSelect from '../../components/SearchableSelect.vue';
-import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, UserGroupIcon, ArrowsRightLeftIcon } from '@heroicons/vue/24/outline';
+import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, UserGroupIcon, ArrowsRightLeftIcon, InformationCircleIcon } from '@heroicons/vue/24/outline';
+
+const showInfoModal = ref(false);
+const infoSections = [
+  {
+    title: 'Fungsi Halaman Ini',
+    description: 'Halaman Data Siswa adalah pusat pengelolaan data induk siswa. Di sini Anda bisa melihat, mencari, menambah, mengubah, dan menghapus data siswa, serta memantau rombel (kelas) tiap siswa.',
+    icon: markRaw(UserGroupIcon),
+    items: [
+      { name: 'Tambah/Edit/Hapus Siswa', description: 'Kelola data induk siswa: NIS, NISN, nama, username, dan data pribadi lainnya' },
+      { name: 'Filter & Pencarian', description: 'Saring data berdasarkan kelas, jurusan, status aktif, atau kata kunci nama/NIS' },
+      { name: 'Mapping Rombel', description: 'Tombol "Mapping Rombel" untuk menempatkan siswa yang belum punya rombel ke dalam rombel tujuan' },
+      { name: 'Status Siswa', description: 'Aktif = siswa terdaftar berjalan, Tidak Aktif = keluar/pindah, Off = nonaktif sementara' },
+    ],
+  },
+];
 
 const router = useRouter();
 const toastRef = ref(null);
