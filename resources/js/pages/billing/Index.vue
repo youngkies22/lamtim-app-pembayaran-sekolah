@@ -70,10 +70,10 @@
                                     <label
                                         class="block text-xs font-semibold text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wider">Pilih
                                         Sekolah</label>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
                                         <label v-for="opt in sekolahOptions" :key="opt.id || 'semua-sekolah'"
                                             :title="opt.nama"
-                                            class="group relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all"
+                                            class="group relative flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all"
                                             :class="selectedSekolah === opt.id
                                                 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 shadow-sm'
                                                 : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700'">
@@ -97,7 +97,7 @@
                                             </span>
                                             <span class="min-w-0 flex-1 text-sm font-semibold leading-snug"
                                                 :class="selectedSekolah === opt.id ? 'text-emerald-700 dark:text-emerald-300' : 'text-gray-700 dark:text-gray-200'">
-                                                {{ opt.nama }}
+                                                {{ opt.label }}
                                             </span>
                                             <svg v-if="selectedSekolah === opt.id"
                                                 class="w-4 h-4 text-emerald-500 shrink-0" fill="currentColor"
@@ -580,7 +580,10 @@ const siswaOptions = computed(() => {
 });
 
 const sekolahOptions = computed(() => {
-    return [{ id: '', nama: 'Semua Sekolah' }, ...sekolahList.value];
+    return [
+        { id: '', nama: 'Semua Sekolah', label: 'Semua' },
+        ...sekolahList.value.map(s => ({ ...s, label: s.kode || s.nama })),
+    ];
 });
 
 const kelasOptions = computed(() => {
