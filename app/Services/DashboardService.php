@@ -21,10 +21,12 @@ class DashboardService
     {
         return CacheHelper::remember(['dashboard'], 'dashboard_stats', 300, function () {
             // Statistik siswa — satu query agregat, bukan tiga count terpisah
+            // Catatan: "isAlumni" bertipe boolean di Postgres, harus dibandingkan
+            // dengan true/false (bukan 1/0 seperti "isActive" yang tinyInteger).
             $siswaStats = LamtimSiswa::query()
                 ->selectRaw('
-                    COUNT(CASE WHEN "isActive" = 1 AND "isAlumni" = 0 THEN 1 END) as total_siswa,
-                    COUNT(CASE WHEN "isAlumni" = 1 THEN 1 END) as total_alumni,
+                    COUNT(CASE WHEN "isActive" = 1 AND "isAlumni" = false THEN 1 END) as total_siswa,
+                    COUNT(CASE WHEN "isAlumni" = true THEN 1 END) as total_alumni,
                     COUNT(CASE WHEN "isActive" = 2 THEN 1 END) as siswa_off
                 ')
                 ->first();
