@@ -238,6 +238,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::post('trash/empty', [\App\Http\Controllers\TrashController::class, 'emptyTrash'])->name('api.trash.empty');
       });
 
+      // Reset Data Routes - Admin Only
+      Route::prefix('reset-data')->middleware('role:1')->group(function () {
+          Route::get('/', [\App\Http\Controllers\ResetDataController::class, 'index'])->name('api.reset-data.index');
+          Route::post('/', [\App\Http\Controllers\ResetDataController::class, 'reset'])->name('api.reset-data.store');
+      });
+
       // External Sync Routes - Admin Only
       Route::prefix('sync')->middleware('role:1,2')->group(function () {
           Route::post('/run', [\App\Http\Controllers\ExternalSyncController::class, 'run'])->name('api.sync.run');

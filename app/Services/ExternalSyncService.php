@@ -46,8 +46,11 @@ class ExternalSyncService
 
     /**
      * Sync a single NON-SISWA entity synchronously. Called directly from controller.
+     *
+     * @param array<int, string>|null $kelasIds For entity='rombel' only: local Kelas UUIDs
+     *                                          to restrict the sync to. Null/empty = all kelas.
      */
-    public function syncSingleEntity(string $entity): array
+    public function syncSingleEntity(string $entity, ?array $kelasIds = null): array
     {
         if (!SettingService::isJobEnabled('job_sync_external_enabled')) {
             throw new \Exception('Sync External Data Job tidak aktif. Aktifkan di Pengaturan.');
@@ -63,6 +66,24 @@ class ExternalSyncService
                 'message' => 'Tidak ada data dari API',
                 'inserted' => 0, 'updated' => 0, 'failed' => 0, 'errors' => [],
             ];
+        }
+
+        // Rombel carries its kelas directly (klsKode/rblKlsId) — the external API has
+        // no filter param of its own, so records outside the selected kelas are dropped here.
+        if ($entity === 'rombel' && !empty($kelasIds)) {
+            $allowedKelasKodes = LamtimKelas::whereIn('id', $kelasIds)->pluck('kode')->all();
+            $data = array_values(array_filter($data, function ($record) use ($allowedKelasKodes) {
+                $klsKode = $record['klsKode'] ?? $record['rblKlsId'] ?? null;
+                return $klsKode && in_array((string) $klsKode, $allowedKelasKodes, true);
+            }));
+
+            if (empty($data)) {
+                return [
+                    'status' => 'completed',
+                    'message' => 'Tidak ada rombel pada kelas yang dipilih',
+                    'inserted' => 0, 'updated' => 0, 'failed' => 0, 'errors' => [],
+                ];
+            }
         }
 
         $stats = ['inserted' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
@@ -174,7 +195,11 @@ class ExternalSyncService
         }
     }
 
-    public function syncSiswaBackground(): array
+    /**
+     * @param array<int, string>|null $kelasIds Local Kelas UUIDs to restrict the sync to.
+     *                                          Null/empty means sync all kelas (default behavior).
+     */
+    public function syncSiswaBackground(?array $kelasIds = null): array
     {
         if (!SettingService::isJobEnabled('job_sync_siswa_enabled')) {
             throw new \Exception('Sync Siswa Job tidak aktif. Aktifkan di Pengaturan.');
@@ -187,12 +212,12 @@ class ExternalSyncService
         // Preload ID maps for the job context
         $this->preloadIdMaps();
 
-        $result = $this->syncEntity('siswa', $siswaIndex, $totalEntities);
-        
+        $result = $this->syncEntity('siswa', $siswaIndex, $totalEntities, null, $kelasIds);
+
         // Save results and clear real-time progress
         $this->results['siswa'] = $result;
         $this->saveLastSyncTime();
-        
+
         return $result;
     }
 
@@ -292,8 +317,11 @@ class ExternalSyncService
 
     /**
      * Sync a single entity type.
+     *
+     * @param array<int, string>|null $kelasIds For entity='siswa' only: local Kelas UUIDs
+     *                                          to restrict the sync to. Null/empty = all kelas.
      */
-    protected function syncEntity(string $entity, int $entityIndex = 1, int $totalEntities = 1, ?callable $onProgress = null): array
+    protected function syncEntity(string $entity, int $entityIndex = 1, int $totalEntities = 1, ?callable $onProgress = null, ?array $kelasIds = null): array
     {
 
         set_time_limit(0);
@@ -306,7 +334,7 @@ class ExternalSyncService
             if ($onProgress) $onProgress($entity, 0, 0);
 
             $filePath = $this->downloadEntity($entity);
-            
+
             if (!$filePath || !File::exists($filePath)) {
                 return [
                     'status' => 'completed', 'message' => 'Tidak ada data dari API',
@@ -317,13 +345,32 @@ class ExternalSyncService
             // Stage 2: Process
             $jsonContent = File::get($filePath);
             $apiData = json_decode($jsonContent, true);
-            
+
             if (empty($apiData)) {
                 $this->cleanupSyncFile($entity);
                 return [
                     'status' => 'completed', 'message' => 'File data kosong',
                     'inserted' => 0, 'updated' => 0, 'soft_deleted' => 0, 'failed' => 0, 'errors' => [],
                 ];
+            }
+
+            // Filter siswa by kelas: the external API has no filter param of its own,
+            // so we pull everything and drop records outside the selected kelas here.
+            // A siswa with no resolvable rombel/kelas is skipped when a filter is active.
+            if ($entity === 'siswa' && !empty($kelasIds)) {
+                $allowedRombelKodes = LamtimRombel::whereIn('idKelas', $kelasIds)->pluck('kode')->all();
+                $apiData = array_values(array_filter($apiData, function ($record) use ($allowedRombelKodes) {
+                    $rblKode = $record['master_rombel']['rblKode'] ?? null;
+                    return $rblKode && in_array($rblKode, $allowedRombelKodes, true);
+                }));
+
+                if (empty($apiData)) {
+                    $this->cleanupSyncFile($entity);
+                    return [
+                        'status' => 'completed', 'message' => 'Tidak ada siswa pada kelas yang dipilih',
+                        'inserted' => 0, 'updated' => 0, 'soft_deleted' => 0, 'failed' => 0, 'errors' => [],
+                    ];
+                }
             }
 
             $totalRecords = count($apiData);

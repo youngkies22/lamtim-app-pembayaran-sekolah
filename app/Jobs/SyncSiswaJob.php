@@ -21,10 +21,12 @@ class SyncSiswaJob implements ShouldQueue
     public $timeout = 600;
 
     /**
-     * Create a new job instance.
+     * @param array<int, string>|null $kelasIds Local Kelas UUIDs to restrict the sync to.
+     *                                          Null/empty means sync all kelas.
      */
-    public function __construct()
-    {
+    public function __construct(
+        protected ?array $kelasIds = null
+    ) {
         //
     }
 
@@ -33,10 +35,10 @@ class SyncSiswaJob implements ShouldQueue
      */
     public function handle(ExternalSyncService $syncService): void
     {
-        Log::info('SyncSiswaJob started.');
+        Log::info('SyncSiswaJob started.', ['kelas_ids' => $this->kelasIds]);
 
         try {
-            $syncService->syncSiswaBackground();
+            $syncService->syncSiswaBackground($this->kelasIds);
             Log::info('SyncSiswaJob completed successfully.');
         } catch (\Exception $e) {
             Log::error('SyncSiswaJob failed: ' . $e->getMessage(), [

@@ -444,7 +444,7 @@ export const syncAPI = {
     run: (data = {}) => api.post('/sync/run', data),
     status: () => api.get('/sync/status'),
     testConnection: () => api.get('/sync/test-connection'),
-    siswaBackground: () => api.post('/sync/siswa/background'),
+    siswaBackground: (kelasIds = []) => api.post('/sync/siswa/background', { kelas_ids: kelasIds?.length ? kelasIds : undefined }),
     getProgress: () => api.get('/sync/progress'),
     siswaDownload: () => api.post('/sync/siswa/download'),
     siswaProcessChunk: (data) => api.post('/sync/siswa/process-chunk', data),
@@ -465,6 +465,12 @@ export const jobsAPI = {
     retryAll: () => api.post('/jobs/failed/retry-all'),
     delete: (id) => api.delete(`/jobs/failed/${id}`),
     flush: () => api.post('/jobs/failed/flush'),
+};
+
+// Reset Data API (Admin only)
+export const resetDataAPI = {
+    getCategories: () => api.get('/reset-data'),
+    reset: (categories) => api.post('/reset-data', { categories }),
 };
 
 export default api;

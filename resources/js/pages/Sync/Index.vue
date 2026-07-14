@@ -49,6 +49,33 @@
         </div>
       </div>
 
+      <!-- Filter Kelas (shared: berlaku untuk sync Rombel & Siswa) -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-5"
+        :class="{ 'opacity-50 pointer-events-none': isSyncing }">
+        <p class="text-sm font-bold text-gray-900 dark:text-white mb-1">Filter Kelas</p>
+        <template v-if="kelasOptions.length > 0">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+            Berlaku saat sinkronisasi <strong>Rombel</strong> dan <strong>Siswa</strong>. Biarkan kosong untuk menyinkronkan semua kelas.
+          </p>
+          <div class="flex flex-wrap gap-1.5">
+            <label v-for="k in kelasOptions" :key="k.id"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border cursor-pointer text-xs font-medium transition-colors"
+              :class="selectedKelasIds.includes(k.id)
+                ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
+                : 'border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600'">
+              <input type="checkbox" :checked="selectedKelasIds.includes(k.id)" @change="toggleKelas(k.id)" class="sr-only" />
+              {{ k.kode }}
+            </label>
+          </div>
+          <p class="mt-2 text-[11px] text-gray-400 dark:text-gray-500">
+            {{ selectedKelasIds.length === 0 ? 'Semua kelas akan disinkronkan' : `Hanya kelas: ${selectedKelasLabel}` }}
+          </p>
+        </template>
+        <p v-else class="text-xs text-amber-600 dark:text-amber-400">
+          Data Kelas belum tersedia — sinkronkan Kelas terlebih dahulu untuk mengaktifkan filter ini.
+        </p>
+      </div>
+
       <!-- Entity Cards Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         <div v-for="entityName in entities" :key="entityName"
@@ -202,6 +229,7 @@ const infoSections = [
     items: [
       { name: 'Tes Koneksi', description: 'Periksa apakah koneksi ke API eksternal berfungsi sebelum sinkronisasi' },
       { name: 'Sinkronisasi', description: 'Tarik data terbaru dari sistem eksternal ke database lokal' },
+      { name: 'Filter Kelas', description: 'Pilih satu atau beberapa kelas (X, XI, XII) untuk membatasi sinkronisasi Rombel dan Siswa; biarkan kosong untuk menyinkronkan semua kelas' },
       { name: 'Riwayat', description: 'Lihat waktu dan status sinkronisasi terakhir' },
     ],
   },
@@ -244,9 +272,26 @@ const syncResults = ref(null)
 // Siswa chunked progress
 const siswaProgress = ref(null)
 
+// Siswa kelas filter
+const kelasOptions = ref([])
+const selectedKelasIds = ref([])
+
 const CHUNK_SIZE = 50
 
 const isSyncing = computed(() => syncingEntity.value !== null)
+
+const selectedKelasLabel = computed(() =>
+  kelasOptions.value
+    .filter(k => selectedKelasIds.value.includes(k.id))
+    .map(k => k.kode)
+    .join(', ')
+)
+
+const toggleKelas = (id) => {
+  const idx = selectedKelasIds.value.indexOf(id)
+  if (idx === -1) selectedKelasIds.value.push(id)
+  else selectedKelasIds.value.splice(idx, 1)
+}
 
 const entityLabels = computed(() => ({
   tahun_ajaran: 'Tahun Ajaran',
@@ -359,7 +404,8 @@ const handleTestConnection = async () => {
 const runSyncNonSiswa = async (entity) => {
   syncingEntity.value = entity
   try {
-    const response = await syncAPI.run({ entity })
+    const payload = entity === 'rombel' ? { entity, kelas_ids: selectedKelasIds.value } : { entity }
+    const response = await syncAPI.run(payload)
     if (response.data.success) {
       const result = response.data.data.result
       if (!syncResults.value) syncResults.value = {}
@@ -388,7 +434,7 @@ const runSyncSiswa = () => {
     siswaProgress.value = { stage: 'downloading', processed: 0, total: 0, percentage: 0, inserted: 0, updated: 0, failed: 0 }
 
     try {
-      const response = await syncAPI.siswaBackground()
+      const response = await syncAPI.siswaBackground(selectedKelasIds.value)
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal memulai background job')
       }
@@ -475,6 +521,7 @@ onMounted(async () => {
   await loadAppSettings()
   const result = await loadAll()
   labelJurusan.value = result.labelJurusan || 'Jurusan'
+  kelasOptions.value = result.kelas || []
   fetchStatus()
 })
 </script>

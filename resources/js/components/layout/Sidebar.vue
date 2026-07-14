@@ -100,6 +100,7 @@ import {
   ReceiptRefundIcon,
   BanknotesIcon,
   TrashIcon,
+  ExclamationTriangleIcon,
   Squares2X2Icon,
   LockClosedIcon,
   CircleStackIcon,
@@ -218,7 +219,8 @@ const menuItems = computed(() => {
     { name: 'Users', icon: UsersIcon, route: '/users' },
     { name: 'Backups', icon: CircleStackIcon, route: '/backups' },
     { name: 'Sync', icon: ArrowPathIcon, route: '/sync' },
-    { name: 'Trash', icon: TrashIcon, route: '/trash' }
+    { name: 'Trash', icon: TrashIcon, route: '/trash' },
+    { name: 'Reset Data', icon: ExclamationTriangleIcon, route: '/reset-data' }
   ];
 
   return allMenus.filter(menu => {

@@ -55,6 +55,7 @@ const TrashIndex = () => import('./pages/trash/Index.vue');
 const ClosingIndex = () => import('./pages/Closing/Index.vue');
 const BackupIndex = () => import('./pages/Backups/Index.vue');
 const SyncIndex = () => import('./pages/Sync/Index.vue');
+const ResetDataIndex = () => import('./pages/ResetData/Index.vue');
 const FailedJobs = () => import('./pages/System/FailedJobs.vue');
 
 // Import API service
@@ -275,6 +276,12 @@ const routes = [
         name: 'trash',
         component: TrashIndex,
         meta: { requiresAuth: true, activeMenu: 'Settings' }
+    },
+    {
+        path: '/reset-data',
+        name: 'reset-data',
+        component: ResetDataIndex,
+        meta: { requiresAuth: true, activeMenu: 'Reset Data' }
     },
     {
         path: '/profile',
