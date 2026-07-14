@@ -20,6 +20,7 @@
         "apexcharts": "^5.3.6",
         "flowbite": "^4.0.1",
         "flowbite-vue": "^0.2.3",
+        "mermaid": "^11.16.0",
         "vue": "^3.5.27",
         "vue-router": "^4.6.4",
         "vue3-apexcharts": "^1.10.0"

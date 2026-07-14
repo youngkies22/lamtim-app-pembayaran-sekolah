@@ -28,6 +28,7 @@ const MENU_PERMISSIONS = {
   'Backups': [ROLES.ADMIN, ROLES.OPERATOR], // Admin & Operator can access Backups
   'Trash': [ROLES.ADMIN], // Only Admin can access Trash (Updated)
   'Reset Data': [ROLES.ADMIN], // Only Admin can access Reset Data
+  'Alur Sistem': [ROLES.ADMIN], // Only Admin can access System Flow overview
   'Settings': [ROLES.ADMIN], // Only Admin can access Settings (Updated)
   'Sync': [ROLES.ADMIN, ROLES.OPERATOR], // Admin & Operator can access Sync
   'Closing': [ROLES.ADMIN, ROLES.OPERATOR],

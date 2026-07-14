@@ -4,7 +4,7 @@
 
   <!-- Sidebar -->
   <aside :class="[
-    'fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto transition-transform bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-64',
+    'fixed top-0 left-0 z-40 h-screen p-4 pb-20 overflow-y-auto transition-transform bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 w-64',
     isLargeScreen || isOpen ? 'translate-x-0' : '-translate-x-full'
   ]" role="navigation" aria-label="Main navigation">
     <div class="border-b border-gray-200 dark:border-gray-700 pb-4 mb-5 flex items-center justify-between">
@@ -101,6 +101,7 @@ import {
   BanknotesIcon,
   TrashIcon,
   ExclamationTriangleIcon,
+  MapIcon,
   Squares2X2Icon,
   LockClosedIcon,
   CircleStackIcon,
@@ -220,7 +221,8 @@ const menuItems = computed(() => {
     { name: 'Backups', icon: CircleStackIcon, route: '/backups' },
     { name: 'Sync', icon: ArrowPathIcon, route: '/sync' },
     { name: 'Trash', icon: TrashIcon, route: '/trash' },
-    { name: 'Reset Data', icon: ExclamationTriangleIcon, route: '/reset-data' }
+    { name: 'Reset Data', icon: ExclamationTriangleIcon, route: '/reset-data' },
+    { name: 'Alur Sistem', icon: MapIcon, route: '/alur-sistem' }
   ];
 
   return allMenus.filter(menu => {
